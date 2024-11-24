@@ -2,6 +2,7 @@ import { Authing } from "./app";
 import { CommentDoc } from "./concepts/commenting";
 import { AlreadyFriendsError, FriendNotFoundError, FriendRequestAlreadyExistsError, FriendRequestDoc, FriendRequestNotFoundError } from "./concepts/friending";
 import { PostAuthorNotMatchError, PostDoc } from "./concepts/posting";
+import { ProjectDoc } from "./concepts/projectmanaging";
 import { Router } from "./framework/router";
 
 /**
@@ -26,6 +27,31 @@ export default class Responses {
   static async posts(posts: PostDoc[]) {
     const authors = await Authing.idsToUsernames(posts.map((post) => post.author));
     return posts.map((post, i) => ({ ...post, author: authors[i] }));
+  }
+
+  /**
+   * Convert ProjectDoc into more readable format for the frontend by converting the owner id into a username.
+   */
+  static async project(project: ProjectDoc | null) {
+    if (!project) {
+      return project;
+    }
+    const fibers = project.fiberUsage;
+    // TODO
+    // const fibers = await Inventorying.idsToFibers(project.fibers);
+    return { ...project, fibers: fibers };
+  }
+
+  /**
+   * Same as {@link project} but for an array of ProjectDoc for improved performance.
+   */
+  static async projects(projects: ProjectDoc[]) {
+    const fibers = await Promise.all(projects.map(async (project: ProjectDoc) => {
+      return project.fiberUsage;
+      // TODO
+      // return Inventorying.idsToFibers(project.fibers);
+    }));
+    return projects.map((project, i) => ({ ...project, fibers: fibers[i] }));
   }
   /**
    * Convert CommentDoc into more readable format for the frontend by converting the author id into a username.
