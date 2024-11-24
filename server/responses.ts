@@ -1,4 +1,5 @@
 import { Authing, Inventorying } from "./app";
+import { CommentDoc } from "./concepts/commenting";
 import { AlreadyFriendsError, FriendNotFoundError, FriendRequestAlreadyExistsError, FriendRequestDoc, FriendRequestNotFoundError } from "./concepts/friending";
 import { PostAuthorNotMatchError, PostDoc } from "./concepts/posting";
 import { ProjectDoc } from "./concepts/project_managing";
@@ -45,6 +46,24 @@ export default class Responses {
   static async projects(projects: ProjectDoc[]) {
     const fibers = await Promise.all(projects.map((project: ProjectDoc) => Inventorying.idsToFibers(project.fibers)));
     return projects.map((project, i) => ({ ...project, fibers: fibers[i] }));
+  }
+  /**
+   * Convert CommentDoc into more readable format for the frontend by converting the author id into a username.
+   */
+  static async comment(comment: CommentDoc | null) {
+    if (!comment) {
+      return comment;
+    }
+    const author = await Authing.getUserById(comment.author);
+    return { ...comment, author: author.username };
+  }
+
+  /**
+   * Same as {@link comment} but for an array of CommentDoc for improved performance.
+   */
+  static async comments(comments: CommentDoc[]) {
+    const authors = await Authing.idsToUsernames(comments.map((comment) => comment.author));
+    return comments.map((comment, i) => ({ ...comment, author: authors[i] }));
   }
 
   /**

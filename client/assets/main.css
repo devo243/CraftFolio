@@ -1,8 +1,33 @@
 /* Add some global styles here! */
 
 :root {
-  --red: rgb(208, 67, 12);
   --base-bg: #f1f3f5;
+  --black: #0E171C;
+  --grey: #DFDFE1;
+  
+  /* error */
+  --light-red: #FBD2E3;
+  --red: #d0430c;
+  --dark-red: #AD2222;
+
+  /* highlights/eco */
+  --light-green: #C3E1D7;
+  --earthy-green: #6B8C6B;
+  --green: #62E279;
+  --dark-green: #4C6047;
+
+  /* warning */
+  --light-yellow: #FCF2CF;
+  --yellow: #DED953;
+  --dark-yellow: #B49956;
+
+  /* highlihgt other */
+  --light-blue: #C2F1FF;
+  --dark-blue: #5377A6;
+
+  /* backgrounds */
+  --light-brown: #EDD4BD;
+  --brown: #B87E51;
 }
 
 button.btn-small {
@@ -29,4 +54,71 @@ a.button {
   justify-content: center;
   align-items: center;
   gap: 1em;
+}
+
+
+/* FONTS */
+
+.shadows-into-light-two-regular {
+  font-family: "Shadows Into Light Two", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.quicksand-medium {
+  font-family: "Quicksand", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.nunito-sans-medium {
+  font-family: "Nunito Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 87.5,
+    "YTLC" 500;
+}
+
+.poppins-medium {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.amatic-sc-regular {
+  font-family: "Amatic SC", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'CrossStich';
+  src: url('./fonts/KingthingsXstitch-r488.ttf') format('truetype');
+  font-weight: normal; 
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Cursive';
+  src:  url('./fonts/Larrisha\ Script.otf') format('opentype')
+        url('./fonts/Larrisha\ Script.ttf') format('truetype');
+  font-weight: normal; 
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Nature';
+  src: url('./fonts/LoveNature-1GG8B.ttf') format('truetype');
+  font-style: normal; /* Specifies this is the normal style */
+  font-weight: normal; /* Optional: define weight */
+}
+
+@font-face {
+  font-family: 'Nature';
+  src: url('./fonts/LoveNatureItalic-8MMwJ.ttf') format('truetype');
+  font-style: italic; /* Specifies this is the italic style */
+  font-weight: normal; /* Optional: define weight */
 }
