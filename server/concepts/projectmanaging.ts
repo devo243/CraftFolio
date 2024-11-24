@@ -6,11 +6,10 @@ export interface ProjectDoc extends BaseDoc {
   owner: ObjectId;
   title: string;
   status: string;
-  dateCreated: Date;
-  dateModified: Date;
   notes: string;
   links: string[];
   images: string[];
+  fiberUsage: { [key: string]: number };
 }
 
 /**
@@ -25,7 +24,7 @@ export default class ProjectManagingConcept {
 
   // Get the user's projects
   async getProjects(owner: ObjectId) {
-    return { projects: await this.projects.readMany({ owner }) };
+    return { projects: await this.projects.readMany({ owner }, { sort: { dateUpdated: -1 } }) };
   }
 
   // Create a project for the user
@@ -33,8 +32,7 @@ export default class ProjectManagingConcept {
     if (!title || !status) {
       throw new BadValuesError("Project must have a title and status.");
     }
-    const date = new Date();
-    const _id = await this.projects.createOne({ owner, title, status, dateCreated: date, dateModified: date, notes: "", links: [], images: [] });
+    const _id = await this.projects.createOne({ owner, title, status, notes: "", links: [], images: [] });
     return { msg: "Project created successfully!", project: await this.projects.readOne({ _id }) };
   }
 
@@ -45,7 +43,7 @@ export default class ProjectManagingConcept {
     if (!project) {
       throw new NotFoundError("Project not found.");
     }
-    const updatedFields: Partial<ProjectDoc> = { title: title || project.title, status: status || project.status, dateModified: new Date() };
+    const updatedFields: Partial<ProjectDoc> = { title: title || project.title, status: status || project.status };
     await this.projects.partialUpdateOne({ _id }, updatedFields);
     return { msg: "Project updated successfully!", project: await this.projects.readOne({ _id }) };
   }
@@ -73,7 +71,7 @@ export default class ProjectManagingConcept {
   // Edit notes for a project
   async editNotes(owner: ObjectId, _id: ObjectId, notes: string) {
     await this.assertOwnerIsUser(owner, _id);
-    await this.projects.partialUpdateOne({ _id }, { notes, dateModified: new Date() });
+    await this.projects.partialUpdateOne({ _id }, { notes });
     return { msg: "Notes updated successfully!", notes };
   }
 
@@ -98,7 +96,7 @@ export default class ProjectManagingConcept {
       throw new NotFoundError("Project not found.");
     }
     const updatedLinks = Array.from(new Set([...project.links, newLink]));
-    await this.projects.partialUpdateOne({ _id }, { links: updatedLinks, dateModified: new Date() });
+    await this.projects.partialUpdateOne({ _id }, { links: updatedLinks });
     return { msg: "Link added successfully!", links: updatedLinks };
   }
 
@@ -113,7 +111,7 @@ export default class ProjectManagingConcept {
       throw new NotFoundError("Project not found.");
     }
     const updatedLinks = project.links.filter((link) => link !== linkToDelete);
-    await this.projects.partialUpdateOne({ _id }, { links: updatedLinks, dateModified: new Date() });
+    await this.projects.partialUpdateOne({ _id }, { links: updatedLinks });
     return { msg: "Link deleted successfully!", links: updatedLinks };
   }
 
@@ -138,7 +136,7 @@ export default class ProjectManagingConcept {
       throw new NotFoundError("Project not found.");
     }
     const updatedImages = Array.from(new Set([...project.images, newImage]));
-    await this.projects.partialUpdateOne({ _id }, { images: updatedImages, dateModified: new Date() });
+    await this.projects.partialUpdateOne({ _id }, { images: updatedImages });
     return { msg: "Image added successfully!", images: updatedImages };
   }
 
@@ -153,8 +151,35 @@ export default class ProjectManagingConcept {
       throw new NotFoundError("Project not found.");
     }
     const updatedImages = project.images.filter((image) => image !== imageToDelete);
-    await this.projects.partialUpdateOne({ _id }, { images: updatedImages, dateModified: new Date() });
+    await this.projects.partialUpdateOne({ _id }, { images: updatedImages });
     return { msg: "Image deleted successfully!", images: updatedImages };
+  }
+
+  // Adjusts the inventory based on the fibers appointed to the project
+  // Adds/Edits fiber usage to a project
+  async addOrEditFiber(owner: ObjectId, _id: ObjectId, fiber: ObjectId, yardage: number) {
+    await this.assertOwnerIsUser(owner, _id);
+    const project = await this.projects.readOne({ _id });
+    if (!project) {
+      throw new NotFoundError(`Project ${_id} does not exist!`);
+    }
+    const updatedFiberUsage = project.fiberUsage || {};
+    updatedFiberUsage[fiber.toString()] = yardage;
+    await this.projects.partialUpdateOne({ _id }, { fiberUsage: updatedFiberUsage });
+    return { msg: "Fiber updated successfully!", fiberUsage: updatedFiberUsage };
+  }
+
+  // Deletes fiber usage to a project
+  async deleteFiber(owner: ObjectId, _id: ObjectId, fiber: ObjectId) {
+    await this.assertOwnerIsUser(owner, _id);
+    const project = await this.projects.readOne({ _id });
+    if (!project) {
+      throw new NotFoundError(`Project ${_id} does not exist!`);
+    }
+    const updatedFiberUsage = project.fiberUsage || {};
+    delete updatedFiberUsage[fiber.toString()];
+    await this.projects.partialUpdateOne({ _id }, { fiberUsage: updatedFiberUsage });
+    return { msg: "Fiber deleted successfully!", fiberUsage: updatedFiberUsage };
   }
 
   async assertOwnerIsUser(user: ObjectId, _id: ObjectId) {
