@@ -3,7 +3,7 @@ import { ObjectId } from "mongodb";
 import { Router, getExpressRouter } from "./framework/router";
 
 import { Authing, CommentOnPost, Inventorying, Posting, ProjectManaging, Sessioning } from "./app";
-import { PostOptions } from "./concepts/posting";
+import { PostDoc, PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
 
@@ -105,6 +105,24 @@ class Routes {
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
     return Posting.delete(oid);
+  }
+
+  async	getGuidesWith(fibers: ObjectId[]){
+    const allGuides: PostDoc[]= await Posting.getPosts();
+    const usableGuides: PostDoc[] = [];
+		for (const guide of allGuides){
+      let usableGuide = true;
+      const guideFibers = guide.options?.fibers ?? [];
+      for (const guidefiberset of guideFibers) {
+        if (guidefiberset.every((guidefiber: ObjectId) => fibers.every((present_fiber) => present_fiber > guidefiber))) {
+          usableGuide = false;
+        }
+      }
+      if (usableGuide) {
+        usableGuides.concat([guide])
+      }     
+    }
+    return usableGuides;
   }
 
   //Comments on Posts
