@@ -2,7 +2,7 @@ import { Authing, Inventorying } from "./app";
 import { CommentDoc } from "./concepts/commenting";
 import { AlreadyFriendsError, FriendNotFoundError, FriendRequestAlreadyExistsError, FriendRequestDoc, FriendRequestNotFoundError } from "./concepts/friending";
 import { PostAuthorNotMatchError, PostDoc } from "./concepts/posting";
-import { ProjectDoc } from "./concepts/project_managing";
+import { ProjectDoc } from "./concepts/projectmanaging";
 import { Router } from "./framework/router";
 
 /**

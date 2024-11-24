@@ -2,12 +2,13 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Inventorying, Posting, ProjectManaging, Sessioning } from "./app";
+import { Authing, CommentOnPost, Inventorying, Posting, ProjectManaging, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
 
 import { z } from "zod";
+import { CommentOptions } from "./concepts/commenting";
 
 /**
  * Web server routes for the app. Implements synchronizations between concepts.
@@ -198,34 +199,80 @@ async deleteFiber(session: SessionDoc, id: string){
 @Router.post("/projects")
 async createProject(session: SessionDoc, title: string, status: string) {
   const user = Sessioning.getUser(session);
-  const created = await ProjectManaging.create(user, title, status);
-  return { msg: created.msg, post: await Responses.project(created.project) };
+  return ProjectManaging.createProject(user, title, status);
 }
+
+// @Router.patch("/projects/:id")
+// async editProject(session: SessionDoc, id: string, title?: string, status?: string, fiber_id?: string, yardage?: string, notes?: string, links?: string, add_image?: string, remove_image?:string) {
+//   const user = Sessioning.getUser(session);
+//   const oid = new ObjectId(id);
+//   // dependes on how implemented
+//   await ProjectManaging.editProject(user, oid, title, status);
+//   if (fiber_id && yardage) {
+//     const fid = new ObjectId(fiber_id); 
+//     await Inventorying.editFiber(fid, yardage=yardage);
+//     await ProjectManaging.editFiberUsage(oid, fid);
+//   }
+//   if (notes){
+//     await ProjectManaging.editNotes(user, oid, notes);
+//   }
+//   await ProjectManaging.edit_links(oid, links);
+//   await ProjectManaging.addImage(oid, add_image);
+//   await ProjectManaging.deleteImage(oid, remove_image);
+// }
 
 @Router.patch("/projects/:id")
-async editProject(session: SessionDoc, id: string, title?: string, status?: string, fiber_id?: string, yardage?: string, notes?: string, links?: string, add_image?: string, remove_image?:string) {
+async editProject(session: SessionDoc, id: string, title: string, status: string, fiber_id?: string, yardage?: number) {
   const user = Sessioning.getUser(session);
   const oid = new ObjectId(id);
-  await ProjectManaging.assertOwnerIsUser(oid, user);
-  // dependes on how implemented
-  await ProjectManaging.editProject(oid, title, status);
+  await ProjectManaging.editProject(user, oid, title, status);
   if (fiber_id && yardage) {
     const fid = new ObjectId(fiber_id); 
-    await Inventorying.editFiber(fid, yardage=yardage);
-    await ProjectManaging.editFiberUsage(oid, fid);
+    await Inventorying.editFiber(fid, undefined, undefined, undefined, undefined, yardage);
+    await ProjectManaging.editFiberUsage(user, oid, fid);
   }
-  await ProjectManaging.editNote(oid, notes);
-  await ProjectManaging.edit_links(oid, links);
-  await ProjectManaging.addImage(oid, add_image);
-  await ProjectManaging.deleteImage(oid, remove_image);
 }
 
+@Router.patch("/projects/:id/")
+async editNotes(session: SessionDoc, id: string, notes: string) {
+  const user = Sessioning.getUser(session);
+  const oid = new ObjectId(id);
+  await ProjectManaging.editNotes(user, oid, notes);
+}
+
+@Router.post("/projects/:id/:link")
+async addLink(session: SessionDoc, id: string, link: string) {
+  const user = Sessioning.getUser(session);
+  const oid = new ObjectId(id);
+  await ProjectManaging.addLink(user, oid, link);
+}
+
+@Router.delete("/projects/:id/:link")
+async deleteLink(session: SessionDoc, id: string, link: string) {
+  const user = Sessioning.getUser(session);
+  const oid = new ObjectId(id);
+  await ProjectManaging.deleteLink(user, oid, link);
+}
+
+@Router.post("/projects/:id/:image")
+async addImage(session: SessionDoc, id: string, image: string) {
+  const user = Sessioning.getUser(session);
+  const oid = new ObjectId(id);
+  await ProjectManaging.addImage(user, oid, image);
+}
+
+@Router.delete("/projects/:id/:image")
+async deleteImage(session: SessionDoc, id: string, image: string) {
+  const user = Sessioning.getUser(session);
+  const oid = new ObjectId(id);
+  await ProjectManaging.deleteLink(user, oid, image);
+}
 
 @Router.get("/projects")
 async getProjects(session: SessionDoc) {
   const user = Sessioning.getUser(session);
   const projects = await ProjectManaging.getProjects(user);
-  return Responses.projects(projects);
+  return Responses.projects(projects.projects);
 }
 
 
@@ -235,8 +282,7 @@ async getProjects(session: SessionDoc) {
 async deleteProject(session: SessionDoc, id: string, fibers: string, amounts: string){
   const user = Sessioning.getUser(session);
   const oid = new ObjectId(id);
-  await ProjectManaging.assertOwnerIsUser(oid, user);
-  await ProjectManaging.deleteProject(oid);
+  await ProjectManaging.deleteProject(user, oid);
   const fiber_ids = fibers.split(",");
   const fiber_amounts = amounts.split(",");
   if (fiber_ids.length !== fiber_amounts.length) throw new Error('Must provide exactly one amount for each fiber'); 
@@ -250,13 +296,17 @@ async importGuide(session: SessionDoc, id: string, guide_link: string){
   // TODO: get guide name from posting
   const title = ""
 	const project = await ProjectManaging.createProject(user, title, "To Do");
-	ProjectManaging.editLinks(project.id, guide_link)
+  if (project.project) {
+    await ProjectManaging.addLink(user, project.project._id, guide_link);
+  } else {
+    throw new Error("failed creating new project");
+  }
   // TODO: get fibers from the guide
   const fibers: ObjectId[] = [];
   // TODO: get amounts from the guide
   const amounts: number[] = [];
   await Promise.all(fibers.map((fiber: ObjectId, idx: number) => Inventorying.editFiber(fiber, undefined, undefined, undefined, undefined, amounts[idx])))
-  return Responses.projects(project);
+  return Responses.project(project.project);
 		
 }
 	
