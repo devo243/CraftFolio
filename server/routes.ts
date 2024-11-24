@@ -183,7 +183,8 @@ async getFibers(session: SessionDoc) {
 async editFiber(session: SessionDoc, id: string, name?: string, brand?: string, type?: string, color?: string, yardage?: number) {
   const user = Sessioning.getUser(session);
   const oid = new ObjectId(id);
-  await Inventorying.assertOwnerIsUser(oid, user);
+  // TODO
+  // await Inventorying.assertOwnerIsUser(oid, user);
   return await Inventorying.editFiber(oid, name, brand, type, color, yardage);
 }
 
@@ -191,7 +192,8 @@ async editFiber(session: SessionDoc, id: string, name?: string, brand?: string, 
 async deleteFiber(session: SessionDoc, id: string){
   const user = Sessioning.getUser(session);
   const oid = new ObjectId(id);
-  await Inventorying.assertOwnerIsUser(oid, user);
+  // TODO
+  // await Inventorying.assertOwnerIsUser(oid, user);
   return await Inventorying.deleteFiber(oid);
 }
 
@@ -229,7 +231,7 @@ async editProject(session: SessionDoc, id: string, title: string, status: string
   if (fiber_id && yardage) {
     const fid = new ObjectId(fiber_id); 
     await Inventorying.editFiber(fid, undefined, undefined, undefined, undefined, yardage);
-    await ProjectManaging.editFiberUsage(user, oid, fid);
+    await ProjectManaging.addOrEditFiber(user, oid, fid, yardage);
   }
 }
 
