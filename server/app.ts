@@ -11,3 +11,5 @@ export const Authing = new AuthenticatingConcept("users");
 export const Posting = new PostingConcept("posts");
 export const Friending = new FriendingConcept("friends");
 export const Inventorying = new InventoryConcept("fibers");
+//  TODO import once added
+export const ProjectManaging = new ProjectManagementConcept("fibers");
