@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
 import { BadValuesError, NotAllowedError, NotFoundError } from "./errors";
+import { FiberDoc } from "./inventorying";
 
 export interface ProjectDoc extends BaseDoc {
   owner: ObjectId;
@@ -9,7 +10,7 @@ export interface ProjectDoc extends BaseDoc {
   notes: string;
   links: string[];
   images: string[];
-  fiberUsage: { [key: string]: number };
+  projectInventory: FiberDoc[];
 }
 
 /**
@@ -155,32 +156,50 @@ export default class ProjectManagingConcept {
     return { msg: "Image deleted successfully!", images: updatedImages };
   }
 
-  // Adjusts the inventory based on the fibers appointed to the project
-  // Adds/Edits fiber usage to a project
-  async addOrEditFiber(owner: ObjectId, _id: ObjectId, fiber: ObjectId, yardage: number) {
+  // Adds/Edits fiber usage of a project
+  async addOrEditFiber(owner: ObjectId, _id: ObjectId, fiber: FiberDoc) {
     await this.assertOwnerIsUser(owner, _id);
     const project = await this.projects.readOne({ _id });
     if (!project) {
       throw new NotFoundError(`Project ${_id} does not exist!`);
     }
-    const updatedFiberUsage = project.fiberUsage || {};
-    updatedFiberUsage[fiber.toString()] = yardage;
-    await this.projects.partialUpdateOne({ _id }, { fiberUsage: updatedFiberUsage });
-    return { msg: "Fiber updated successfully!", fiberUsage: updatedFiberUsage };
+    const updatedInventory = project.projectInventory || [];
+    const fiberIndex = updatedInventory.findIndex((f) => f._id.equals(fiber._id));
+    if (fiberIndex === -1) {
+      updatedInventory.push(fiber);
+    } else {
+      updatedInventory[fiberIndex] = { ...updatedInventory[fiberIndex], ...fiber };
+    }
+    await this.projects.partialUpdateOne({ _id }, { projectInventory: updatedInventory });
+    return { msg: "Fiber updated successfully!", projectInventory: updatedInventory };
   }
 
-  // Deletes fiber usage to a project
-  async deleteFiber(owner: ObjectId, _id: ObjectId, fiber: ObjectId) {
+  // Deletes fiber usage of a project
+  async deleteFiber(owner: ObjectId, _id: ObjectId, fiber: FiberDoc) {
     await this.assertOwnerIsUser(owner, _id);
     const project = await this.projects.readOne({ _id });
     if (!project) {
       throw new NotFoundError(`Project ${_id} does not exist!`);
     }
-    const updatedFiberUsage = project.fiberUsage || {};
-    delete updatedFiberUsage[fiber.toString()];
-    await this.projects.partialUpdateOne({ _id }, { fiberUsage: updatedFiberUsage });
-    return { msg: "Fiber deleted successfully!", fiberUsage: updatedFiberUsage };
+    const updatedInventory = project.projectInventory || [];
+    const newInventory = updatedInventory.filter((f) => !f._id.equals(fiber._id));
+    await this.projects.partialUpdateOne({ _id }, { projectInventory: newInventory });
+    return { msg: "Fiber deleted successfully!", projectInventory: newInventory };
   }
+
+  // do an id to fibers
+  /**
+  method in inventorying:
+  static async posts(posts: PostDoc[]) {
+    const authors = await Authing.idsToUsernames(posts.map((post) => post.author));
+    return posts.map((post, i) => ({ ...post, author: authors[i] }));
+  }
+
+  To be able to use like this `Inventorying.idsToFibers(project.fibers)'
+
+
+  need to separate guide link and external links
+  */
 
   async assertOwnerIsUser(user: ObjectId, _id: ObjectId) {
     const project = await this.projects.readOne({ _id });

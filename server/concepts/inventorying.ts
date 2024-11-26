@@ -61,6 +61,12 @@ export default class InventoryConcept {
     return true;
   }
 
+  async idsToFibers(ids: ObjectId[]) {
+    const fibers = await this.fibers.readMany({ _id: { $in: ids } });
+    const idTofiber = new Map(fibers.map((fiber) => [fiber._id.toString(), fiber]));
+    return ids.map((id) => idTofiber.get(id.toString()) ?? null);
+  }
+
   async assertOwnerIsUser(_id: ObjectId, user: ObjectId) {
     const fiber = await this.fibers.readOne({ _id });
     if (fiber?.user !== user) {
