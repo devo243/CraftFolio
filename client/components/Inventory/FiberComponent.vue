@@ -8,38 +8,57 @@ const { currentUsername } = storeToRefs(useUserStore());
 
 const fiber = ref(props.fiber);
 const editing = ref(false);
+
+const toggleEditing = () => {
+  if (!editing.value) {
+    editing.value = true;
+  } else {
+    editing.value = false;
+  }
+};
 </script>
 
 <template>
-  <div class="container">
-    <div class="block">
-      <span v-if="editing">{{ fiber.name }}</span>
-      <input v-else type="text" id="name" v-model="fiber.name" :placeholder="fiber.name"></input>
+  <div class="fiber">
+    <div class="container">
+      <div class="block">
+        <span v-if="!editing">{{ fiber.name }}</span>
+        <input v-else type="text" id="name" v-model="fiber.name" :placeholder="fiber.name" />
+      </div>
+      <div class="vl"></div>
+      <div class="block">
+        <span v-if="!editing">{{ fiber.brand }}</span>
+        <input v-else type="text" id="brand" v-model="fiber.brand" :placeholder="fiber.brand" />
+      </div>
+      <div class="vl"></div>
+      <div class="block">
+        <span v-if="!editing">{{ fiber.type }}</span>
+        <input v-else type="text" id="type" v-model="fiber.type" :placeholder="fiber.type" />
+      </div>
+      <div class="vl"></div>
+      <div class="block">
+        <span v-if="!editing">{{ fiber.color }}</span>
+        <input v-else type="text" id="yardage" v-model="fiber.color" :placeholder="fiber.color" />
+      </div>
+      <div class="vl"></div>
+      <div class="block">
+        <span v-if="!editing">{{ fiber.yardage }}</span>
+        <input v-else type="text" id="yardage" v-model="fiber.yardage" :placeholder="fiber.yardage" />
+      </div>
     </div>
-    <div class="vl"></div>
-    <div class="block">
-      <span v-if="editing">{{ fiber.brand }}</span>
-      <input v-else type="text" id="brand" v-model="fiber.brand" :placeholder="fiber.brand"></input>
-    </div>
-    <div class="vl"></div>
-    <div class="block">
-      <span v-if="editing">{{ fiber.type }}</span>
-      <input v-else type="text" id="type" v-model="fiber.type" :placeholder="fiber.type"></input>
-    </div>
-    <div class="vl"></div>
-    <div class="block">
-      <span v-if="editing">{{ fiber.color }}</span>
-      <input v-else type="text" id="yardage" v-model="fiber.color" :placeholder="fiber.color"></input>
-    </div>
-    <div class="vl"></div>
-    <div class="block">
-      <span v-if="editing">{{ fiber.yardage }}</span>
-      <input v-else type="text" id="yardage" v-model="fiber.yardage" :placeholder="fiber.yardage"></input>
-    </div>
+    <button v-on:click="toggleEditing"><img src="@/assets/icons/pencil.svg" /></button>
+    <button><img src="@/assets/icons/thrash.svg" /></button>
   </div>
 </template>
 
 <style scoped>
+.fiber {
+  display: flex;
+  flex-direction: row;
+  gap: 1em;
+  align-items: center;
+}
+
 .container {
   width: 80%;
   display: flex;
@@ -66,6 +85,16 @@ input {
   border: none;
   border-radius: 2em;
   box-shadow: none;
+}
+
+img {
+  width: 25px;
+  height: 100%;
+}
+
+button {
+  width: 40px;
+  height: 40px;
 }
 
 .vl {
