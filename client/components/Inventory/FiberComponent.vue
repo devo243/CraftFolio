@@ -42,11 +42,12 @@ const toggleEditing = () => {
       </div>
       <div class="vl"></div>
       <div class="block">
-        <span v-if="!editing">{{ fiber.yardage }}</span>
+        <span v-if="!editing">{{ fiber.yardage }} ft</span>
         <input v-else type="text" id="yardage" v-model="fiber.yardage" :placeholder="fiber.yardage" />
       </div>
     </div>
-    <button v-on:click="toggleEditing"><img src="@/assets/icons/pencil.svg" /></button>
+    <button v-if="!editing" v-on:click="toggleEditing"><img src="@/assets/icons/pencil.svg" /></button>
+    <button v-else v-on:click="toggleEditing" class="edit"><img src="@/assets/icons/pencil.svg" /></button>
     <button><img src="@/assets/icons/thrash.svg" /></button>
   </div>
 </template>
@@ -95,6 +96,10 @@ img {
 button {
   width: 40px;
   height: 40px;
+}
+
+.edit {
+  background-color: lightgray;
 }
 
 .vl {
