@@ -187,20 +187,6 @@ export default class ProjectManagingConcept {
     return { msg: "Fiber deleted successfully!", projectInventory: newInventory };
   }
 
-  // do an id to fibers
-  /**
-  method in inventorying:
-  static async posts(posts: PostDoc[]) {
-    const authors = await Authing.idsToUsernames(posts.map((post) => post.author));
-    return posts.map((post, i) => ({ ...post, author: authors[i] }));
-  }
-
-  To be able to use like this `Inventorying.idsToFibers(project.fibers)'
-
-
-  need to separate guide link and external links
-  */
-
   async assertOwnerIsUser(user: ObjectId, _id: ObjectId) {
     const project = await this.projects.readOne({ _id });
     if (!project) {
