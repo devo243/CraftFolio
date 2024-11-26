@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import { useUserStore } from "@/stores/user";
 import HomeView from "../views/HomeView.vue";
+import InventoryView from "../views/InventoryView.vue";
 import LoginView from "../views/LoginView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
 import SettingView from "../views/SettingView.vue";
@@ -32,6 +33,11 @@ const router = createRouter({
           return { name: "Settings" };
         }
       },
+    },
+    {
+      path: "/inventory",
+      name: "Inventory",
+      component: InventoryView,
     },
     {
       path: "/:catchAll(.*)",
