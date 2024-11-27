@@ -187,6 +187,16 @@ export default class ProjectManagingConcept {
     return { msg: "Fiber deleted successfully!", projectInventory: newInventory };
   }
 
+  // Get fibers for a project
+  async getFibers(owner: ObjectId, _id: ObjectId) {
+    await this.assertOwnerIsUser(owner, _id);
+    const project = await this.projects.readOne({ _id });
+    if (!project) {
+      throw new NotFoundError(`Project ${_id} does not exist!`);
+    }
+    return { fibers: project.projectInventory };
+  }
+
   async assertOwnerIsUser(user: ObjectId, _id: ObjectId) {
     const project = await this.projects.readOne({ _id });
     if (!project) {
