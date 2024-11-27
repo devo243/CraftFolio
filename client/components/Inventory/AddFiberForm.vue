@@ -22,7 +22,7 @@ const createFiber = async () => {
         brand: brand.value,
         type: type.value,
         color: color.value,
-        remainingYardage: yardage.value,
+        yardage: yardage.value,
       },
     });
   } catch (_) {

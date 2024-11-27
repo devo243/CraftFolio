@@ -53,7 +53,7 @@ const toggleEditing = () => {
       </div>
       <div class="vl"></div>
       <div class="block">
-        <span v-if="!editing">{{ fiber.yardage }} ft</span>
+        <span v-if="!editing">{{ fiber.remainingYardage }} ft</span>
         <input v-else type="text" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
       </div>
     </div>
