@@ -40,6 +40,12 @@ section {
   gap: 1em;
 }
 
+section,
+p {
+  margin: 0 auto;
+  max-width: 60em;
+}
+
 .fibers {
   padding: 1em;
 }
