@@ -29,6 +29,15 @@ const createFiber = async () => {
     return;
   }
   emit("refreshFibers");
+  emptyForm();
+};
+
+const emptyForm = () => {
+  name.value = "";
+  brand.value = "";
+  type.value = "";
+  color.value = "";
+  yardage.value = "";
 };
 </script>
 

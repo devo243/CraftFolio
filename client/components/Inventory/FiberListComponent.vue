@@ -18,9 +18,6 @@ const getInventory = async () => {
   fibers.value = inventory;
 };
 
-fibers.value.push(fiber.value);
-fibers.value.push(fiber.value);
-
 onBeforeMount(async () => {
   await getInventory();
 });
