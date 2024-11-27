@@ -1,7 +1,6 @@
 import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
 import { BadValuesError, NotAllowedError, NotFoundError } from "./errors";
-import { FiberDoc } from "./inventorying";
 
 export interface ProjectDoc extends BaseDoc {
   owner: ObjectId;
@@ -10,7 +9,7 @@ export interface ProjectDoc extends BaseDoc {
   notes: string;
   links: string[];
   images: string[];
-  projectInventory: FiberDoc[];
+  projectInventory: ObjectId[];
 }
 
 /**
@@ -157,34 +156,27 @@ export default class ProjectManagingConcept {
   }
 
   // Adds/Edits fiber usage of a project
-  async addOrEditFiber(owner: ObjectId, _id: ObjectId, fiber: FiberDoc) {
+  async addFiber(owner: ObjectId, _id: ObjectId, fiber: ObjectId) {
     await this.assertOwnerIsUser(owner, _id);
     const project = await this.projects.readOne({ _id });
     if (!project) {
       throw new NotFoundError(`Project ${_id} does not exist!`);
     }
-    const updatedInventory = project.projectInventory || [];
-    const fiberIndex = updatedInventory.findIndex((f) => f._id.equals(fiber._id));
-    if (fiberIndex === -1) {
-      updatedInventory.push(fiber);
-    } else {
-      updatedInventory[fiberIndex] = { ...updatedInventory[fiberIndex], ...fiber };
-    }
+    const updatedInventory = Array.from(new Set([...project.projectInventory, fiber]));
     await this.projects.partialUpdateOne({ _id }, { projectInventory: updatedInventory });
-    return { msg: "Fiber updated successfully!", projectInventory: updatedInventory };
+    return { msg: "Fiber added successfully!", projectInventory: updatedInventory };
   }
 
   // Deletes fiber usage of a project
-  async deleteFiber(owner: ObjectId, _id: ObjectId, fiber: FiberDoc) {
+  async deleteFiber(owner: ObjectId, _id: ObjectId, fiber: ObjectId) {
     await this.assertOwnerIsUser(owner, _id);
     const project = await this.projects.readOne({ _id });
     if (!project) {
       throw new NotFoundError(`Project ${_id} does not exist!`);
     }
-    const updatedInventory = project.projectInventory || [];
-    const newInventory = updatedInventory.filter((f) => !f._id.equals(fiber._id));
-    await this.projects.partialUpdateOne({ _id }, { projectInventory: newInventory });
-    return { msg: "Fiber deleted successfully!", projectInventory: newInventory };
+    const updatedInventory = project?.projectInventory.filter((id) => id !== fiber);
+    await this.projects.partialUpdateOne({ _id }, { projectInventory: updatedInventory });
+    return { msg: "Fiber deleted successfully!", projectInventory: updatedInventory };
   }
 
   // Get fibers for a project

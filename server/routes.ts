@@ -237,7 +237,7 @@ class Routes {
     const oid = new ObjectId(id);
     const created = await ProjectInventorying.addNewFiber(oid, name, brand ?? "", type ?? "", color ?? "", yardage);
     if (created.fiber !== null) {
-      return await ProjectManaging.addOrEditFiber(user, oid, created.fiber);
+      return await ProjectManaging.addFiber(user, oid, created.fiber._id);
     } else {
       return created.msg;
     }
@@ -252,7 +252,7 @@ class Routes {
     if (used_fiber) {
       const created = await ProjectInventorying.addNewFiber(oid, used_fiber.name, used_fiber.brand, used_fiber.type, used_fiber.color, yardage ?? used_fiber.remainingYardage);
       if (created.fiber !== null) {
-        await ProjectManaging.addOrEditFiber(user, oid, created.fiber);
+        await ProjectManaging.addFiber(user, oid, created.fiber._id);
         if (yardage) {
           return await Inventorying.editFiber(fid, undefined, undefined, undefined, undefined, yardage);
         }
