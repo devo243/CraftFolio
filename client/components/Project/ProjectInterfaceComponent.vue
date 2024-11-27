@@ -1,14 +1,20 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onBeforeMount, ref } from "vue";
+import ProjectLinkComponent from "./ProjectLinkComponent.vue";
+import ProjectNoteComponent from "./ProjectNoteComponent.vue";
 
 const props = defineProps(["project"]);
 const currentPage = ref("");
 
 const emit = defineEmits(["goBackToList"]);
+
+onBeforeMount(() => {
+  currentPage.value = "note";
+});
 </script>
 
 <template>
-  <section>
+  <section class="header">
     <img class="back" src="@/assets/icons/back-arrow.svg" @click="emit('goBackToList')" />
     <h1 class="title">{{ props.project.title }}</h1>
   </section>
@@ -24,6 +30,10 @@ const emit = defineEmits(["goBackToList"]);
       <label class="nav" for="c4">Materials</label>
     </form>
   </section>
+  <section>
+    <ProjectNoteComponent v-if="currentPage == 'note'" :notes="props.project.notes" />
+    <ProjectLinkComponent v-else-if="currentPage == 'link'" :links="props.project.links" />
+  </section>
 </template>
 
 <style scoped>
@@ -32,7 +42,10 @@ section {
   flex-direction: row;
   gap: 1em;
   align-items: center;
-  margin: 0em 0em 0em 1em;
+  margin: auto;
+  max-width: 90em;
+  max-height: 90%;
+  padding-top: 1em;
 }
 form {
   display: flex;
@@ -57,6 +70,6 @@ input:checked + .nav {
 
 .back {
   width: 2em;
-  margin: 0em 0em 0em 1em;
+  /* margin: 0em 0em 0em 1em; */
 }
 </style>
