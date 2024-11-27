@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 
 const title = ref("");
 const status = ref("");
+const router = useRouter();
 
 const createProject = async () => {
   return;
+};
+
+const cancelProject = async () => {
+  await router.push("/projects");
 };
 </script>
 
@@ -22,7 +28,7 @@ const createProject = async () => {
       </div>
     </div>
     <div class="buttons">
-      <button type="button" class="button-error btn-small pure-button">Cancel</button>
+      <button type="button" class="button-error btn-small pure-button" v-on:click="cancelProject">Cancel</button>
       <button type="submit" class="pure-button-primary pure-button">Create</button>
     </div>
   </form>

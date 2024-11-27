@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import ProjectComponent from "./ProjectComponent.vue";
 
 const projects = ref(ref<Array<Record<string, string>>>([]));
+const router = useRouter();
+
+const createProject = async () => {
+  await router.push("/projects/create");
+};
 </script>
 
 <template>
@@ -18,7 +24,7 @@ const projects = ref(ref<Array<Record<string, string>>>([]));
     <p v-else>No Projects</p>
   </div>
   <section class="create">
-    <button>Create Project</button>
+    <button v-on:click="createProject">Create Project</button>
   </section>
   <!-- <div>
     <FiberComponent :fiber="fiber" />
