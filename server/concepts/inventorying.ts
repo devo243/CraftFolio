@@ -73,4 +73,24 @@ export default class InventoryConcept {
       throw new NotAllowedError("You don't own this fiber object!");
     }
   }
+
+  async updateCorrespondingFibers(user: ObjectId, fibers: (FiberDoc | null)[]): Promise<void> {
+    const inventory_fibers: (FiberDoc | null)[] = await Promise.all(
+        fibers.map(async (fiber: FiberDoc | null) => {
+          if (fiber) {
+            return (await this.getFibersWith(fiber.name, fiber.brand, fiber.type, fiber.color))[0];
+          }
+          return null;
+        })
+    );
+    inventory_fibers.forEach(async (fiber: FiberDoc | null, idx: number) => {
+      if (fiber) {
+        return await this.editFiber(fiber._id, fiber.name, fiber.brand, fiber.type, fiber.color, fiber.remainingYardage + (fibers[idx]?.remainingYardage ?? 0));
+      }
+      const new_fiber = fibers[idx];
+      if (new_fiber) {
+        return await this.addNewFiber(user, new_fiber.name, new_fiber.brand, new_fiber.type, new_fiber.color, new_fiber.remainingYardage);
+      }
+    });
+  }
 }
