@@ -87,7 +87,7 @@ export default class ProjectManagingConcept {
 
   // Add a link to a project
   async addLink(owner: ObjectId, _id: ObjectId, newLink: string) {
-    await this.assertOwnerIsUser(_id, owner);
+    await this.assertOwnerIsUser(owner, _id);
     if (typeof newLink !== "string" || !newLink.trim()) {
       throw new BadValuesError("The link must be a non-empty string.");
     }
@@ -102,7 +102,7 @@ export default class ProjectManagingConcept {
 
   // Delete a link from a project
   async deleteLink(owner: ObjectId, _id: ObjectId, linkToDelete: string) {
-    await this.assertOwnerIsUser(_id, owner);
+    await this.assertOwnerIsUser(owner, _id);
     if (typeof linkToDelete !== "string" || !linkToDelete.trim()) {
       throw new BadValuesError("The link must be a non-empty string.");
     }

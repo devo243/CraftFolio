@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { fetchy } from "@/utils/fetchy";
-import { onBeforeMount, ref } from "vue";
+import { ref } from "vue";
 
 const props = defineProps(["notes", "id"]);
 const currentNotes = ref("");
@@ -23,13 +23,9 @@ const editNotes = async () => {
 };
 
 const toggleEdit = () => {
+  currentNotes.value = props.notes;
   editing.value = true;
 };
-
-onBeforeMount(() => {
-  currentNotes.value = props.notes;
-  console.log(currentNotes.value);
-});
 </script>
 
 <template>
@@ -37,7 +33,7 @@ onBeforeMount(() => {
     <p v-if="!editing">{{ props.notes }}</p>
     <textarea v-else class="notes" v-model="currentNotes" placeholder="Write some notes..."></textarea>
     <button v-if="editing" class="save" @click="editNotes">Save</button>
-    <button v-else class="save" @click="toggleEdit">Edit</button>
+    <button v-else class="edit" @click="toggleEdit">Edit</button>
   </div>
 </template>
 
@@ -66,8 +62,8 @@ p {
 
 .notes {
   resize: none;
-  margin: 1.5em;
-  width: 95%;
+  margin: 1em;
+  width: 97%;
   height: 55vh;
   background-color: rgb(226, 226, 226);
   border: none;
@@ -80,9 +76,20 @@ p {
   /* background-color: aqua; */
 }
 
-.save {
+button {
   width: 4em;
   margin: 1em;
+  padding: 0.5em 0 0.5em 0;
   font-size: 1.5em;
+  border-radius: 1em;
+  color: white;
+  border: none;
+}
+.edit {
+  background-color: #0078e7;
+}
+
+.save {
+  background-color: var(--red);
 }
 </style>

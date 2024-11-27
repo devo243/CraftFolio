@@ -233,7 +233,7 @@ class Routes {
       if (created.fiber !== null) {
         await ProjectManaging.addFiber(user, oid, created.fiber._id);
         if (yardage) {
-          return await Inventorying.editFiber(fid, undefined, undefined, undefined, undefined, used_fiber.remainingYardage-yardage);
+          return await Inventorying.editFiber(fid, undefined, undefined, undefined, undefined, used_fiber.remainingYardage - yardage);
         }
         return await Inventorying.deleteFiber(fid);
       } else {
@@ -241,7 +241,6 @@ class Routes {
       }
     }
     throw new NotAllowedError("You don't own this fiber object!");
-
   }
 
   // consider as used or just renaming, so does not get added back to the inventory
@@ -263,12 +262,11 @@ class Routes {
     await ProjectManaging.assertOwnerIsUser(user, oid);
     await ProjectInventorying.assertOwnerIsUser(fid, oid);
     // update total inventory to contain add back the fiber
-    const fiber = (await ProjectInventorying.idsToFibers([fid]));
+    const fiber = await ProjectInventorying.idsToFibers([fid]);
     await Inventorying.updateCorrespondingFibers(user, fiber);
     await ProjectInventorying.deleteFiber(fid);
     return await ProjectManaging.deleteFiber(user, oid, fid);
   }
-
 
   @Router.patch("/projects/:id/notes")
   async editNotes(session: SessionDoc, id: string, notes: string) {
@@ -319,14 +317,13 @@ class Routes {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     const fiber_ids = await ProjectManaging.getFibers(user, oid);
-    const fibers: (FiberDoc|null)[] = await ProjectInventorying.idsToFibers(fiber_ids.fibers);
+    const fibers: (FiberDoc | null)[] = await ProjectInventorying.idsToFibers(fiber_ids.fibers);
     // this will find the fibers assigned to the project and add them back to the user's general inventory
     await Inventorying.updateCorrespondingFibers(user, fibers);
     // now delete the materials from project's inventory
     await Promise.all(fiber_ids.fibers.map((fiber_id: ObjectId) => ProjectInventorying.deleteFiber(fiber_id)));
     return await ProjectManaging.deleteProject(user, oid);
   }
-
 
   // WIP
   // @Router.post("/guides/:id")

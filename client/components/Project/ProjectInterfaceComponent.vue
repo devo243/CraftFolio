@@ -59,8 +59,8 @@ onBeforeMount(async () => {
   </section>
   <section>
     <ProjectNoteComponent v-if="currentPage == 'note'" :notes="project.notes" :id="props.id" @refreshProject="getProject" />
-    <ProjectLinkComponent v-else-if="currentPage == 'link'" :links="project.links" />
-    <ProjectImageComponent v-else-if="currentPage == 'image'" :images="project.images" />
+    <ProjectLinkComponent v-else-if="currentPage == 'link'" :links="project.links" :id="props.id" @refreshProject="getProject" />
+    <ProjectImageComponent v-else-if="currentPage == 'image'" :images="project.images" :id="props.id" @refreshProject="getProject" />
   </section>
 </template>
 

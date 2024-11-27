@@ -76,12 +76,12 @@ export default class InventoryConcept {
 
   async updateCorrespondingFibers(user: ObjectId, fibers: (FiberDoc | null)[]): Promise<void> {
     const inventory_fibers: (FiberDoc | null)[] = await Promise.all(
-        fibers.map(async (fiber: FiberDoc | null) => {
-          if (fiber) {
-            return (await this.getFibersWith(fiber.name, fiber.brand, fiber.type, fiber.color))[0];
-          }
-          return null;
-        })
+      fibers.map(async (fiber: FiberDoc | null) => {
+        if (fiber) {
+          return (await this.getFibersWith(fiber.name, fiber.brand, fiber.type, fiber.color))[0];
+        }
+        return null;
+      }),
     );
     inventory_fibers.forEach(async (fiber: FiberDoc | null, idx: number) => {
       if (fiber) {
