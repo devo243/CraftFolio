@@ -1,22 +1,49 @@
 <script setup lang="ts">
+import { fetchy } from "@/utils/fetchy";
 import { onBeforeMount, ref } from "vue";
+import { useRouter } from "vue-router";
+import ProjectImageComponent from "./ProjectImageComponent.vue";
 import ProjectLinkComponent from "./ProjectLinkComponent.vue";
 import ProjectNoteComponent from "./ProjectNoteComponent.vue";
 
-const props = defineProps(["project"]);
+const props = defineProps(["id"]);
 const currentPage = ref("");
+const router = useRouter();
+const project = ref(ref<Record<string, string>>({}));
 
-const emit = defineEmits(["goBackToList"]);
+const goToList = async () => {
+  await router.push("/projects");
+};
 
-onBeforeMount(() => {
+const getProject = async () => {
+  let projectResults;
+  try {
+    projectResults = await fetchy("/api/projects", "GET");
+  } catch (_) {
+    return;
+  }
+
+  for (const p of projectResults) {
+    if (p._id === props.id) {
+      project.value = p;
+      return;
+    }
+  }
+
+  await goToList();
+};
+
+onBeforeMount(async () => {
   currentPage.value = "note";
+  await getProject();
+  console.log(project.value);
 });
 </script>
 
 <template>
   <section class="header">
-    <img class="back" src="@/assets/icons/back-arrow.svg" @click="emit('goBackToList')" />
-    <h1 class="title">{{ props.project.title }}</h1>
+    <img class="back" src="@/assets/icons/back-arrow.svg" @click="goToList" />
+    <h1 class="title">{{ project.title }}</h1>
   </section>
   <section>
     <form>
@@ -31,8 +58,9 @@ onBeforeMount(() => {
     </form>
   </section>
   <section>
-    <ProjectNoteComponent v-if="currentPage == 'note'" :notes="props.project.notes" />
-    <ProjectLinkComponent v-else-if="currentPage == 'link'" :links="props.project.links" />
+    <ProjectNoteComponent v-if="currentPage == 'note'" :notes="project.notes" :id="props.id" @refreshProject="getProject" />
+    <ProjectLinkComponent v-else-if="currentPage == 'link'" :links="project.links" />
+    <ProjectImageComponent v-else-if="currentPage == 'image'" :images="project.images" />
   </section>
 </template>
 

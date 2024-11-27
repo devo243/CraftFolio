@@ -7,6 +7,7 @@ import HomeView from "../views/HomeView.vue";
 import InventoryView from "../views/InventoryView.vue";
 import LoginView from "../views/LoginView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
+import ProjectListView from "../views/ProjectListView.vue";
 import ProjectPageView from "../views/ProjectPageView.vue";
 import SettingView from "../views/SettingView.vue";
 
@@ -40,16 +41,26 @@ const router = createRouter({
       path: "/inventory",
       name: "Inventory",
       component: InventoryView,
+      meta: { requiresAuth: true },
     },
     {
       path: "/projects",
       name: "Projects",
-      component: ProjectPageView,
+      component: ProjectListView,
+      meta: { requiresAuth: true },
     },
     {
-      path: "/projects/create",
+      path: "/projects/:id",
+      name: "ProjectPage",
+      component: ProjectPageView,
+      meta: { requiresAuth: true },
+      props: true,
+    },
+    {
+      path: "/create/project",
       name: "CreateProjects",
       component: CreateProjectView,
+      meta: { requiresAuth: true },
     },
     {
       path: "/:catchAll(.*)",

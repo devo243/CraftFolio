@@ -234,11 +234,14 @@ class Routes {
     }
   }
 
-  @Router.patch("/projects/:id/")
+  @Router.patch("/projects/:id/notes")
   async editNotes(session: SessionDoc, id: string, notes: string) {
+    console.log(notes);
+    console.log(id);
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await ProjectManaging.editNotes(user, oid, notes);
+    return { msg: "Edit succesful" };
   }
 
   @Router.post("/projects/:id/:link")

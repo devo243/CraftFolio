@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import ProjectListComponent from "@/components/Project/ProjectListComponent.vue";
+import ProjectInterfaceComponent from "@/components/Project/ProjectInterfaceComponent.vue";
+
+const props = defineProps(["id"]);
 </script>
 
 <template>
   <div>
-    <ProjectListComponent />
+    <ProjectInterfaceComponent :id="props.id" />
   </div>
 </template>
 

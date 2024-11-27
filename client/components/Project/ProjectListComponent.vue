@@ -3,17 +3,12 @@ import { fetchy } from "@/utils/fetchy";
 import { onBeforeMount, ref } from "vue";
 import { useRouter } from "vue-router";
 import ProjectComponent from "./ProjectComponent.vue";
-import ProjectInterfaceComponent from "./ProjectInterfaceComponent.vue";
 
 const projects = ref(ref<Array<Record<string, string>>>([]));
 const router = useRouter();
 
-const currentProject = ref(ref<Record<string, string>>({}));
-
-const isInterface = ref(false);
-
 const createProject = async () => {
-  await router.push("/projects/create");
+  await router.push("/create/project");
 };
 
 const getProjects = async () => {
@@ -28,13 +23,8 @@ const getProjects = async () => {
   projects.value = projectResults;
 };
 
-const setCurrentProject = (project: Record<string, string>) => {
-  currentProject.value = project;
-  toggleInterface();
-};
-
-const toggleInterface = () => {
-  isInterface.value = !isInterface.value;
+const openProject = async (id: string) => {
+  await router.push(`/projects/${id}`);
 };
 
 onBeforeMount(async () => {
@@ -43,23 +33,20 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div v-if="!isInterface">
-    <div class="page">
-      <section>
-        <h1>My Projects</h1>
-      </section>
-      <section class="projects" v-if="projects.length !== 0">
-        <article v-for="project in projects" :key="project._id">
-          <ProjectComponent :project="project" @click="setCurrentProject(project)" />
-        </article>
-      </section>
-      <p v-else>No Projects</p>
-    </div>
-    <section class="create">
-      <button v-on:click="createProject">Create Project</button>
+  <div class="page">
+    <section>
+      <h1>My Projects</h1>
     </section>
+    <section class="projects" v-if="projects.length !== 0">
+      <article v-for="project in projects" :key="project._id">
+        <ProjectComponent :project="project" @click="openProject(project._id)" />
+      </article>
+    </section>
+    <p v-else>No Projects</p>
   </div>
-  <ProjectInterfaceComponent v-else :project="currentProject" @goBackToList="toggleInterface" />
+  <section class="create">
+    <button v-on:click="createProject">Create Project</button>
+  </section>
   <!-- <div>{{ currentProject }}</div> -->
   <!-- <div>
     <FiberComponent :fiber="fiber" />
