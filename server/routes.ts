@@ -283,6 +283,18 @@ class Routes {
     const fid = new ObjectId(fiber_id);
     await ProjectManaging.assertOwnerIsUser(user, oid);
     await ProjectInventorying.assertOwnerIsUser(fid, oid);
+
+    // update total inventory to contain add back the fiber
+    const fiber = (await ProjectInventorying.idsToFibers([fid]))[0];
+    if (fiber) {
+      const inventory_fiber = (await Inventorying.getFibersWith(fiber.name, fiber.brand, fiber.type, fiber.color))[0];
+      if (inventory_fiber) {
+        await Inventorying.editFiber(inventory_fiber._id, fiber.name, fiber.brand, fiber.type, fiber.color, inventory_fiber.remainingYardage + fiber.remainingYardage);
+      } else {
+        await Inventorying.addNewFiber(user, fiber.name, fiber.brand, fiber.type, fiber.color, fiber.remainingYardage);
+      }
+    }
+
     await ProjectInventorying.deleteFiber(fid);
     return await ProjectManaging.deleteFiber(user, oid, fid);
   }
@@ -349,29 +361,12 @@ class Routes {
     const fiber_ids = await ProjectManaging.getFibers(user, oid);
     const fibers: (FiberDoc|null)[] = await ProjectInventorying.idsToFibers(fiber_ids.fibers);
     // this will find the fibers assigned to the project and add them back to the user's general inventory
-    if (fibers) {
-      const inventory_fibers: (FiberDoc | null)[] = await Promise.all(
-        fibers.map(async (fiber: FiberDoc | null) => {
-          if (fiber) {
-            return (await Inventorying.getFibersWith(fiber.name, fiber.brand, fiber.type, fiber.color))[0];
-          }
-          return null;
-        })
-    );
-      inventory_fibers.forEach(async (fiber: FiberDoc | null, idx: number) => {
-        if (fiber) {
-          return await Inventorying.editFiber(fiber._id, undefined, undefined, undefined, undefined, fiber.remainingYardage + (fibers[idx]?.remainingYardage ?? 0));
-        }
-        const new_fiber = fibers[idx];
-        if (new_fiber) {
-          return await Inventorying.addNewFiber(user, new_fiber.name, new_fiber.brand, new_fiber.type, new_fiber.color, new_fiber.remainingYardage);
-        }
-    })
-    }
+    await Inventorying.updateCorrespondingFibers(user, fibers);
     // now delete the materials from project's inventory
     await Promise.all(fiber_ids.fibers.map((fiber_id: ObjectId) => ProjectInventorying.deleteFiber(fiber_id)));
     return await ProjectManaging.deleteProject(user, oid);
   }
+
 
   // WIP
   @Router.post("/guides/:id")
