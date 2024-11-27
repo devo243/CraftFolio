@@ -254,7 +254,7 @@ class Routes {
       if (created.fiber !== null) {
         await ProjectManaging.addFiber(user, oid, created.fiber._id);
         if (yardage) {
-          return await Inventorying.editFiber(fid, undefined, undefined, undefined, undefined, yardage);
+          return await Inventorying.editFiber(fid, undefined, undefined, undefined, undefined, used_fiber.remainingYardage-yardage);
         }
         return await Inventorying.deleteFiber(fid);
       } else {
