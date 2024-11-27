@@ -3,12 +3,14 @@ import { fetchy } from "@/utils/fetchy";
 import { onBeforeMount, ref } from "vue";
 import { useRouter } from "vue-router";
 import ProjectComponent from "./ProjectComponent.vue";
+import ProjectInterfaceComponent from "./ProjectInterfaceComponent.vue";
 
 const projects = ref(ref<Array<Record<string, string>>>([]));
 const router = useRouter();
 
-const exampleProject = { title: "example", status: "who knows  ¯/_(ツ)_/¯", dateUpdated: "today" };
-projects.value.push(exampleProject);
+const currentProject = ref(ref<Record<string, string>>({}));
+
+const isInterface = ref(false);
 
 const createProject = async () => {
   await router.push("/projects/create");
@@ -26,26 +28,39 @@ const getProjects = async () => {
   projects.value = projectResults;
 };
 
+const setCurrentProject = (project: Record<string, string>) => {
+  currentProject.value = project;
+  toggleInterface();
+};
+
+const toggleInterface = () => {
+  isInterface.value = !isInterface.value;
+};
+
 onBeforeMount(async () => {
   await getProjects();
 });
 </script>
 
 <template>
-  <div class="page">
-    <section>
-      <h1>My Projects</h1>
+  <div v-if="!isInterface">
+    <div class="page">
+      <section>
+        <h1>My Projects</h1>
+      </section>
+      <section class="projects" v-if="projects.length !== 0">
+        <article v-for="project in projects" :key="project._id">
+          <ProjectComponent :project="project" @click="setCurrentProject(project)" />
+        </article>
+      </section>
+      <p v-else>No Projects</p>
+    </div>
+    <section class="create">
+      <button v-on:click="createProject">Create Project</button>
     </section>
-    <section class="projects" v-if="projects.length !== 0">
-      <article v-for="project in projects" :key="project._id">
-        <ProjectComponent :project="project" />
-      </article>
-    </section>
-    <p v-else>No Projects</p>
   </div>
-  <section class="create">
-    <button v-on:click="createProject">Create Project</button>
-  </section>
+  <ProjectInterfaceComponent v-else :project="currentProject" @goBackToList="toggleInterface" />
+  <!-- <div>{{ currentProject }}</div> -->
   <!-- <div>
     <FiberComponent :fiber="fiber" />
   </div> -->
