@@ -6,6 +6,9 @@ import ProjectComponent from "./ProjectComponent.vue";
 const projects = ref(ref<Array<Record<string, string>>>([]));
 const router = useRouter();
 
+const exampleProject = { title: "example", status: "who knows  ¯/_(ツ)_/¯", dateUpdated: "today" };
+projects.value.push(exampleProject);
+
 const createProject = async () => {
   await router.push("/projects/create");
 };

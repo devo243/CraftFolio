@@ -1,13 +1,24 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
+import { fetchy } from "@/utils/fetchy";
 import { storeToRefs } from "pinia";
 import { ref } from "vue";
 
 const props = defineProps(["fiber"]);
 const { currentUsername } = storeToRefs(useUserStore());
+const emit = defineEmits(["refreshFibers"]);
 
 const fiber = ref(props.fiber);
 const editing = ref(false);
+
+const deleteFiber = async () => {
+  try {
+    await fetchy(`/api/fibers/${props.fiber._id}`, "DELETE");
+  } catch {
+    return;
+  }
+  emit("refreshFibers");
+};
 
 const toggleEditing = () => {
   if (!editing.value) {
@@ -43,12 +54,12 @@ const toggleEditing = () => {
       <div class="vl"></div>
       <div class="block">
         <span v-if="!editing">{{ fiber.yardage }} ft</span>
-        <input v-else type="text" id="yardage" v-model="fiber.yardage" :placeholder="fiber.yardage" />
+        <input v-else type="text" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
       </div>
     </div>
     <button v-if="!editing" v-on:click="toggleEditing"><img src="@/assets/icons/pencil.svg" /></button>
     <button v-else v-on:click="toggleEditing" class="edit"><img src="@/assets/icons/pencil.svg" /></button>
-    <button><img src="@/assets/icons/thrash.svg" /></button>
+    <button v-on:click="deleteFiber"><img src="@/assets/icons/thrash.svg" /></button>
   </div>
 </template>
 

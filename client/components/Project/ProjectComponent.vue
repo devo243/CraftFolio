@@ -24,18 +24,23 @@ const { currentUsername } = storeToRefs(useUserStore());
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
+  height: 2em;
 }
 
 .project {
   display: flex;
   flex-direction: column;
-  gap: 1em;
+  background-color: var(--base-bg);
+  padding: 0.5em 1em 0.5em 1em;
+  border-radius: 1.5em;
 }
 
 .status {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
+  align-items: center;
   gap: 0.5em;
 }
 
@@ -45,5 +50,10 @@ const { currentUsername } = storeToRefs(useUserStore());
   background-color: #bbb;
   border-radius: 50%;
   display: inline-block;
+}
+
+.title {
+  font-size: 1.75em;
+  font-weight: bold;
 }
 </style>

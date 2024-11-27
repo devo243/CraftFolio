@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
+import { fetchy } from "@/utils/fetchy";
 import { storeToRefs } from "pinia";
 import { ref } from "vue";
+
+const emit = defineEmits(["refreshFibers"]);
 
 const { currentUsername } = storeToRefs(useUserStore());
 
@@ -12,7 +15,20 @@ const color = ref("");
 const yardage = ref("");
 
 const createFiber = async () => {
-  return;
+  try {
+    await fetchy("/api/fibers", "POST", {
+      body: {
+        name: name.value,
+        brand: brand.value,
+        type: type.value,
+        color: color.value,
+        remainingYardage: yardage.value,
+      },
+    });
+  } catch (_) {
+    return;
+  }
+  emit("refreshFibers");
 };
 </script>
 
@@ -35,5 +51,9 @@ form {
   flex-direction: row;
   gap: 0.5em;
   padding: 1em;
+}
+
+input {
+  width: 18%;
 }
 </style>

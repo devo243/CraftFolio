@@ -1,26 +1,44 @@
 <script setup lang="ts">
 import FiberComponent from "@/components/Inventory/FiberComponent.vue";
-import { ref } from "vue";
+import { fetchy } from "@/utils/fetchy";
+import { onBeforeMount, ref } from "vue";
 import AddFiberForm from "./AddFiberForm.vue";
 
 const fiber = ref({ name: "example", brand: "example", type: "example", color: "example", yardage: "10" });
 const fibers = ref<Array<Record<string, string>>>([]);
 
+const getInventory = async () => {
+  let inventory;
+  try {
+    inventory = await fetchy("/api/fibers", "GET");
+  } catch (_) {
+    return;
+  }
+
+  fibers.value = inventory;
+};
+
 fibers.value.push(fiber.value);
 fibers.value.push(fiber.value);
+
+onBeforeMount(async () => {
+  await getInventory();
+});
 </script>
 
 <template>
-  <section class="fibers" v-if="fibers.length !== 0">
+  <section>
     <h1>Inventory</h1>
+  </section>
+  <section class="fibers" v-if="fibers.length !== 0">
     <article v-for="fiber in fibers" :key="fiber._id">
-      <FiberComponent :fiber="fiber" />
+      <FiberComponent :fiber="fiber" @refreshFibers="getInventory" />
     </article>
   </section>
   <p v-else>No inventory</p>
   <section>
     <h2>Add fiber:</h2>
-    <AddFiberForm />
+    <AddFiberForm @refreshFibers="getInventory" />
   </section>
   <!-- <div>
     <FiberComponent :fiber="fiber" />
