@@ -184,7 +184,6 @@ class Routes {
   async editFiber(session: SessionDoc, id: string, name?: string, brand?: string, type?: string, color?: string, yardage?: number) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    // TODO
     await Inventorying.assertOwnerIsUser(oid, user);
     return await Inventorying.editFiber(oid, name, brand, type, color, yardage);
   }
@@ -193,7 +192,6 @@ class Routes {
   async deleteFiber(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    // TODO
     await Inventorying.assertOwnerIsUser(oid, user);
     return await Inventorying.deleteFiber(oid);
   }
@@ -204,25 +202,6 @@ class Routes {
     const user = Sessioning.getUser(session);
     return ProjectManaging.createProject(user, title, status);
   }
-
-  // @Router.patch("/projects/:id")
-  // async editProject(session: SessionDoc, id: string, title?: string, status?: string, fiber_id?: string, yardage?: string, notes?: string, links?: string, add_image?: string, remove_image?:string) {
-  //   const user = Sessioning.getUser(session);
-  //   const oid = new ObjectId(id);
-  //   // dependes on how implemented
-  //   await ProjectManaging.editProject(user, oid, title, status);
-  //   if (fiber_id && yardage) {
-  //     const fid = new ObjectId(fiber_id);
-  //     await Inventorying.editFiber(fid, yardage=yardage);
-  //     await ProjectManaging.editFiberUsage(oid, fid);
-  //   }
-  //   if (notes){
-  //     await ProjectManaging.editNotes(user, oid, notes);
-  //   }
-  //   await ProjectManaging.edit_links(oid, links);
-  //   await ProjectManaging.addImage(oid, add_image);
-  //   await ProjectManaging.deleteImage(oid, remove_image);
-  // }
 
   @Router.patch("/projects/:id")
   async editProject(session: SessionDoc, id: string, title: string, status: string) {
@@ -332,19 +311,6 @@ class Routes {
     return Responses.projects(projects.projects);
   }
 
-  // assumes that fibers and counts are strings that have corresponding amounts of each fiber used
-  // (both comma-separated)
-  // @Router.delete("projects/:id")
-  // async deleteProject(session: SessionDoc, id: string, fibers: string, amounts: string) {
-  //   const user = Sessioning.getUser(session);
-  //   const oid = new ObjectId(id);
-  //   await ProjectManaging.deleteProject(user, oid);
-  //   const fiber_ids = fibers.split(",");
-  //   const fiber_amounts = amounts.split(",");
-  //   if (fiber_ids.length !== fiber_amounts.length) throw new Error("Must provide exactly one amount for each fiber");
-  //   return await Promise.all(fiber_ids.map((fiber_id: string, idx: number) => Inventorying.editFiber(new ObjectId(fiber_id), fiber_amounts[idx])));
-  // }
-
   @Router.delete("projects/:id")
   async deleteProject(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
@@ -360,25 +326,25 @@ class Routes {
 
 
   // WIP
-  @Router.post("/guides/:id")
-  async importGuide(session: SessionDoc, id: string, guide_link: string) {
-    const user = Sessioning.getUser(session);
-    const oid = new ObjectId(id);
-    // TODO: get guide name from posting
-    const title = "";
-    const project = await ProjectManaging.createProject(user, title, "To Do");
-    if (project.project) {
-      await ProjectManaging.addLink(user, project.project._id, guide_link);
-    } else {
-      throw new Error("failed creating new project");
-    }
-    // TODO: get fibers from the guide
-    const fibers: ObjectId[] = [];
-    // TODO: get amounts from the guide
-    const amounts: number[] = [];
-    await Promise.all(fibers.map((fiber: ObjectId, idx: number) => Inventorying.editFiber(fiber, undefined, undefined, undefined, undefined, amounts[idx])));
-    return Responses.project(project.project);
-  }
+  // @Router.post("/guides/:id")
+  // async importGuide(session: SessionDoc, id: string, guide_link: string) {
+  //   const user = Sessioning.getUser(session);
+  //   const oid = new ObjectId(id);
+  //   // TODO: get guide name from posting
+  //   const title = "";
+  //   const project = await ProjectManaging.createProject(user, title, "To Do");
+  //   if (project.project) {
+  //     await ProjectManaging.addLink(user, project.project._id, guide_link);
+  //   } else {
+  //     throw new Error("failed creating new project");
+  //   }
+  //   // TODO: get fibers from the guide
+  //   const fibers: ObjectId[] = [];
+  //   // TODO: get amounts from the guide
+  //   const amounts: number[] = [];
+  //   await Promise.all(fibers.map((fiber: ObjectId, idx: number) => Inventorying.editFiber(fiber, undefined, undefined, undefined, undefined, amounts[idx])));
+  //   return Responses.project(project.project);
+  // }
 
   // FRIENDS CONCEPT
 
