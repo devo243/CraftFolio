@@ -188,7 +188,7 @@ class Routes {
     return await Inventorying.editFiber(oid, name, brand, type, color, yardage);
   }
 
-  @Router.delete("fibers/:id")
+  @Router.delete("/fibers/:id")
   async deleteFiber(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
@@ -269,8 +269,11 @@ class Routes {
     return await ProjectManaging.deleteFiber(user, oid, fid);
   }
 
-  @Router.patch("/projects/:id")
+
+  @Router.patch("/projects/:id/notes")
   async editNotes(session: SessionDoc, id: string, notes: string) {
+    console.log(notes);
+    console.log(id);
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     return await ProjectManaging.editNotes(user, oid, notes);

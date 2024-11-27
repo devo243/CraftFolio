@@ -69,7 +69,7 @@ export default class InventoryConcept {
 
   async assertOwnerIsUser(_id: ObjectId, user: ObjectId) {
     const fiber = await this.fibers.readOne({ _id });
-    if (fiber?.user !== user) {
+    if (fiber?.user.toString() !== user.toString()) {
       throw new NotAllowedError("You don't own this fiber object!");
     }
   }

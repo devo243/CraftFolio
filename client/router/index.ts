@@ -2,9 +2,13 @@ import { storeToRefs } from "pinia";
 import { createRouter, createWebHistory } from "vue-router";
 
 import { useUserStore } from "@/stores/user";
+import CreateProjectView from "../views/CreateProjectView.vue";
 import HomeView from "../views/HomeView.vue";
+import InventoryView from "../views/InventoryView.vue";
 import LoginView from "../views/LoginView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
+import ProjectListView from "../views/ProjectListView.vue";
+import ProjectPageView from "../views/ProjectPageView.vue";
 import SettingView from "../views/SettingView.vue";
 
 const router = createRouter({
@@ -32,6 +36,31 @@ const router = createRouter({
           return { name: "Settings" };
         }
       },
+    },
+    {
+      path: "/inventory",
+      name: "Inventory",
+      component: InventoryView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/projects",
+      name: "Projects",
+      component: ProjectListView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/projects/:id",
+      name: "ProjectPage",
+      component: ProjectPageView,
+      meta: { requiresAuth: true },
+      props: true,
+    },
+    {
+      path: "/create/project",
+      name: "CreateProjects",
+      component: CreateProjectView,
+      meta: { requiresAuth: true },
     },
     {
       path: "/:catchAll(.*)",
