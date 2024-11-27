@@ -151,7 +151,7 @@ class Routes {
     return Responses.comments(comments);
   }
   @Router.post("/posts/:pid/comments")
-  async createCommentOnPost(session: SessionDoc, pid: string, content: string, options?: PostOptions) {
+  async createCommentOnPost(session: SessionDoc, pid: string, content: string, options?: CommentOptions) {
     const user = Sessioning.getUser(session);
     const itemID = new ObjectId(pid);
     await Posting.assertPostExists(itemID); //check if that post exists!
@@ -308,21 +308,19 @@ class Routes {
   }
 
   @Router.post("/guides/:id")
-  async importGuide(session: SessionDoc, id: string, guide_link: string) {
+  async importGuide(session: SessionDoc, id: string, title: string, guide_link: string, selected_fibers: string, selected_amounts: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     // TODO: get guide name from posting
-    const title = "";
     const project = await ProjectManaging.createProject(user, title, "To Do");
     if (project.project) {
       await ProjectManaging.addLink(user, project.project._id, guide_link);
     } else {
       throw new Error("failed creating new project");
     }
-    // TODO: get fibers from the guide
-    const fibers: ObjectId[] = [];
-    // TODO: get amounts from the guide
-    const amounts: number[] = [];
+    const fibers: ObjectId[] = selected_fibers.split(",").map((fiber_id: string) => new ObjectId(fiber_id));
+    // get amounts from the guide
+    const amounts: number[] = selected_amounts.split(",").map((amount: string) => parseFloat(amount));;
     await Promise.all(fibers.map((fiber: ObjectId, idx: number) => Inventorying.editFiber(fiber, undefined, undefined, undefined, undefined, amounts[idx])));
     return Responses.project(project.project);
   }
