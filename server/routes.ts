@@ -265,7 +265,7 @@ class Routes {
 
   }
 
-  // consider as used, so does not get added back to the inventory
+  // consider as used or just renaming, so does not get added back to the inventory
   @Router.patch("/projects/:id/fibers/:fid")
   async editFiberInProject(session: SessionDoc, id: string, fiber_id: string, name?: string, brand?: string, type?: string, color?: string, yardage?: number) {
     const user = Sessioning.getUser(session); // the user is considered the owner of the project
@@ -283,18 +283,9 @@ class Routes {
     const fid = new ObjectId(fiber_id);
     await ProjectManaging.assertOwnerIsUser(user, oid);
     await ProjectInventorying.assertOwnerIsUser(fid, oid);
-
     // update total inventory to contain add back the fiber
-    const fiber = (await ProjectInventorying.idsToFibers([fid]))[0];
-    if (fiber) {
-      const inventory_fiber = (await Inventorying.getFibersWith(fiber.name, fiber.brand, fiber.type, fiber.color))[0];
-      if (inventory_fiber) {
-        await Inventorying.editFiber(inventory_fiber._id, fiber.name, fiber.brand, fiber.type, fiber.color, inventory_fiber.remainingYardage + fiber.remainingYardage);
-      } else {
-        await Inventorying.addNewFiber(user, fiber.name, fiber.brand, fiber.type, fiber.color, fiber.remainingYardage);
-      }
-    }
-
+    const fiber = (await ProjectInventorying.idsToFibers([fid]));
+    await Inventorying.updateCorrespondingFibers(user, fiber);
     await ProjectInventorying.deleteFiber(fid);
     return await ProjectManaging.deleteFiber(user, oid, fid);
   }
