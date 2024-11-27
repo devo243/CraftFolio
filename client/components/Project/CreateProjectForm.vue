@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { fetchy } from "@/utils/fetchy";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
@@ -7,7 +8,15 @@ const status = ref("");
 const router = useRouter();
 
 const createProject = async () => {
-  return;
+  try {
+    await fetchy("/api/projects", "POST", {
+      body: { title: title.value, status: status.value },
+    });
+  } catch (_) {
+    return;
+  }
+
+  await router.push("/projects");
 };
 
 const cancelProject = async () => {

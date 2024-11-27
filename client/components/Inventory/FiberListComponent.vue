@@ -4,7 +4,6 @@ import { fetchy } from "@/utils/fetchy";
 import { onBeforeMount, ref } from "vue";
 import AddFiberForm from "./AddFiberForm.vue";
 
-const fiber = ref({ name: "example", brand: "example", type: "example", color: "example", yardage: "10" });
 const fibers = ref<Array<Record<string, string>>>([]);
 
 const getInventory = async () => {

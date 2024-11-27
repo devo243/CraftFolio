@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
+import { formatDate } from "@/utils/formatDate";
 import { storeToRefs } from "pinia";
 
 const props = defineProps(["project"]);
@@ -10,7 +11,7 @@ const { currentUsername } = storeToRefs(useUserStore());
   <div class="project">
     <div class="header">
       <p class="title">{{ props.project.title }}</p>
-      <p class="date">{{ props.project.dateUpdated }}</p>
+      <p class="date">{{ formatDate(props.project.dateUpdated) }}</p>
     </div>
     <div class="status">
       <span class="dot"></span>
@@ -53,7 +54,7 @@ const { currentUsername } = storeToRefs(useUserStore());
 }
 
 .title {
-  font-size: 1.75em;
+  font-size: 1.5em;
   font-weight: bold;
 }
 </style>

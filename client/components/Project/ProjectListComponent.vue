@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { fetchy } from "@/utils/fetchy";
+import { onBeforeMount, ref } from "vue";
 import { useRouter } from "vue-router";
 import ProjectComponent from "./ProjectComponent.vue";
 
@@ -12,6 +13,22 @@ projects.value.push(exampleProject);
 const createProject = async () => {
   await router.push("/projects/create");
 };
+
+const getProjects = async () => {
+  let projectResults;
+
+  try {
+    projectResults = await fetchy("/api/projects", "GET");
+  } catch (_) {
+    return;
+  }
+
+  projects.value = projectResults;
+};
+
+onBeforeMount(async () => {
+  await getProjects();
+});
 </script>
 
 <template>
