@@ -68,20 +68,22 @@ export default class InventoryConcept {
   }
 
   async assertOwnerIsUser(_id: ObjectId, user: ObjectId) {
+    console.log(_id);
+    console.log(user);
     const fiber = await this.fibers.readOne({ _id });
-    if (fiber?.user !== user) {
+    if (fiber?.user.toString() !== user.toString()) {
       throw new NotAllowedError("You don't own this fiber object!");
     }
   }
 
   async updateCorrespondingFibers(user: ObjectId, fibers: (FiberDoc | null)[]): Promise<void> {
     const inventory_fibers: (FiberDoc | null)[] = await Promise.all(
-        fibers.map(async (fiber: FiberDoc | null) => {
-          if (fiber) {
-            return (await this.getFibersWith(fiber.name, fiber.brand, fiber.type, fiber.color))[0];
-          }
-          return null;
-        })
+      fibers.map(async (fiber: FiberDoc | null) => {
+        if (fiber) {
+          return (await this.getFibersWith(fiber.name, fiber.brand, fiber.type, fiber.color))[0];
+        }
+        return null;
+      }),
     );
     inventory_fibers.forEach(async (fiber: FiberDoc | null, idx: number) => {
       if (fiber) {

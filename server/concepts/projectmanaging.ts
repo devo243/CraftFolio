@@ -32,7 +32,7 @@ export default class ProjectManagingConcept {
     if (!title || !status) {
       throw new BadValuesError("Project must have a title and status.");
     }
-    const _id = await this.projects.createOne({ owner, title, status, notes: "", links: [], images: [] });
+    const _id = await this.projects.createOne({ owner, title, status, notes: "", links: [], images: [], projectInventory: [] });
     return { msg: "Project created successfully!", project: await this.projects.readOne({ _id }) };
   }
 
@@ -87,7 +87,7 @@ export default class ProjectManagingConcept {
 
   // Add a link to a project
   async addLink(owner: ObjectId, _id: ObjectId, newLink: string) {
-    await this.assertOwnerIsUser(_id, owner);
+    await this.assertOwnerIsUser(owner, _id);
     if (typeof newLink !== "string" || !newLink.trim()) {
       throw new BadValuesError("The link must be a non-empty string.");
     }
@@ -102,7 +102,7 @@ export default class ProjectManagingConcept {
 
   // Delete a link from a project
   async deleteLink(owner: ObjectId, _id: ObjectId, linkToDelete: string) {
-    await this.assertOwnerIsUser(_id, owner);
+    await this.assertOwnerIsUser(owner, _id);
     if (typeof linkToDelete !== "string" || !linkToDelete.trim()) {
       throw new BadValuesError("The link must be a non-empty string.");
     }
@@ -127,7 +127,7 @@ export default class ProjectManagingConcept {
 
   // Add an image to a project
   async addImage(owner: ObjectId, _id: ObjectId, newImage: string) {
-    await this.assertOwnerIsUser(_id, owner);
+    await this.assertOwnerIsUser(owner, _id);
     if (typeof newImage !== "string" || !newImage.trim()) {
       throw new BadValuesError("The image URL must be a non-empty string.");
     }
@@ -142,7 +142,7 @@ export default class ProjectManagingConcept {
 
   // Delete an image from a project
   async deleteImage(owner: ObjectId, _id: ObjectId, imageToDelete: string) {
-    await this.assertOwnerIsUser(_id, owner);
+    await this.assertOwnerIsUser(owner, _id);
     if (typeof imageToDelete !== "string" || !imageToDelete.trim()) {
       throw new BadValuesError("The image URL must be a non-empty string.");
     }
@@ -174,7 +174,7 @@ export default class ProjectManagingConcept {
     if (!project) {
       throw new NotFoundError(`Project ${_id} does not exist!`);
     }
-    const updatedInventory = project?.projectInventory.filter((id) => id !== fiber);
+    const updatedInventory = project?.projectInventory.filter((id) => id.toString() !== fiber.toString());
     await this.projects.partialUpdateOne({ _id }, { projectInventory: updatedInventory });
     return { msg: "Fiber deleted successfully!", projectInventory: updatedInventory };
   }
