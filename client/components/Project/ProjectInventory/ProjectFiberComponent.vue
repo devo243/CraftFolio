@@ -21,10 +21,28 @@ const deleteFiber = async () => {
   emit("refreshFibers");
 };
 
-const toggleEditing = () => {
+const editFiber = async () => {
+  try {
+    await fetchy(`/api/projects/${props.id}/fibers/${props.fiber._id}`, "PATCH", {
+      body: {
+        name: fiber.value.name,
+        brand: fiber.value.brand,
+        type: fiber.value.type,
+        color: fiber.value.color,
+        yardage: fiber.value.yardage,
+      },
+    });
+  } catch {
+    return;
+  }
+  emit("refreshFibers");
+};
+
+const toggleEditing = async () => {
   if (!editing.value) {
     editing.value = true;
   } else {
+    await editFiber();
     editing.value = false;
   }
 };
