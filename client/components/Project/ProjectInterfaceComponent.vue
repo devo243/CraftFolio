@@ -3,6 +3,7 @@ import { fetchy } from "@/utils/fetchy";
 import { onBeforeMount, ref } from "vue";
 import { useRouter } from "vue-router";
 import ProjectImageComponent from "./ProjectImageComponent.vue";
+import ProjectInventoryComponent from "./ProjectInventory/ProjectInventoryComponent.vue";
 import ProjectLinkComponent from "./ProjectLinkComponent.vue";
 import ProjectNoteComponent from "./ProjectNoteComponent.vue";
 
@@ -61,6 +62,7 @@ onBeforeMount(async () => {
     <ProjectNoteComponent v-if="currentPage == 'note'" :notes="project.notes" :id="props.id" @refreshProject="getProject" />
     <ProjectLinkComponent v-else-if="currentPage == 'link'" :links="project.links" :id="props.id" @refreshProject="getProject" />
     <ProjectImageComponent v-else-if="currentPage == 'image'" :images="project.images" :id="props.id" @refreshProject="getProject" />
+    <ProjectInventoryComponent class="inv" v-else :fibers="project.fibers" :id="props.id" @refreshProject="getProject" />
   </section>
 </template>
 
@@ -99,5 +101,16 @@ input:checked + .nav {
 .back {
   width: 2em;
   /* margin: 0em 0em 0em 1em; */
+}
+
+.inv {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  align-items: center;
+  margin: auto;
+  max-width: 90em;
+  max-height: 90%;
+  padding-top: 1em;
 }
 </style>

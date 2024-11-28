@@ -277,28 +277,28 @@ class Routes {
     return await ProjectManaging.editNotes(user, oid, notes);
   }
 
-  @Router.post("/projects/:id/:link")
+  @Router.post("/projects/:id/link")
   async addLink(session: SessionDoc, id: string, link: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     return await ProjectManaging.addLink(user, oid, link);
   }
 
-  @Router.delete("/projects/:id/:link")
+  @Router.delete("/projects/:id/link")
   async deleteLink(session: SessionDoc, id: string, link: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     return await ProjectManaging.deleteLink(user, oid, link);
   }
 
-  @Router.post("/projects/:id/:image")
+  @Router.post("/projects/:id/image")
   async addImage(session: SessionDoc, id: string, image: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     return await ProjectManaging.addImage(user, oid, image);
   }
 
-  @Router.delete("/projects/:id/:image")
+  @Router.delete("/projects/:id/image")
   async deleteImage(session: SessionDoc, id: string, image: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);

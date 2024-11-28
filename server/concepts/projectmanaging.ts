@@ -32,7 +32,7 @@ export default class ProjectManagingConcept {
     if (!title || !status) {
       throw new BadValuesError("Project must have a title and status.");
     }
-    const _id = await this.projects.createOne({ owner, title, status, notes: "", links: [], images: [] });
+    const _id = await this.projects.createOne({ owner, title, status, notes: "", links: [], images: [], projectInventory: [] });
     return { msg: "Project created successfully!", project: await this.projects.readOne({ _id }) };
   }
 
@@ -127,7 +127,7 @@ export default class ProjectManagingConcept {
 
   // Add an image to a project
   async addImage(owner: ObjectId, _id: ObjectId, newImage: string) {
-    await this.assertOwnerIsUser(_id, owner);
+    await this.assertOwnerIsUser(owner, _id);
     if (typeof newImage !== "string" || !newImage.trim()) {
       throw new BadValuesError("The image URL must be a non-empty string.");
     }
@@ -142,7 +142,7 @@ export default class ProjectManagingConcept {
 
   // Delete an image from a project
   async deleteImage(owner: ObjectId, _id: ObjectId, imageToDelete: string) {
-    await this.assertOwnerIsUser(_id, owner);
+    await this.assertOwnerIsUser(owner, _id);
     if (typeof imageToDelete !== "string" || !imageToDelete.trim()) {
       throw new BadValuesError("The image URL must be a non-empty string.");
     }

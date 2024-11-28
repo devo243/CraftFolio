@@ -20,16 +20,14 @@ const addLink = async () => {
   emit("refreshProject");
   console.log(newLink.value);
 };
-
-// const emit = defineEmits(["goBackToList"]);
 </script>
 
 <template>
   <div class="container">
-    <div v-if="props.links.length !== 0">
-      <p v-for="(link, index) in props.links" :key="index">- {{ link }}</p>
+    <div class="links" v-if="props.links.length !== 0">
+      <a class="link" v-for="(link, index) in props.links" :key="index" :href="link">- {{ link }}</a>
     </div>
-    <p v-else>Add some links...</p>
+    <p class="placeholder" v-else>Add some links...</p>
     <form @submit.prevent="addLink()">
       <!-- <label for="link">Add a new link:</label> -->
       <input id="link" v-model="newLink" required />
@@ -50,6 +48,7 @@ const addLink = async () => {
   justify-content: space-between;
 }
 
+a,
 p,
 form {
   padding: 1em;
@@ -80,5 +79,16 @@ input {
 
 button {
   border-radius: 1em;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  padding: 1em;
+}
+
+.link {
+  padding: 0;
 }
 </style>
