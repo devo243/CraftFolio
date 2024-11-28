@@ -14,7 +14,8 @@ const editing = ref(false);
 const deleteFiber = async () => {
   try {
     await fetchy(`/api/projects/${props.id}/fibers/${props.fiber._id}`, "DELETE");
-  } catch {
+  } catch (_) {
+    console.log(_);
     return;
   }
   emit("refreshFibers");

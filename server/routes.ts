@@ -9,7 +9,6 @@ import Responses from "./responses";
 
 import { z } from "zod";
 import { CommentOptions } from "./concepts/commenting";
-import { NotAllowedError } from "./concepts/errors";
 import { FiberDoc } from "./concepts/inventorying";
 
 /**
@@ -222,29 +221,29 @@ class Routes {
     }
   }
 
-  @Router.post("/projects/:id/fibers")
-  async addFiberToProjectFromInventory(session: SessionDoc, id: string, fiber_id: string, yardage?: number) {
-    const user = Sessioning.getUser(session);
-    const oid = new ObjectId(id);
-    const fid = new ObjectId(fiber_id);
-    const used_fiber = (await Inventorying.idsToFibers([fid]))[0];
-    if (used_fiber) {
-      const created = await ProjectInventorying.addNewFiber(oid, used_fiber.name, used_fiber.brand, used_fiber.type, used_fiber.color, yardage ?? used_fiber.remainingYardage);
-      if (created.fiber !== null) {
-        await ProjectManaging.addFiber(user, oid, created.fiber._id);
-        if (yardage) {
-          return await Inventorying.editFiber(fid, undefined, undefined, undefined, undefined, used_fiber.remainingYardage - yardage);
-        }
-        return await Inventorying.deleteFiber(fid);
-      } else {
-        return created.msg;
-      }
-    }
-    throw new NotAllowedError("You don't own this fiber object!");
-  }
+  // @Router.post("/projects/:id/fibers")
+  // async addFiberToProjectFromInventory(session: SessionDoc, id: string, fiber_id: string, yardage?: number) {
+  //   const user = Sessioning.getUser(session);
+  //   const oid = new ObjectId(id);
+  //   const fid = new ObjectId(fiber_id);
+  //   const used_fiber = (await Inventorying.idsToFibers([fid]))[0];
+  //   if (used_fiber) {
+  //     const created = await ProjectInventorying.addNewFiber(oid, used_fiber.name, used_fiber.brand, used_fiber.type, used_fiber.color, yardage ?? used_fiber.remainingYardage);
+  //     if (created.fiber !== null) {
+  //       await ProjectManaging.addFiber(user, oid, created.fiber._id);
+  //       if (yardage) {
+  //         return await Inventorying.editFiber(fid, undefined, undefined, undefined, undefined, used_fiber.remainingYardage - yardage);
+  //       }
+  //       return await Inventorying.deleteFiber(fid);
+  //     } else {
+  //       return created.msg;
+  //     }
+  //   }
+  //   throw new NotAllowedError("You don't own this fiber object!");
+  // }
 
   // consider as used or just renaming, so does not get added back to the inventory
-  @Router.patch("/projects/:id/fibers/:fid")
+  @Router.patch("/projects/:id/fibers/:fiber_id")
   async editFiberInProject(session: SessionDoc, id: string, fiber_id: string, name?: string, brand?: string, type?: string, color?: string, yardage?: number) {
     const user = Sessioning.getUser(session); // the user is considered the owner of the project
     const oid = new ObjectId(id); // the project is considered the owner of the inventory
@@ -254,11 +253,12 @@ class Routes {
     return ProjectInventorying.editFiber(fid, name, brand, type, color, yardage);
   }
 
-  @Router.delete("/projects/:id/fibers/:fid")
+  @Router.delete("/projects/:id/fibers/:fiber_id")
   async deleteFiberInProject(session: SessionDoc, id: string, fiber_id: string) {
     const user = Sessioning.getUser(session); // the user is considered the owner of the project
     const oid = new ObjectId(id); // the project is considered the owner of the inventory
     const fid = new ObjectId(fiber_id);
+    console.log(fid);
     await ProjectManaging.assertOwnerIsUser(user, oid);
     await ProjectInventorying.assertOwnerIsUser(fid, oid);
     // update total inventory to contain add back the fiber
@@ -270,8 +270,6 @@ class Routes {
 
   @Router.patch("/projects/:id/notes")
   async editNotes(session: SessionDoc, id: string, notes: string) {
-    console.log(notes);
-    console.log(id);
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     return await ProjectManaging.editNotes(user, oid, notes);

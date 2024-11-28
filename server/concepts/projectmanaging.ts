@@ -174,7 +174,7 @@ export default class ProjectManagingConcept {
     if (!project) {
       throw new NotFoundError(`Project ${_id} does not exist!`);
     }
-    const updatedInventory = project?.projectInventory.filter((id) => id !== fiber);
+    const updatedInventory = project?.projectInventory.filter((id) => id.toString() !== fiber.toString());
     await this.projects.partialUpdateOne({ _id }, { projectInventory: updatedInventory });
     return { msg: "Fiber deleted successfully!", projectInventory: updatedInventory };
   }
