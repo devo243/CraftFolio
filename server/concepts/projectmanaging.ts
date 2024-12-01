@@ -9,7 +9,7 @@ export interface ProjectDoc extends BaseDoc {
   notes: string;
   links: string[];
   images: string[];
-  fiberUsage: { [key: string]: number };
+  projectInventory: ObjectId[];
 }
 
 /**
@@ -32,7 +32,7 @@ export default class ProjectManagingConcept {
     if (!title || !status) {
       throw new BadValuesError("Project must have a title and status.");
     }
-    const _id = await this.projects.createOne({ owner, title, status, notes: "", links: [], images: [] });
+    const _id = await this.projects.createOne({ owner, title, status, notes: "", links: [], images: [], projectInventory: [] });
     return { msg: "Project created successfully!", project: await this.projects.readOne({ _id }) };
   }
 
@@ -87,7 +87,7 @@ export default class ProjectManagingConcept {
 
   // Add a link to a project
   async addLink(owner: ObjectId, _id: ObjectId, newLink: string) {
-    await this.assertOwnerIsUser(_id, owner);
+    await this.assertOwnerIsUser(owner, _id);
     if (typeof newLink !== "string" || !newLink.trim()) {
       throw new BadValuesError("The link must be a non-empty string.");
     }
@@ -102,7 +102,7 @@ export default class ProjectManagingConcept {
 
   // Delete a link from a project
   async deleteLink(owner: ObjectId, _id: ObjectId, linkToDelete: string) {
-    await this.assertOwnerIsUser(_id, owner);
+    await this.assertOwnerIsUser(owner, _id);
     if (typeof linkToDelete !== "string" || !linkToDelete.trim()) {
       throw new BadValuesError("The link must be a non-empty string.");
     }
@@ -127,7 +127,7 @@ export default class ProjectManagingConcept {
 
   // Add an image to a project
   async addImage(owner: ObjectId, _id: ObjectId, newImage: string) {
-    await this.assertOwnerIsUser(_id, owner);
+    await this.assertOwnerIsUser(owner, _id);
     if (typeof newImage !== "string" || !newImage.trim()) {
       throw new BadValuesError("The image URL must be a non-empty string.");
     }
@@ -142,7 +142,7 @@ export default class ProjectManagingConcept {
 
   // Delete an image from a project
   async deleteImage(owner: ObjectId, _id: ObjectId, imageToDelete: string) {
-    await this.assertOwnerIsUser(_id, owner);
+    await this.assertOwnerIsUser(owner, _id);
     if (typeof imageToDelete !== "string" || !imageToDelete.trim()) {
       throw new BadValuesError("The image URL must be a non-empty string.");
     }
@@ -155,31 +155,38 @@ export default class ProjectManagingConcept {
     return { msg: "Image deleted successfully!", images: updatedImages };
   }
 
-  // Adjusts the inventory based on the fibers appointed to the project
-  // Adds/Edits fiber usage to a project
-  async addOrEditFiber(owner: ObjectId, _id: ObjectId, fiber: ObjectId, yardage: number) {
+  // Adds/Edits fiber usage of a project
+  async addFiber(owner: ObjectId, _id: ObjectId, fiber: ObjectId) {
     await this.assertOwnerIsUser(owner, _id);
     const project = await this.projects.readOne({ _id });
     if (!project) {
       throw new NotFoundError(`Project ${_id} does not exist!`);
     }
-    const updatedFiberUsage = project.fiberUsage || {};
-    updatedFiberUsage[fiber.toString()] = yardage;
-    await this.projects.partialUpdateOne({ _id }, { fiberUsage: updatedFiberUsage });
-    return { msg: "Fiber updated successfully!", fiberUsage: updatedFiberUsage };
+    const updatedInventory = Array.from(new Set([...project.projectInventory, fiber]));
+    await this.projects.partialUpdateOne({ _id }, { projectInventory: updatedInventory });
+    return { msg: "Fiber added successfully!", projectInventory: updatedInventory };
   }
 
-  // Deletes fiber usage to a project
+  // Deletes fiber usage of a project
   async deleteFiber(owner: ObjectId, _id: ObjectId, fiber: ObjectId) {
     await this.assertOwnerIsUser(owner, _id);
     const project = await this.projects.readOne({ _id });
     if (!project) {
       throw new NotFoundError(`Project ${_id} does not exist!`);
     }
-    const updatedFiberUsage = project.fiberUsage || {};
-    delete updatedFiberUsage[fiber.toString()];
-    await this.projects.partialUpdateOne({ _id }, { fiberUsage: updatedFiberUsage });
-    return { msg: "Fiber deleted successfully!", fiberUsage: updatedFiberUsage };
+    const updatedInventory = project?.projectInventory.filter((id) => id.toString() !== fiber.toString());
+    await this.projects.partialUpdateOne({ _id }, { projectInventory: updatedInventory });
+    return { msg: "Fiber deleted successfully!", projectInventory: updatedInventory };
+  }
+
+  // Get fibers for a project
+  async getFibers(owner: ObjectId, _id: ObjectId) {
+    await this.assertOwnerIsUser(owner, _id);
+    const project = await this.projects.readOne({ _id });
+    if (!project) {
+      throw new NotFoundError(`Project ${_id} does not exist!`);
+    }
+    return { fibers: project.projectInventory };
   }
 
   async assertOwnerIsUser(user: ObjectId, _id: ObjectId) {

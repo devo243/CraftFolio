@@ -1,4 +1,4 @@
-import { Authing } from "./app";
+import { Authing, ProjectInventorying } from "./app";
 import { CommentDoc } from "./concepts/commenting";
 import { AlreadyFriendsError, FriendNotFoundError, FriendRequestAlreadyExistsError, FriendRequestDoc, FriendRequestNotFoundError } from "./concepts/friending";
 import { PostAuthorNotMatchError, PostDoc } from "./concepts/posting";
@@ -36,7 +36,7 @@ export default class Responses {
     if (!project) {
       return project;
     }
-    const fibers = project.fiberUsage;
+    const fibers = project.projectInventory;
     // TODO
     // const fibers = await Inventorying.idsToFibers(project.fibers);
     return { ...project, fibers: fibers };
@@ -46,11 +46,13 @@ export default class Responses {
    * Same as {@link project} but for an array of ProjectDoc for improved performance.
    */
   static async projects(projects: ProjectDoc[]) {
-    const fibers = await Promise.all(projects.map(async (project: ProjectDoc) => {
-      return project.fiberUsage;
-      // TODO
-      // return Inventorying.idsToFibers(project.fibers);
-    }));
+    const fibers = await Promise.all(
+      projects.map(async (project: ProjectDoc) => {
+        // return project.projectInventory;
+        // TODO
+        return ProjectInventorying.idsToFibers(project.projectInventory);
+      }),
+    );
     return projects.map((project, i) => ({ ...project, fibers: fibers[i] }));
   }
   /**
