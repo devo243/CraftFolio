@@ -3,12 +3,13 @@ import { ObjectId } from "mongodb";
 import { Router, getExpressRouter } from "./framework/router";
 
 import { Authing, CommentOnPost, Inventorying, Posting, ProjectInventorying, ProjectManaging, Sessioning } from "./app";
-import { PostOptions } from "./concepts/posting";
+import { PostDoc, PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
 
 import { z } from "zod";
 import { CommentOptions } from "./concepts/commenting";
+import { NotAllowedError } from "./concepts/errors";
 import { FiberDoc } from "./concepts/inventorying";
 
 /**
@@ -108,6 +109,25 @@ class Routes {
     return Posting.delete(oid);
   }
 
+  async	getGuidesWith(availbaleFibers: ObjectId[]){
+    const allGuides: PostDoc[]= await Posting.getPosts();
+    const usableGuides: PostDoc[] = [];
+    // this is not foolproof: especially if a type of fabric is mentionaed across multiple arrays
+		for (const guide of allGuides){
+      let isUsableGuide = true;
+      const guideFibers = guide.options?.fibers ?? [];
+      for (const guideFiberOptions of guideFibers) {
+        if (guideFiberOptions.every((guidefiber: ObjectId) => availbaleFibers.every((available_fiber) => available_fiber < guidefiber))) {
+          isUsableGuide = false;
+        }
+      }
+      if (isUsableGuide) {
+        usableGuides.concat([guide])
+      }     
+    }
+    return usableGuides;
+  }
+
   //Comments on Posts
   @Router.patch("/posts/:pid/comments/:id")
   async updateCommentOnPost(session: SessionDoc, pid: string, id: string, content?: string, options?: CommentOptions) {
@@ -134,7 +154,7 @@ class Routes {
     return Responses.comments(comments);
   }
   @Router.post("/posts/:pid/comments")
-  async createCommentOnPost(session: SessionDoc, pid: string, content: string, options?: PostOptions) {
+  async createCommentOnPost(session: SessionDoc, pid: string, content: string, options?: CommentOptions) {
     const user = Sessioning.getUser(session);
     const itemID = new ObjectId(pid);
     await Posting.assertPostExists(itemID); //check if that post exists!
@@ -221,26 +241,26 @@ class Routes {
     }
   }
 
-  // @Router.post("/projects/:id/fibers")
-  // async addFiberToProjectFromInventory(session: SessionDoc, id: string, fiber_id: string, yardage?: number) {
-  //   const user = Sessioning.getUser(session);
-  //   const oid = new ObjectId(id);
-  //   const fid = new ObjectId(fiber_id);
-  //   const used_fiber = (await Inventorying.idsToFibers([fid]))[0];
-  //   if (used_fiber) {
-  //     const created = await ProjectInventorying.addNewFiber(oid, used_fiber.name, used_fiber.brand, used_fiber.type, used_fiber.color, yardage ?? used_fiber.remainingYardage);
-  //     if (created.fiber !== null) {
-  //       await ProjectManaging.addFiber(user, oid, created.fiber._id);
-  //       if (yardage) {
-  //         return await Inventorying.editFiber(fid, undefined, undefined, undefined, undefined, used_fiber.remainingYardage - yardage);
-  //       }
-  //       return await Inventorying.deleteFiber(fid);
-  //     } else {
-  //       return created.msg;
-  //     }
-  //   }
-  //   throw new NotAllowedError("You don't own this fiber object!");
-  // }
+  @Router.post("/projects/:id/fibers/:fiber_id")
+  async addFiberToProjectFromInventory(session: SessionDoc, id: string, fiber_id: string, yardage?: number) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    const fid = new ObjectId(fiber_id);
+    const used_fiber = (await Inventorying.idsToFibers([fid]))[0];
+    if (used_fiber) {
+      const created = await ProjectInventorying.addNewFiber(oid, used_fiber.name, used_fiber.brand, used_fiber.type, used_fiber.color, yardage ?? used_fiber.remainingYardage);
+      if (created.fiber !== null) {
+        await ProjectManaging.addFiber(user, oid, created.fiber._id);
+        if (yardage) {
+          return await Inventorying.editFiber(fid, undefined, undefined, undefined, undefined, used_fiber.remainingYardage - yardage);
+        }
+        return await Inventorying.deleteFiber(fid);
+      } else {
+        return created.msg;
+      }
+    }
+    throw new NotAllowedError("You don't own this fiber object!");
+  }
 
   // consider as used or just renaming, so does not get added back to the inventory
   @Router.patch("/projects/:id/fibers/:fiber_id")
@@ -277,6 +297,9 @@ class Routes {
 
   @Router.post("/projects/:id/link")
   async addLink(session: SessionDoc, id: string, link: string) {
+    if (!URL.canParse(link)) {
+      throw new NotAllowedError(`expected VALID link but got ${link}`);
+    }
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     return await ProjectManaging.addLink(user, oid, link);
@@ -284,6 +307,9 @@ class Routes {
 
   @Router.delete("/projects/:id/link")
   async deleteLink(session: SessionDoc, id: string, link: string) {
+    if (!URL.canParse(link)) {
+      throw new NotAllowedError(`expected VALID link but got ${link}`);
+    }
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     return await ProjectManaging.deleteLink(user, oid, link);
@@ -300,7 +326,7 @@ class Routes {
   async deleteImage(session: SessionDoc, id: string, image: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    return await ProjectManaging.deleteLink(user, oid, image);
+    return await ProjectManaging.deleteImage(user, oid, image);
   }
 
   @Router.get("/projects")
@@ -323,26 +349,26 @@ class Routes {
     return await ProjectManaging.deleteProject(user, oid);
   }
 
-  // WIP
-  // @Router.post("/guides/:id")
-  // async importGuide(session: SessionDoc, id: string, guide_link: string) {
-  //   const user = Sessioning.getUser(session);
-  //   const oid = new ObjectId(id);
-  //   // TODO: get guide name from posting
-  //   const title = "";
-  //   const project = await ProjectManaging.createProject(user, title, "To Do");
-  //   if (project.project) {
-  //     await ProjectManaging.addLink(user, project.project._id, guide_link);
-  //   } else {
-  //     throw new Error("failed creating new project");
-  //   }
-  //   // TODO: get fibers from the guide
-  //   const fibers: ObjectId[] = [];
-  //   // TODO: get amounts from the guide
-  //   const amounts: number[] = [];
-  //   await Promise.all(fibers.map((fiber: ObjectId, idx: number) => Inventorying.editFiber(fiber, undefined, undefined, undefined, undefined, amounts[idx])));
-  //   return Responses.project(project.project);
-  // }
+  @Router.post("/guides/:id")
+  async importGuide(session: SessionDoc, id: string, title: string, guide_link: string, selected_fibers: string, selected_amounts: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    // TODO: get guide name from posting
+    const project = await ProjectManaging.createProject(user, title, "To Do");
+    if (project.project) {
+      if (!URL.canParse(guide_link)) {
+        throw new NotAllowedError(`expected VALID link but got ${guide_link}`);
+      }
+      await ProjectManaging.addLink(user, project.project._id, guide_link);
+    } else {
+      throw new Error("failed creating new project");
+    }
+    const fibers: ObjectId[] = selected_fibers.split(",").map((fiber_id: string) => new ObjectId(fiber_id));
+    // get amounts from the guide
+    const amounts: number[] = selected_amounts.split(",").map((amount: string) => parseFloat(amount));;
+    await Promise.all(fibers.map((fiber: ObjectId, idx: number) => Inventorying.editFiber(fiber, undefined, undefined, undefined, undefined, amounts[idx])));
+    return Responses.project(project.project);
+  }
 
   // FRIENDS CONCEPT
 

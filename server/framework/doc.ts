@@ -1,4 +1,5 @@
 import {
+  AggregationCursor,
   BulkWriteOptions,
   Collection,
   CountDocumentsOptions,
@@ -12,7 +13,7 @@ import {
   OptionalUnlessRequiredId,
   ReplaceOptions,
   UpdateResult,
-  WithoutId,
+  WithoutId
 } from "mongodb";
 
 import db from "../db";
@@ -153,4 +154,13 @@ export default class DocCollection<Schema extends BaseDoc> {
   /*
    * You may wish to add more methods, e.g. using other MongoDB operations!
    */
+  async aggregateRandom(number: number): Promise<AggregationCursor<Document>> {
+      return await this.collection.aggregate([
+        { $sample: { size: number } }  
+    ]);
+  }
+
+  async aggregateMatch(filters: Filter<Schema>[]): Promise<AggregationCursor<Document>> {
+    return await this.collection.aggregate(filters);
+  }
 }

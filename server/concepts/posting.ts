@@ -3,8 +3,12 @@ import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
 import { NotAllowedError, NotFoundError } from "./errors";
 
+// the fibers are an array of arrays of fibers from "guide" inventory. the first fiber in each array is the recommended fiber, the rest are its alternatives
+// the ids are from the inventorying
 export interface PostOptions {
-  backgroundColor?: string;
+  fibers?: ObjectId[][];
+  tips: string[];
+  mistakes: string[];
 }
 
 export interface PostDoc extends BaseDoc {
@@ -14,7 +18,7 @@ export interface PostDoc extends BaseDoc {
 }
 
 /**
- * concept: Posting [Author]
+ * concept: Posting [Author, Fiber]
  */
 export default class PostingConcept {
   public readonly posts: DocCollection<PostDoc>;
@@ -50,6 +54,10 @@ export default class PostingConcept {
   async delete(_id: ObjectId) {
     await this.posts.deleteOne({ _id });
     return { msg: "Post deleted successfully!" };
+  }
+
+  async getRandomGuide() {
+    return await this.posts.aggregateRandom(1);
   }
 
   async assertAuthorIsUser(_id: ObjectId, user: ObjectId) {
