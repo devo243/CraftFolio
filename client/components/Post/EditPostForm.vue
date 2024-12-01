@@ -35,48 +35,37 @@ const editPost = async (content: string) => {
 
 <style scoped>
 form {
-  background-color: var(--base-bg);
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
+  justify-content: space-between;
+  height: 40em;
+  max-width: 60em;
+  margin: 5em auto;
 }
 
-textarea {
-  font-family: inherit;
-  font-size: inherit;
-  height: 6em;
-  border-radius: 4px;
-  resize: none;
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
 }
 
-p {
-  margin: 0em;
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  padding: 1em;
+  background-color: var(--base-bg);
+  border-radius: 1em;
 }
 
-.author {
-  font-weight: bold;
-  font-size: 1.2em;
-}
-
-menu {
-  list-style-type: none;
+.buttons {
   display: flex;
   flex-direction: row;
-  gap: 1em;
-  padding: 0;
-  margin: 0;
+  justify-content: center;
+  gap: 2em;
 }
 
-.base {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.timestamp {
-  display: flex;
-  justify-content: flex-end;
-  font-size: 0.9em;
-  font-style: italic;
+label {
+  font-size: 1.5em;
 }
 </style>
