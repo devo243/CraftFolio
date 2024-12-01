@@ -154,13 +154,13 @@ export default class DocCollection<Schema extends BaseDoc> {
   /*
    * You may wish to add more methods, e.g. using other MongoDB operations!
    */
-    /**
-   * Count all documents that match `filter`.
-   * @returns the count
-   */
-    async aggregate(number: number): Promise<AggregationCursor<Document>> {
+  async aggregateRandom(number: number): Promise<AggregationCursor<Document>> {
       return await this.collection.aggregate([
         { $sample: { size: number } }  
     ]);
-    }
+  }
+
+  async aggregateMatch(filters: Filter<Schema>[]): Promise<AggregationCursor<Document>> {
+    return await this.collection.aggregate(filters);
+  }
 }

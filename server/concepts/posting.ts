@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
 import { NotAllowedError, NotFoundError } from "./errors";
 
+// the fibers are an array of arrays of fibers from "guide" inventory. the first fiber in each array is the recommended fiber, the rest are its alternatives
 export interface PostOptions {
   fibers?: ObjectId[][];
   tips: string[];
@@ -55,7 +56,7 @@ export default class PostingConcept {
   }
 
   async getRandomGuide() {
-    return await this.posts.aggregate(1);
+    return await this.posts.aggregateRandom(1);
   }
 
   async assertAuthorIsUser(_id: ObjectId, user: ObjectId) {

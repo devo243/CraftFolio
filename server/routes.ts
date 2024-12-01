@@ -9,6 +9,7 @@ import Responses from "./responses";
 
 import { z } from "zod";
 import { CommentOptions } from "./concepts/commenting";
+import { NotAllowedError } from "./concepts/errors";
 import { FiberDoc } from "./concepts/inventorying";
 
 /**
@@ -108,18 +109,19 @@ class Routes {
     return Posting.delete(oid);
   }
 
-  async	getGuidesWith(fibers: ObjectId[]){
+  async	getGuidesWith(availbaleFibers: ObjectId[]){
     const allGuides: PostDoc[]= await Posting.getPosts();
     const usableGuides: PostDoc[] = [];
+    // this is not foolproof: especially if a type of fabric is mentionaed across multiple arrays
 		for (const guide of allGuides){
-      let usableGuide = true;
+      let isUsableGuide = true;
       const guideFibers = guide.options?.fibers ?? [];
-      for (const guidefiberset of guideFibers) {
-        if (guidefiberset.every((guidefiber: ObjectId) => fibers.every((present_fiber) => present_fiber > guidefiber))) {
-          usableGuide = false;
+      for (const guideFiberOptions of guideFibers) {
+        if (guideFiberOptions.every((guidefiber: ObjectId) => availbaleFibers.every((available_fiber) => available_fiber < guidefiber))) {
+          isUsableGuide = false;
         }
       }
-      if (usableGuide) {
+      if (isUsableGuide) {
         usableGuides.concat([guide])
       }     
     }
@@ -295,6 +297,9 @@ class Routes {
 
   @Router.post("/projects/:id/link")
   async addLink(session: SessionDoc, id: string, link: string) {
+    if (!URL.canParse(link)) {
+      throw new NotAllowedError(`expected VALID link but got ${link}`);
+    }
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     return await ProjectManaging.addLink(user, oid, link);
@@ -302,6 +307,9 @@ class Routes {
 
   @Router.delete("/projects/:id/link")
   async deleteLink(session: SessionDoc, id: string, link: string) {
+    if (!URL.canParse(link)) {
+      throw new NotAllowedError(`expected VALID link but got ${link}`);
+    }
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     return await ProjectManaging.deleteLink(user, oid, link);
@@ -318,7 +326,7 @@ class Routes {
   async deleteImage(session: SessionDoc, id: string, image: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    return await ProjectManaging.deleteLink(user, oid, image);
+    return await ProjectManaging.deleteImage(user, oid, image);
   }
 
   @Router.get("/projects")
@@ -348,6 +356,9 @@ class Routes {
     // TODO: get guide name from posting
     const project = await ProjectManaging.createProject(user, title, "To Do");
     if (project.project) {
+      if (!URL.canParse(guide_link)) {
+        throw new NotAllowedError(`expected VALID link but got ${guide_link}`);
+      }
       await ProjectManaging.addLink(user, project.project._id, guide_link);
     } else {
       throw new Error("failed creating new project");
