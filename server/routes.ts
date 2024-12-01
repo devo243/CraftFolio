@@ -241,26 +241,26 @@ class Routes {
     }
   }
 
-  // @Router.post("/projects/:id/fibers")
-  // async addFiberToProjectFromInventory(session: SessionDoc, id: string, fiber_id: string, yardage?: number) {
-  //   const user = Sessioning.getUser(session);
-  //   const oid = new ObjectId(id);
-  //   const fid = new ObjectId(fiber_id);
-  //   const used_fiber = (await Inventorying.idsToFibers([fid]))[0];
-  //   if (used_fiber) {
-  //     const created = await ProjectInventorying.addNewFiber(oid, used_fiber.name, used_fiber.brand, used_fiber.type, used_fiber.color, yardage ?? used_fiber.remainingYardage);
-  //     if (created.fiber !== null) {
-  //       await ProjectManaging.addFiber(user, oid, created.fiber._id);
-  //       if (yardage) {
-  //         return await Inventorying.editFiber(fid, undefined, undefined, undefined, undefined, used_fiber.remainingYardage - yardage);
-  //       }
-  //       return await Inventorying.deleteFiber(fid);
-  //     } else {
-  //       return created.msg;
-  //     }
-  //   }
-  //   throw new NotAllowedError("You don't own this fiber object!");
-  // }
+  @Router.post("/projects/:id/fibers/:fiber_id")
+  async addFiberToProjectFromInventory(session: SessionDoc, id: string, fiber_id: string, yardage?: number) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    const fid = new ObjectId(fiber_id);
+    const used_fiber = (await Inventorying.idsToFibers([fid]))[0];
+    if (used_fiber) {
+      const created = await ProjectInventorying.addNewFiber(oid, used_fiber.name, used_fiber.brand, used_fiber.type, used_fiber.color, yardage ?? used_fiber.remainingYardage);
+      if (created.fiber !== null) {
+        await ProjectManaging.addFiber(user, oid, created.fiber._id);
+        if (yardage) {
+          return await Inventorying.editFiber(fid, undefined, undefined, undefined, undefined, used_fiber.remainingYardage - yardage);
+        }
+        return await Inventorying.deleteFiber(fid);
+      } else {
+        return created.msg;
+      }
+    }
+    throw new NotAllowedError("You don't own this fiber object!");
+  }
 
   // consider as used or just renaming, so does not get added back to the inventory
   @Router.patch("/projects/:id/fibers/:fiber_id")

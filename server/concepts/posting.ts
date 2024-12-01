@@ -4,6 +4,7 @@ import DocCollection, { BaseDoc } from "../framework/doc";
 import { NotAllowedError, NotFoundError } from "./errors";
 
 // the fibers are an array of arrays of fibers from "guide" inventory. the first fiber in each array is the recommended fiber, the rest are its alternatives
+// the ids are from the inventorying
 export interface PostOptions {
   fibers?: ObjectId[][];
   tips: string[];
@@ -17,7 +18,7 @@ export interface PostDoc extends BaseDoc {
 }
 
 /**
- * concept: Posting [Author]
+ * concept: Posting [Author, Fiber]
  */
 export default class PostingConcept {
   public readonly posts: DocCollection<PostDoc>;
