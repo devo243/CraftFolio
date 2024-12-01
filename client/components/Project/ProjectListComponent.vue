@@ -27,6 +27,15 @@ const openProject = async (id: string) => {
   await router.push(`/projects/${id}`);
 };
 
+const deleteProject = async (id: string) => {
+  try {
+    await fetchy(`/api/projects/${id}`, "DELETE");
+  } catch {
+    return;
+  }
+  getProjects();
+};
+
 onBeforeMount(async () => {
   await getProjects();
 });
@@ -39,7 +48,8 @@ onBeforeMount(async () => {
     </section>
     <section class="projects" v-if="projects.length !== 0">
       <article v-for="project in projects" :key="project._id">
-        <ProjectComponent :project="project" @click="openProject(project._id)" />
+        <ProjectComponent :project="project" @click="openProject(project._id)" class="project"/>
+        <button v-on:click="deleteProject(project._id)" class="trash"><img src="@/assets/icons/thrash.svg" /></button>
       </article>
     </section>
     <p v-else>No Projects</p>
@@ -92,6 +102,34 @@ button {
   font-size: 1.5em;
   padding: 0.5em;
   /* border: none; */
-  border-radius: 2em;
+  border-radius: 1em;
+}
+
+h1 {
+  color: var(--earthy-green);
+}
+
+
+img {
+  width: 36px;
+  height: 100%;
+}
+.trash {
+  height: 100%;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: var(--red);
+}
+
+article {
+  display: flex;
+  flex-direction: row;
+  gap: 1em;
+  align-items: center;
+}
+
+.project{
+  flex: 1;
 }
 </style>

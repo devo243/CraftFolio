@@ -40,7 +40,7 @@ onBeforeMount(async () => {
   </section>
   <p v-else>No inventory</p>
   <section>
-    <h2>Add fiber:</h2>
+    <h2>Add fiber</h2>
     <AddFiberForm @refreshFibers="getInventory" />
   </section>
   <!-- <div>

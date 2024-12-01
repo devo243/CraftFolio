@@ -70,7 +70,7 @@ const emptyForm = () => {
       />
     <input type="text" id="color" v-model="color" placeholder="Color" />
     <input type="text" id="yardage" v-model="yardage" placeholder="Yardage" required />
-    <button type="submit" class="pure-button pure-button-primary">Add</button>
+    <button type="submit" class="button-custom pure-button pure-button-primary">Add</button>
   </form>
 </template>
 
@@ -86,5 +86,9 @@ form {
 
 input {
   width: 18%;
+}
+
+.button-custom {
+  background-color: var(--earthy-green);
 }
 </style>

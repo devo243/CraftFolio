@@ -125,7 +125,7 @@ img {
 button {
   width: 40px;
   height: 40px;
-  background-color: var(--green);
+  background-color: var(--earthy-green);
   border: none;
   border-radius: 4px;
   cursor: pointer;

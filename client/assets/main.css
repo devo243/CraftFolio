@@ -49,6 +49,10 @@ a.button {
   text-decoration: none;
 }
 
+button {
+  cursor: pointer;
+}
+
 .column {
   display: flex;
   flex-direction: column;
