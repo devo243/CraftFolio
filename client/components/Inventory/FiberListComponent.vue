@@ -27,6 +27,13 @@ onBeforeMount(async () => {
     <h1>Inventory</h1>
   </section>
   <section class="fibers" v-if="fibers.length !== 0">
+    <article class="container">
+        <span >Name</span>
+        <span >Brand</span>
+        <span >Type</span>
+        <span >Color</span>
+        <span >Amount (yd)</span>
+    </article>
     <article v-for="fiber in fibers" :key="fiber._id">
       <FiberComponent :fiber="fiber" @refreshFibers="getInventory" />
     </article>
@@ -62,5 +69,32 @@ p {
 
 .fibers {
   padding: 1em;
+}
+
+.container {
+  width: 80%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 10px 0px 10px;
+
+  border-radius: 1em;
+}
+
+.container span {
+  width: 20%;
+  overflow: hidden;
+  text-align: center;
+  font-weight: bold;
+  font-size: large;
+}
+
+.vl {
+  height: 100%;
+}
+
+h1, h2 {
+  color: var(--earthy-green);
 }
 </style>

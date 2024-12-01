@@ -16,6 +16,8 @@ export const client = new MongoClient(mongoUri, {
 export let DB_NAME: string;
 if (process.env.TEST) {
   DB_NAME = "test-db"; // Used only for unit-tests
+} else if (process.env.DB_NAME){
+  DB_NAME = process.env.DB_NAME; // used locally
 } else {
   DB_NAME = "61040-db"; // Feel free to change db name!
 }
