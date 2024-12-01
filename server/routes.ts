@@ -87,18 +87,18 @@ class Routes {
   }
 
   @Router.post("/posts")
-  async createPost(session: SessionDoc, content: string, options?: PostOptions) {
+  async createPost(session: SessionDoc, title: string, content: string, options?: PostOptions) {
     const user = Sessioning.getUser(session);
-    const created = await Posting.create(user, content, options);
+    const created = await Posting.create(user, title, content, options);
     return { msg: created.msg, post: await Responses.post(created.post) };
   }
 
   @Router.patch("/posts/:id")
-  async updatePost(session: SessionDoc, id: string, content?: string, options?: PostOptions) {
+  async updatePost(session: SessionDoc, id: string, title?:string, content?: string, options?: PostOptions) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
-    return await Posting.update(oid, content, options);
+    return await Posting.update(oid, title, content, options);
   }
 
   @Router.delete("/posts/:id")
@@ -109,7 +109,7 @@ class Routes {
     return Posting.delete(oid);
   }
 
-  async	getGuidesWith(availbaleFibers: ObjectId[]){
+  async	getGuidesWith(availableFibers: ObjectId[]){
     const allGuides: PostDoc[]= await Posting.getPosts();
     const usableGuides: PostDoc[] = [];
     // this is not foolproof: especially if a type of fabric is mentionaed across multiple arrays
@@ -117,7 +117,7 @@ class Routes {
       let isUsableGuide = true;
       const guideFibers = guide.options?.fibers ?? [];
       for (const guideFiberOptions of guideFibers) {
-        if (guideFiberOptions.every((guidefiber: ObjectId) => availbaleFibers.every((available_fiber) => available_fiber < guidefiber))) {
+        if (guideFiberOptions.every((guidefiber: ObjectId) => availableFibers.every((available_fiber) => available_fiber < guidefiber))) {
           isUsableGuide = false;
         }
       }
