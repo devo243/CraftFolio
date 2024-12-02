@@ -8,7 +8,6 @@ import { NotAllowedError, NotFoundError } from "./errors";
 export interface PostOptions {
   fibers?: ObjectId[][];
   tips: string[];
-  mistakes: string[];
 }
 
 export interface PostDoc extends BaseDoc {
@@ -45,7 +44,7 @@ export default class PostingConcept {
     return await this.posts.readMany({ author });
   }
 
-  async update(_id: ObjectId, title?:string, content?: string, options?: PostOptions) {
+  async update(_id: ObjectId, title?: string, content?: string, options?: PostOptions) {
     // Note that if content or options is undefined, those fields will *not* be updated
     // since undefined values for partialUpdateOne are ignored.
     await this.posts.partialUpdateOne({ _id }, { title, content, options });

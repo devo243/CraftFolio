@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import EditPostForm from "@/components/Post/EditPostForm.vue";
 import PostComponent from "@/components/Post/PostComponent.vue";
 import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
@@ -13,7 +12,6 @@ const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
 const loaded = ref(false);
 const router = useRouter();
 let posts = ref<Array<Record<string, string>>>([]);
-let editing = ref("");
 let searchAuthor = ref("");
 const props = defineProps(["username"]);
 
@@ -29,10 +27,6 @@ async function getPosts(author?: string) {
   posts.value = postResults;
 }
 
-function updateEditing(id: string) {
-  editing.value = id;
-}
-
 onBeforeMount(async () => {
   if (props.username) {
     await getPosts(props.username);
@@ -45,19 +39,22 @@ onBeforeMount(async () => {
 const createPost = async () => {
   await router.push("/create/post");
 };
+
+const openPost = async (id: string) => {
+  await router.push(`/posts/${id}`);
+};
 </script>
 
 <template>
   <div class="page">
-    <div class="row" v-if="props.username!==currentUsername">
-      <h2 v-if="!searchAuthor">Posts:</h2>
-      <h2 v-else>Posts by {{ searchAuthor }}:</h2>
-      <SearchPostForm @getPostsByAuthor="getPosts" />
+    <div class="row">
+      <h2 v-if="!searchAuthor">Guides:</h2>
+      <h2 v-else>Guides by {{ searchAuthor }}:</h2>
+      <SearchPostForm v-if="props.username!==currentUsername" @getPostsByAuthor="getPosts" />
     </div>
     <section class="posts" v-if="loaded && posts.length !== 0">
       <article v-for="post in posts" :key="post._id">
-        <PostComponent v-if="editing !== post._id" :post="post" @refreshPosts="getPosts" @editPost="updateEditing" />
-        <EditPostForm v-else :post="post" @refreshPosts="getPosts" @editPost="updateEditing" />
+        <PostComponent :post="post" @click="openPost(post._id)" @refreshPosts="getPosts"  />
       </article>
     </section>
     <p v-else-if="loaded">No posts found</p>
