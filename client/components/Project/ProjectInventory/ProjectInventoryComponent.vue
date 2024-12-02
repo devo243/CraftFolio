@@ -12,18 +12,25 @@ const getInventory = async () => {
 
 <template>
   <section>
-    <section>
+    <!-- <section>
       <h1>Inventory</h1>
-    </section>
+    </section> -->
     <p v-if="props.fibers === undefined">No inventory</p>
     <section class="fibers" v-else-if="props.fibers.length !== 0">
+      <article class="container">
+        <span >Name</span>
+        <span >Brand</span>
+        <span >Type</span>
+        <span >Color</span>
+        <span >Amount (yd)</span>
+    </article>
       <article v-for="fiber in props.fibers" :key="fiber._id">
         <ProjectFiberComponent :fiber="fiber" :id="props.id" @refreshFibers="getInventory" />
       </article>
     </section>
     <p v-else>No inventory</p>
     <section>
-      <h2>Add fiber:</h2>
+      <h2>Add fiber</h2>
       <AddProjectFiberForm :id="props.id" @refreshFibers="getInventory" />
     </section>
   </section>
@@ -34,10 +41,8 @@ const getInventory = async () => {
 
 <style scoped>
 section {
-  /* width: 80%; */
-  max-width: 70em;
+  width: 80%;
   max-height: 60%;
-  margin: 0 auto;
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
@@ -45,7 +50,7 @@ section {
   gap: 1em;
 }
 
-section,
+section
 p {
   margin: 0 auto;
   max-width: 60em;
@@ -57,5 +62,28 @@ p {
 
 .inv {
   width: 3000px;
+}
+
+h1, h2 {
+  color: var(--earthy-green);
+}
+
+.container {
+  width: 80%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 10px 0px 10px;
+
+  border-radius: 1em;
+}
+
+.container span {
+  width: 20%;
+  overflow: hidden;
+  text-align: center;
+  font-weight: bold;
+  font-size: large;
 }
 </style>

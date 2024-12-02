@@ -32,7 +32,7 @@ const createFiber = async () => {
       body: {
         name: name.value,
         brand: brand.value,
-        type: type.value === "Custom..." ? customType.value : type.value,
+        type: type.value === "custom" ? customType.value : type.value,
         color: color.value,
         yardage: yardage.value,
       },
@@ -48,6 +48,7 @@ const emptyForm = () => {
   name.value = "";
   brand.value = "";
   type.value = "";
+  customType.value = "";
   color.value = "";
   yardage.value = "";
 };
