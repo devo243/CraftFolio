@@ -71,6 +71,82 @@ export default class PostingConcept {
     return await this.posts.readOne({ _id });
   }
 
+  async getTips(_id: ObjectId) {
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    return post.options?.tips || [];
+  }
+
+  async addTip(_id: ObjectId, newTip: string) {
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    const updatedTips = [...(post.options?.tips || []), newTip];
+    await this.update(_id, undefined, { ...post.options, tips: updatedTips });
+    return { msg: "Tip added successfully!", tips: updatedTips };
+  }
+
+  async deleteTip(_id: ObjectId, tipToDelete: string) {
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    const updatedTips = post.options?.tips?.filter((tip) => tip !== tipToDelete) || [];
+    await this.update(_id, undefined, { ...post.options, tips: updatedTips });
+    return { msg: "Tip deleted successfully!", tips: updatedTips };
+  }
+
+  async editTip(_id: ObjectId, oldTip: string, newTip: string) {
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    const updatedTips = post.options?.tips?.map((tip) => (tip === oldTip ? newTip : tip)) || [];
+    await this.update(_id, undefined, { ...post.options, tips: updatedTips });
+    return { msg: "Tip updated successfully!", tips: updatedTips };
+  }
+
+  async getMistakes(_id: ObjectId) {
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    return post.options?.mistakes || [];
+  }
+
+  async addMistake(_id: ObjectId, newMistake: string) {
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    const updatedMistakes = [...(post.options?.mistakes || []), newMistake];
+    await this.update(_id, undefined, { ...post.options, mistakes: updatedMistakes });
+    return { msg: "Mistake added successfully!", mistakes: updatedMistakes };
+  }
+
+  async deleteMistake(_id: ObjectId, mistakeToDelete: string) {
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    const updatedMistakes = post.options?.mistakes?.filter((mistake) => mistake !== mistakeToDelete) || [];
+    await this.update(_id, undefined, { ...post.options, mistakes: updatedMistakes });
+    return { msg: "Mistake deleted successfully!", mistakes: updatedMistakes };
+  }
+
+  async editMistake(_id: ObjectId, oldMistake: string, newMistake: string) {
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    const updatedMistakes = post.options?.mistakes?.map((mistake) => (mistake === oldMistake ? newMistake : mistake)) || [];
+    await this.update(_id, undefined, { ...post.options, mistakes: updatedMistakes });
+    return { msg: "Mistake updated successfully!", mistakes: updatedMistakes };
+  }
+
   async assertAuthorIsUser(_id: ObjectId, user: ObjectId) {
     const post = await this.posts.readOne({ _id });
     if (!post) {

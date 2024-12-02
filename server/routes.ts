@@ -178,6 +178,71 @@ class Routes {
     return posts;
   }
 
+  // Tips and Mistakes on Posts
+  @Router.get("/posts/:id/tips")
+  async getTips(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.getTips(oid);
+  }
+
+  @Router.get("/posts/:id/mistakes")
+  async getMistakes(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.getMistakes(oid);
+  }
+
+  @Router.post("/posts/:id/tips")
+  async addTip(session: SessionDoc, id: string, newTip: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.addTip(oid, newTip);
+  }
+
+  @Router.post("/posts/:id/mistakes")
+  async addMistake(session: SessionDoc, id: string, newMistake: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.addMistake(oid, newMistake);
+  }
+
+  @Router.delete("/posts/:id/tips")
+  async deleteTip(session: SessionDoc, id: string, tipToDelete: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.deleteTip(oid, tipToDelete);
+  }
+
+  @Router.delete("/posts/:id/mistakes")
+  async deleteMistake(session: SessionDoc, id: string, mistakeToDelete: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.deleteMistake(oid, mistakeToDelete);
+  }
+
+  @Router.patch("/posts/:id/tips")
+  async editTip(session: SessionDoc, id: string, oldTip: string, newTip: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.editTip(oid, oldTip, newTip);
+  }
+
+  @Router.patch("/posts/:id/mistakes")
+  async editMistake(session: SessionDoc, id: string, oldMistake: string, newMistake: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.editMistake(oid, oldMistake, newMistake);
+  }
+
   async getGuidesWith(availbaleFibers: ObjectId[]) {
     const allGuides: PostDoc[] = await Posting.getPosts();
     const usableGuides: PostDoc[] = [];
