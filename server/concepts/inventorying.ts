@@ -3,12 +3,15 @@ import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
 import { NotAllowedError } from "./errors";
 
-export interface FiberDoc extends BaseDoc {
-  user: ObjectId;
+export interface FiberOptions {
   name: string;
   brand: string;
-  type: string;
   color: string;
+}
+
+export interface FiberDoc extends BaseDoc, FiberOptions {
+  user: ObjectId;
+  type: string;
   remainingYardage: number;
 }
 
@@ -40,6 +43,12 @@ export default class InventoryConcept {
   async deleteFiber(_id: ObjectId) {
     await this.fibers.deleteOne({ _id });
     return { msg: "Fiber deleted successfully!" };
+  }
+
+  async deleteOwnersFibers(user: ObjectId) {
+    const inventory = await this.getUserInventory(user);
+    await Promise.all(inventory.map(async (fiber: FiberDoc) => await this.fibers.deleteOne({ _id: fiber._id })));
+    return { msg: "User's fibers deleted successfully!" };
   }
 
   async editFiber(_id: ObjectId, name?: string, brand?: string, type?: string, color?: string, yardage?: number) {

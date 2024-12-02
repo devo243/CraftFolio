@@ -2,8 +2,8 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, CommentOnPost, Inventorying, Posting, ProjectInventorying, ProjectManaging, Sessioning } from "./app";
-import { PostDoc, PostOptions } from "./concepts/posting";
+import { Authing, CommentOnPost, GuideInventorying, Inventorying, Posting, ProjectInventorying, ProjectManaging, Sessioning } from "./app";
+import { PostDoc, PostHelpOptions, PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
 
@@ -87,12 +87,32 @@ class Routes {
   }
 
   @Router.post("/posts")
-  async createPost(session: SessionDoc, content: string, options?: PostOptions) {
+  async createPost(session: SessionDoc, content: string, options?: PostHelpOptions, fiber_types?: string[][], fiber_yardages?: number[][]) {
     const user = Sessioning.getUser(session);
     const created = await Posting.create(user, content, options);
+    const post_id = created.post?._id;
+    if (!post_id) {
+      throw new Error(created.msg);
+    }
+    // adds fibers to the inventory for guides
+    // TODO: currently only takes in yardage and type
+    if (fiber_types && fiber_yardages) {
+      const guide_fibers = await Promise.all(
+        fiber_types.map(
+          async (fiber_type_alternatives: string[], idx: number) => (await Promise.all(
+            fiber_type_alternatives.map((fiber_type_alternative: string, fiber_type_alternative_idx: number) => 
+              GuideInventorying.addNewFiber(post_id, "", "", fiber_type_alternative, "", fiber_yardages[idx][fiber_type_alternative_idx]))
+          )).map((fiber_msg) => fiber_msg.fiber?._id)
+        )
+      );
+      const created_fibers = guide_fibers.map((fiber_ids) => fiber_ids.filter((fiber_id) => fiber_id !== undefined));
+      await Posting.update(post_id, undefined, {fibers: created_fibers});
+    }
+    
     return { msg: created.msg, post: await Responses.post(created.post) };
   }
 
+  // to update anything fiber realted use addNewFiberToPost, editFiberInGuide, deleteFiberInPost
   @Router.patch("/posts/:id")
   async updatePost(session: SessionDoc, id: string, content?: string, options?: PostOptions) {
     const user = Sessioning.getUser(session);
@@ -106,6 +126,8 @@ class Routes {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
+    // delete all the fibers related to the post
+    await GuideInventorying.deleteOwnersFibers(oid);
     return Posting.delete(oid);
   }
 
@@ -126,6 +148,46 @@ class Routes {
       }     
     }
     return usableGuides;
+  }
+
+  @Router.post("/projects/:id/fibers")
+  async addNewFiberToPost(session: SessionDoc, id: string, alternative_to: string, type: string, yardage: number) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    const created = await GuideInventorying.addNewFiber(oid, "", "", type ,"", yardage);
+    if (created.fiber !== null) {
+      const altid = new ObjectId(alternative_to);
+      const existing_fiber = await Posting.getFibersForPost(oid);
+      const new_fibers = existing_fiber?.map((fibers: ObjectId[]) => alternative_to in fibers.map((fiber) => fiber.toString()) ? fibers.concat([altid]) : fibers)
+      return await Posting.update(oid, undefined, {fibers : new_fibers});
+    } else {
+      return created.msg;
+    }
+  }
+
+  @Router.patch("/posts/:id/fibers/:fiber_id")
+  async editFiberInGuide(session: SessionDoc, id: string, fiber_id: string, name?: string, brand?: string, type?: string, color?: string, yardage?: number) {
+    const user = Sessioning.getUser(session); // the user is considered the author of the guide
+    const oid = new ObjectId(id); // the guide is considered the owner of the inventory
+    const fid = new ObjectId(fiber_id);
+    await Posting.assertAuthorIsUser(user, oid);
+    await GuideInventorying.assertOwnerIsUser(fid, oid);
+    return GuideInventorying.editFiber(fid, name, brand, type, color, yardage);
+  }
+
+  @Router.delete("/posts/:id/fibers/:fiber_id")
+  async deleteFiberInPost(session: SessionDoc, id: string, fiber_id: string) {
+    const user = Sessioning.getUser(session); // the user is considered the author of the guide
+    const oid = new ObjectId(id); // the guide is considered the owner of the inventory
+    const fid = new ObjectId(fiber_id);
+    console.log(fid);
+    await Posting.assertAuthorIsUser(user, oid);
+    await GuideInventorying.assertOwnerIsUser(fid, oid);
+    const existing_fibers = await Posting.getFibersForPost(oid);
+    const new_fibers = existing_fibers?.map((existing_fiber_alternatives: ObjectId[]) => existing_fiber_alternatives.filter((existing_fiber: ObjectId) => existing_fiber !== fid));
+    await Posting.update(oid, undefined, {fibers: new_fibers});
+    return await GuideInventorying.deleteFiber(fid);
   }
 
   //Comments on Posts
