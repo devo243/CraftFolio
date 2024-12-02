@@ -5,10 +5,12 @@ import { NotAllowedError, NotFoundError } from "./errors";
 
 // the fibers are an array of arrays of fibers from "guide" inventory. the first fiber in each array is the recommended fiber, the rest are its alternatives
 // the ids are from the inventorying
-export interface PostOptions {
+export interface PostOptions extends PostHelpOptions {
   fibers?: ObjectId[][];
-  tips: string[];
-  mistakes: string[];
+}
+export interface PostHelpOptions {
+  tips?: string[];
+  mistakes?: string[];
 }
 
 export interface PostDoc extends BaseDoc {
@@ -38,6 +40,10 @@ export default class PostingConcept {
   async getPosts() {
     // Returns all posts! You might want to page for better client performance
     return await this.posts.readMany({}, { sort: { _id: -1 } });
+  }
+
+  async getFibersForPost(_id: ObjectId) {
+    return (await this.posts.readOne({_id}))?.options?.fibers;
   }
 
   async getByAuthor(author: ObjectId) {

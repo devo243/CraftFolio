@@ -17,5 +17,6 @@ export const Inventorying = new InventoryConcept("fibers");
 export const CommentOnPost = new CommentingConcept("comments_on_posts");
 export const ProjectManaging = new ProjectManagingConcept("projects");
 export const ProjectInventorying = new InventoryConcept("project_fibers");
+export const GuideInventorying = new InventoryConcept("guide_fibers");
 export const EcoFriendlyRating = new RatingConcept("environment_guides");
 export const BeginnerFriendlyRating = new RatingConcept("beginner_guides");
