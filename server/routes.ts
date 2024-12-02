@@ -248,9 +248,9 @@ class Routes {
 
   // INVENTORY CONCEPT
   @Router.post("/fibers")
-  async createFiber(session: SessionDoc, name: string, yardage: number, brand?: string, type?: string, color?: string, image?: string) {
+  async createFiber(session: SessionDoc, name: string, yardage: number, type: string, brand?: string, color?: string) {
     const user = Sessioning.getUser(session);
-    const created = await Inventorying.addNewFiber(user, name, brand ?? "", type ?? "", color ?? "", yardage);
+    const created = await Inventorying.addNewFiber(user, name, brand ?? "", type, color ?? "", yardage);
     return created;
   }
 
@@ -398,7 +398,7 @@ class Routes {
     return Responses.projects(projects.projects);
   }
 
-  @Router.delete("projects/:id")
+  @Router.delete("/projects/:id")
   async deleteProject(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);

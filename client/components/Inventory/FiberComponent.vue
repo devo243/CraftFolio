@@ -71,13 +71,13 @@ const toggleEditing = async () => {
       </div>
       <div class="vl"></div>
       <div class="block">
-        <span v-if="!editing">{{ fiber.remainingYardage }} ft</span>
+        <span v-if="!editing">{{ fiber.remainingYardage }} yd</span>
         <input v-else type="text" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
       </div>
     </div>
     <button v-if="!editing" v-on:click="toggleEditing"><img src="@/assets/icons/pencil.svg" /></button>
-    <button v-else v-on:click="toggleEditing" class="edit"><img src="@/assets/icons/pencil.svg" /></button>
-    <button v-on:click="deleteFiber"><img src="@/assets/icons/thrash.svg" /></button>
+    <button v-else v-on:click="toggleEditing" class="edit"><img src="@/assets/icons/check.svg" /></button>
+    <button v-on:click="deleteFiber" class="trash"><img src="@/assets/icons/thrash.svg" /></button>
   </div>
 </template>
 
@@ -97,8 +97,8 @@ const toggleEditing = async () => {
   align-items: center;
   padding: 0px 10px 0px 10px;
   height: 60px;
-  background-color: rgb(190, 190, 190);
-  border-radius: 2em;
+  background-color: #E8E8E8;
+  border-radius: 1em;
 }
 
 .block {
@@ -111,9 +111,9 @@ input {
   width: 90%;
   overflow: hidden;
   text-align: center;
-  background-color: rgb(238, 238, 238);
+  background-color: var(--base-bg);
   border: none;
-  border-radius: 2em;
+  border-radius: 1em;
   box-shadow: none;
 }
 
@@ -125,14 +125,23 @@ img {
 button {
   width: 40px;
   height: 40px;
+  background-color: var(--earthy-green);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .edit {
-  background-color: lightgray;
+  background-color: var(--green);
+  border-color: var(--green);
+}
+
+.trash {
+  background-color: var(--red);
 }
 
 .vl {
-  border-left: 1px solid black;
+  border-left: 1px solid white;
   height: 100%;
 }
 </style>

@@ -41,7 +41,7 @@ const addImage = async () => {
   width: 100%;
   height: 65vh;
   /* margin: 0 0 0 1em; */
-  background-color: rgb(226, 226, 226);
+  background-color: var(--base-bg);
   border-radius: 2em;
   display: flex;
   flex-direction: column;
@@ -64,7 +64,7 @@ form {
 }
 
 form {
-  background-color: rgb(177, 175, 175);
+  background-color: var(--grey);
   width: 70%;
   border-radius: 2em;
   margin: 0 0 1em 0;
@@ -77,7 +77,10 @@ input {
 }
 
 button {
-  border-radius: 1em;
+  border-radius: 2em;
+  border-color: var(--dark-blue);
+  background-color: var(--dark-blue);
+  color: var(--light-blue);
 }
 
 .images {
