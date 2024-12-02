@@ -11,6 +11,7 @@ export interface PostOptions extends PostHelpOptions {
 export interface PostHelpOptions {
   tips?: string[];
   mistakes?: string[];
+  links?: string[];
 }
 
 export interface PostDoc extends BaseDoc {
@@ -43,7 +44,7 @@ export default class PostingConcept {
   }
 
   async getFibersForPost(_id: ObjectId) {
-    return (await this.posts.readOne({_id}))?.options?.fibers;
+    return (await this.posts.readOne({ _id }))?.options?.fibers;
   }
 
   async getByAuthor(author: ObjectId) {
@@ -64,6 +65,10 @@ export default class PostingConcept {
 
   async getRandomGuide() {
     return await this.posts.aggregateRandom(1);
+  }
+
+  async getById(_id: ObjectId) {
+    return await this.posts.readOne({ _id });
   }
 
   async assertAuthorIsUser(_id: ObjectId, user: ObjectId) {

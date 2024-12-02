@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, CommentOnPost, GuideInventorying, Inventorying, Posting, ProjectInventorying, ProjectManaging, Sessioning } from "./app";
+import { Authing, BeginnerFriendlyRating, CommentOnPost, EcoFriendlyRating, GuideInventorying, Inventorying, Posting, ProjectInventorying, ProjectManaging, Sessioning } from "./app";
 import { PostDoc, PostHelpOptions, PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -11,6 +11,9 @@ import { z } from "zod";
 import { CommentOptions } from "./concepts/commenting";
 import { NotAllowedError } from "./concepts/errors";
 import { FiberDoc } from "./concepts/inventorying";
+import { RatingDoc } from "./concepts/rating";
+
+const ECO_FRIENDLY_FIBERS = ["organic hemp", "organic cotton", "organic linen", "lyocell", "econyl", "pinatex", "qmonos", "bamboo"];
 
 /**
  * Web server routes for the app. Implements synchronizations between concepts.
@@ -86,6 +89,20 @@ class Routes {
     return Responses.posts(posts);
   }
 
+  private calculateEcoRating(fiber_types: string[][]) {
+    const total_fibers = fiber_types.length;
+    const eco_friendly_count = fiber_types.filter((fiber_row) => ECO_FRIENDLY_FIBERS.includes(fiber_row[2]?.toLowerCase())).length;
+    return total_fibers > 0 ? (eco_friendly_count / total_fibers) * 5 : 0;
+  }
+
+  private calculateBeginnerRating(options?: PostHelpOptions) {
+    const tips_count = options?.tips?.length || 0;
+    const mistakes_count = options?.mistakes?.length || 0;
+    const max_tips_mistakes = 3;
+
+    return Math.min(((tips_count + mistakes_count) / max_tips_mistakes) * 5, 5);
+  }
+
   @Router.post("/posts")
   async createPost(session: SessionDoc, content: string, options?: PostHelpOptions, fiber_types?: string[][], fiber_yardages?: number[][]) {
     const user = Sessioning.getUser(session);
@@ -98,26 +115,40 @@ class Routes {
     // TODO: currently only takes in yardage and type
     if (fiber_types && fiber_yardages) {
       const guide_fibers = await Promise.all(
-        fiber_types.map(
-          async (fiber_type_alternatives: string[], idx: number) => (await Promise.all(
-            fiber_type_alternatives.map((fiber_type_alternative: string, fiber_type_alternative_idx: number) => 
-              GuideInventorying.addNewFiber(post_id, "", "", fiber_type_alternative, "", fiber_yardages[idx][fiber_type_alternative_idx]))
-          )).map((fiber_msg) => fiber_msg.fiber?._id)
-        )
+        fiber_types.map(async (fiber_type_alternatives: string[], idx: number) =>
+          (
+            await Promise.all(
+              fiber_type_alternatives.map((fiber_type_alternative: string, fiber_type_alternative_idx: number) =>
+                GuideInventorying.addNewFiber(post_id, "", "", fiber_type_alternative, "", fiber_yardages[idx][fiber_type_alternative_idx]),
+              ),
+            )
+          ).map((fiber_msg) => fiber_msg.fiber?._id),
+        ),
       );
       const created_fibers = guide_fibers.map((fiber_ids) => fiber_ids.filter((fiber_id) => fiber_id !== undefined));
-      await Posting.update(post_id, undefined, {fibers: created_fibers});
+      await Posting.update(post_id, undefined, { fibers: created_fibers });
     }
-    
+
+    const eco_rating = this.calculateEcoRating(fiber_types || []);
+    const beginner_rating = this.calculateBeginnerRating(options);
+    await EcoFriendlyRating.create(post_id, eco_rating);
+    await BeginnerFriendlyRating.create(post_id, beginner_rating);
+
     return { msg: created.msg, post: await Responses.post(created.post) };
   }
 
   // to update anything fiber realted use addNewFiberToPost, editFiberInGuide, deleteFiberInPost
   @Router.patch("/posts/:id")
-  async updatePost(session: SessionDoc, id: string, content?: string, options?: PostOptions) {
+  async updatePost(session: SessionDoc, id: string, content?: string, options?: PostOptions, fiber_types?: string[][]) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
+
+    const eco_rating = this.calculateEcoRating(fiber_types || []);
+    const beginner_rating = this.calculateBeginnerRating(options);
+    await EcoFriendlyRating.update(oid, eco_rating);
+    await BeginnerFriendlyRating.update(oid, beginner_rating);
+
     return await Posting.update(oid, content, options);
   }
 
@@ -128,14 +159,30 @@ class Routes {
     await Posting.assertAuthorIsUser(oid, user);
     // delete all the fibers related to the post
     await GuideInventorying.deleteOwnersFibers(oid);
+    await EcoFriendlyRating.delete(oid);
+    await BeginnerFriendlyRating.delete(oid);
     return Posting.delete(oid);
   }
 
-  async	getGuidesWith(availbaleFibers: ObjectId[]){
-    const allGuides: PostDoc[]= await Posting.getPosts();
+  @Router.get("/posts/top")
+  @Router.validate(z.object({ minScore: z.number().optional(), ratingType: z.enum(["eco", "beginner"]) }))
+  async getTopPosts(ratingType: "eco" | "beginner", minScore: number = 0) {
+    const Rating = ratingType === "eco" ? EcoFriendlyRating : BeginnerFriendlyRating;
+    const ratings = (await (await Rating.getObjectsWithMinRating(minScore)).toArray()) as RatingDoc[];
+    const posts = await Promise.all(
+      ratings.map(async (rating: RatingDoc) => {
+        const post = await Posting.getById(rating.object);
+        return post ? { ...post, rating: rating.rating } : null;
+      }),
+    );
+    return posts;
+  }
+
+  async getGuidesWith(availbaleFibers: ObjectId[]) {
+    const allGuides: PostDoc[] = await Posting.getPosts();
     const usableGuides: PostDoc[] = [];
     // this is not foolproof: especially if a type of fabric is mentionaed across multiple arrays
-		for (const guide of allGuides){
+    for (const guide of allGuides) {
       let isUsableGuide = true;
       const guideFibers = guide.options?.fibers ?? [];
       for (const guideFiberOptions of guideFibers) {
@@ -144,8 +191,8 @@ class Routes {
         }
       }
       if (isUsableGuide) {
-        usableGuides.concat([guide])
-      }     
+        usableGuides.concat([guide]);
+      }
     }
     return usableGuides;
   }
@@ -155,12 +202,12 @@ class Routes {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
-    const created = await GuideInventorying.addNewFiber(oid, "", "", type ,"", yardage);
+    const created = await GuideInventorying.addNewFiber(oid, "", "", type, "", yardage);
     if (created.fiber !== null) {
       const altid = new ObjectId(alternative_to);
       const existing_fiber = await Posting.getFibersForPost(oid);
-      const new_fibers = existing_fiber?.map((fibers: ObjectId[]) => alternative_to in fibers.map((fiber) => fiber.toString()) ? fibers.concat([altid]) : fibers)
-      return await Posting.update(oid, undefined, {fibers : new_fibers});
+      const new_fibers = existing_fiber?.map((fibers: ObjectId[]) => (alternative_to in fibers.map((fiber) => fiber.toString()) ? fibers.concat([altid]) : fibers));
+      return await Posting.update(oid, undefined, { fibers: new_fibers });
     } else {
       return created.msg;
     }
@@ -186,7 +233,7 @@ class Routes {
     await GuideInventorying.assertOwnerIsUser(fid, oid);
     const existing_fibers = await Posting.getFibersForPost(oid);
     const new_fibers = existing_fibers?.map((existing_fiber_alternatives: ObjectId[]) => existing_fiber_alternatives.filter((existing_fiber: ObjectId) => existing_fiber !== fid));
-    await Posting.update(oid, undefined, {fibers: new_fibers});
+    await Posting.update(oid, undefined, { fibers: new_fibers });
     return await GuideInventorying.deleteFiber(fid);
   }
 
@@ -223,28 +270,6 @@ class Routes {
     const created = await CommentOnPost.create(itemID, user, content, options);
     return { msg: created.msg, comment: await Responses.comment(created.comment) };
   }
-
-  // POST CONCEPT
-  // sync postGuide(user: User, content: String, fibers: set (set Fiber), tips: set String, mistakes: set String, out guide: Guide, out rating: Rating)
-  // Posting.postGuide(content, fibers, tips, mistakes, user)
-  // Rating.giveRating(guide, someScore)
-
-  // sync editGuide(guide: Guide, ?content, ?fibers, ?tips, ?mistakes)
-  // Posting.editGuide(guide, content, fibers, tips, mistakes)
-  // Rating.updateRating(guide, newScore)
-
-  // sync importGuide(user: User, guide: Guide, out project: Project)
-  // title = title of the guide
-  // ProjectManaging.createProject(title, “To Do”)
-  // guideLink = link of the guide
-  // ProjectManaging.editLinks(project, guideLink)
-  // for fiber in guide.fibers:
-  //   Inventorying.editFiberCount(fiber, amount)
-
-  // sync getTopGuides(minScore: float, out guides: set Guide)
-  // Rating.getObjectsWithMinRating(minScore, ratings)
-  // for rating in ratings:
-  //   guides |= rating.object
 
   // INVENTORY CONCEPT
   @Router.post("/fibers")
@@ -427,7 +452,7 @@ class Routes {
     }
     const fibers: ObjectId[] = selected_fibers.split(",").map((fiber_id: string) => new ObjectId(fiber_id));
     // get amounts from the guide
-    const amounts: number[] = selected_amounts.split(",").map((amount: string) => parseFloat(amount));;
+    const amounts: number[] = selected_amounts.split(",").map((amount: string) => parseFloat(amount));
     await Promise.all(fibers.map((fiber: ObjectId, idx: number) => Inventorying.editFiber(fiber, undefined, undefined, undefined, undefined, amounts[idx])));
     return Responses.project(project.project);
   }

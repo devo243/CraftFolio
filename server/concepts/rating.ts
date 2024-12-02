@@ -31,8 +31,7 @@ export default class RatingConcept {
   }
 
   async getObjectsWithMinRating(score: number) {
-    return await this.ratings.aggregateMatch([{$match: { rating: { $gte:  score} } },
-      { $sort: { rating: -1 } }]);
+    return await this.ratings.aggregateMatch([{ $match: { rating: { $gte: score } } }, { $sort: { rating: -1 } }]);
   }
 
   async update(_id: ObjectId, rating: number) {
