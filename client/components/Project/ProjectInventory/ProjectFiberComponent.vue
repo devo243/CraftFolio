@@ -11,6 +11,18 @@ const emit = defineEmits(["refreshFibers"]);
 const fiber = ref(props.fiber);
 const editing = ref(false);
 
+const availableTypes = [
+  "cotton",
+  "linen",
+  "acrylic",
+  "polyester",
+  "flannel",
+  "shiffon",
+  "interfacing",
+  "zipper",
+  "button",
+];
+
 const deleteFiber = async () => {
   try {
     await fetchy(`/api/projects/${props.id}/fibers/${props.fiber._id}`, "DELETE");
@@ -63,7 +75,11 @@ const toggleEditing = async () => {
       <div class="vl"></div>
       <div class="block">
         <span v-if="!editing">{{ fiber.type }}</span>
-        <input v-else type="text" id="type" v-model="fiber.type" :placeholder="fiber.type" />
+        <select v-else v-model="fiber.type" required>
+          <option disabled value="">Please select one</option>
+          <option v-for="(type, index) of availableTypes" :key="index">{{ type }}</option>
+          <option value="custom">Custom...</option>
+        </select>
       </div>
       <div class="vl"></div>
       <div class="block">
@@ -108,7 +124,8 @@ const toggleEditing = async () => {
   text-align: center;
 }
 
-input {
+input,
+select {
   width: 90%;
   overflow: hidden;
   text-align: center;
