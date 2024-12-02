@@ -27,7 +27,7 @@ onBeforeMount(async () => {
       <div class="title">
         <img src="@/assets/images/logo.svg" />
         <RouterLink :to="{ name: 'Home' }">
-          <h1>Social Media App</h1>
+          <h1>Carftfolio</h1>
         </RouterLink>
       </div>
       <ul>
@@ -63,7 +63,7 @@ onBeforeMount(async () => {
 
 nav {
   padding: 1em 2em;
-  background-color: lightgray;
+  background-color: var(--dark-green);
   display: flex;
   align-items: center;
 }
@@ -85,7 +85,7 @@ img {
 
 a {
   font-size: large;
-  color: black;
+  color: #FCF2CF;
   text-decoration: none;
 }
 

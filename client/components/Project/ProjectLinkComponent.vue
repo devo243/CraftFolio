@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { fetchy } from "@/utils/fetchy";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 const props = defineProps(["links", "id"]);
+
+const guideLinks = computed(() => props.links.filter((link: string) => link.startsWith('https://craft-folio.vercel.app/')));
+const otherLinks = computed(() => props.links.filter((link: string) => !link.startsWith('https://craft-folio.vercel.app/'))); 
 
 const newLink = ref("");
 const emit = defineEmits(["refreshProject"]);
@@ -25,7 +28,11 @@ const addLink = async () => {
 <template>
   <div class="container">
     <div class="links" v-if="props.links.length !== 0">
-      <a class="link" v-for="(link, index) in props.links" :key="index" :href="link">- {{ link }}</a>
+      <h2>Guide Links</h2>
+      <a class="link" v-for="(link, index) in guideLinks" :key="index" :href="link">- {{ link }}</a>
+
+      <h2>Other Links</h2>
+      <a class="link" v-for="(link, index) in otherLinks" :key="index" :href="link">- {{ link }}</a>
     </div>
     <p class="placeholder" v-else>Add some links...</p>
     <form @submit.prevent="addLink()">
@@ -41,7 +48,7 @@ const addLink = async () => {
   width: 100%;
   height: 65vh;
   /* margin: 0 0 0 1em; */
-  background-color: rgb(226, 226, 226);
+  background-color: var(--base-bg);
   border-radius: 2em;
   display: flex;
   flex-direction: column;
@@ -65,7 +72,7 @@ form {
 }
 
 form {
-  background-color: rgb(177, 175, 175);
+  background-color: var(--grey);
   width: 70%;
   border-radius: 2em;
   margin: 0 0 1em 0;
@@ -78,7 +85,10 @@ input {
 }
 
 button {
-  border-radius: 1em;
+  border-radius: 2em;
+  border-color: var(--dark-blue);
+  background-color: var(--dark-blue);
+  color: var(--light-blue);
 }
 
 .links {
@@ -90,5 +100,9 @@ button {
 
 .link {
   padding: 0;
+}
+
+h2 {
+  color: var(--dark-blue);
 }
 </style>

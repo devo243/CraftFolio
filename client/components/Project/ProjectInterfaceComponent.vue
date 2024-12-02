@@ -88,18 +88,23 @@ input {
 }
 
 input:checked + .nav {
-  background-color: rgb(160, 160, 160);
+  color: var(--light-blue);
+  background-color: var(--dark-blue);
+  font-weight: 600;
 }
 
 .nav {
-  font-size: 1.5em;
-  background-color: var(--base-bg);
+  font-size: 1.25em;
+  background-color: var(--base-bg);;
+  color: var(--dark-blue);
   padding: 0.25em 1.5em 0.25em 1.5em;
-  border-radius: 2em;
+  border-radius: 1em;
+  cursor: pointer;
 }
 
 .back {
   width: 2em;
+  cursor: pointer;
   /* margin: 0em 0em 0em 1em; */
 }
 
@@ -107,10 +112,16 @@ input:checked + .nav {
   display: flex;
   flex-direction: column;
   gap: 1em;
-  align-items: center;
-  margin: auto;
+  /* align-items: center; */
+  /* margin: auto; */
+  margin: 5%;
   max-width: 90em;
   max-height: 90%;
   padding-top: 1em;
+}
+
+.title {
+  margin: 8px 2px;
+  font-size: 2.5em;
 }
 </style>

@@ -46,7 +46,7 @@ const toggleEdit = () => {
   justify-content: space-between;
   align-items: flex-start;
   /* margin: 0 0 0 1em; */
-  background-color: rgb(226, 226, 226);
+  background-color: var(--base-bg);
   border-radius: 2em;
 }
 
@@ -86,7 +86,7 @@ button {
   border: none;
 }
 .edit {
-  background-color: #0078e7;
+  background-color: var(--dark-blue);
 }
 
 .save {

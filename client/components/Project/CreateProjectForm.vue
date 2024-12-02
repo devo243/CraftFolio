@@ -33,7 +33,13 @@ const cancelProject = async () => {
       </div>
       <div class="text">
         <label for="content">Status</label>
-        <input id="content" v-model="status" placeholder="Type Status" required />
+        <select v-model="status" required class="status">
+          <option disabled value="">Please select one</option>
+          <option>To Do</option>
+          <option>In Progress</option>
+          <option>Complete</option>
+          <option>Abandoned</option>
+        </select>
       </div>
     </div>
     <div class="buttons">
@@ -66,6 +72,10 @@ form {
   padding: 1em;
   background-color: var(--base-bg);
   border-radius: 1em;
+}
+
+.status {
+  width: fit-content;
 }
 
 .buttons {
