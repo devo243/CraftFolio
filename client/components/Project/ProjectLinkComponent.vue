@@ -23,22 +23,39 @@ const addLink = async () => {
   emit("refreshProject");
   console.log(newLink.value);
 };
+
+const deleteLink = async (link: string) => {
+  try {
+    await fetchy(`/api/projects/${props.id}/link`, "PATCH", {
+      body: { link: link },
+    });
+  } catch (_) {
+    console.log(_);
+    return;
+  }
+
+  emit("refreshProject");
+}
 </script>
 
 <template>
   <div class="container">
     <div class="links" v-if="props.links.length !== 0">
-      <h2>Guide Links</h2>
-      <a class="link" v-for="(link, index) in guideLinks" :key="index" :href="link">- {{ link }}</a>
-
+      <div v-if="guideLinks.length !== 0">
+        <h2>Guide Links</h2>
+        <a class="link" v-for="(link, index) in guideLinks" :key="index" :href="link">- {{ link }}</a>
+      </div>
       <h2>Other Links</h2>
-      <a class="link" v-for="(link, index) in otherLinks" :key="index" :href="link">- {{ link }}</a>
+      <div class="otherLinkContainer" v-for="(link, index) in otherLinks" :key="index">
+        <a class="link" :href="link">- {{ link }}</a>
+        <button v-on:click="deleteLink(link)" class="trash"><img src="@/assets/icons/thrash.svg" /></button>
+      </div>
     </div>
     <p class="placeholder" v-else>Add some links...</p>
     <form @submit.prevent="addLink()">
       <!-- <label for="link">Add a new link:</label> -->
       <input id="link" v-model="newLink" required />
-      <button type="submit">+</button>
+      <button class="submit" type="submit">+</button>
     </form>
   </div>
 </template>
@@ -84,7 +101,7 @@ input {
   padding-left: 0.5em;
 }
 
-button {
+.submit {
   border-radius: 2em;
   border-color: var(--dark-blue);
   background-color: var(--dark-blue);
@@ -104,5 +121,26 @@ button {
 
 h2 {
   color: var(--dark-blue);
+}
+
+.trash {
+  width: 40px;
+  height: 40px;
+  background-color: var(--red);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+img {
+  width: 25px;
+  height: 100%;
+}
+
+.otherLinkContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 1em;
+  align-items: center;
 }
 </style>

@@ -367,7 +367,7 @@ class Routes {
     return await ProjectManaging.addLink(user, oid, link);
   }
 
-  @Router.delete("/projects/:id/link")
+  @Router.patch("/projects/:id/link")
   async deleteLink(session: SessionDoc, id: string, link: string) {
     if (!URL.canParse(link)) {
       throw new NotAllowedError(`expected VALID link but got ${link}`);
