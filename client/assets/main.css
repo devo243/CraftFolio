@@ -53,6 +53,10 @@ button {
   cursor: pointer;
 }
 
+.button-custom {
+  background-color: var(--earthy-green);
+}
+
 .column {
   display: flex;
   flex-direction: column;

@@ -55,7 +55,7 @@ onBeforeMount(async () => {
     <p v-else>No Projects</p>
   </div>
   <section class="create">
-    <button v-on:click="createProject">Create Project</button>
+    <button v-on:click="createProject" class="pure-button custom-button">Create Project</button>
   </section>
   <!-- <div>{{ currentProject }}</div> -->
   <!-- <div>
@@ -131,5 +131,10 @@ article {
 
 .project{
   flex: 1;
+}
+
+.custom-button {
+  box-shadow: 0px 4px 0px lightgrey;  
+  margin: 1em 0 5% 0;
 }
 </style>

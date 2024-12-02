@@ -95,7 +95,7 @@ input:checked + .nav {
 
 .nav {
   font-size: 1.25em;
-  background-color: var(--grey);
+  background-color: var(--base-bg);;
   color: var(--dark-blue);
   padding: 0.25em 1.5em 0.25em 1.5em;
   border-radius: 1em;
@@ -112,8 +112,9 @@ input:checked + .nav {
   display: flex;
   flex-direction: column;
   gap: 1em;
-  align-items: center;
-  margin: auto;
+  /* align-items: center; */
+  /* margin: auto; */
+  margin: 5%;
   max-width: 90em;
   max-height: 90%;
   padding-top: 1em;

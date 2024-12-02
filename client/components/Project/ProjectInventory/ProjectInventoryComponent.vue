@@ -41,7 +41,7 @@ const getInventory = async () => {
 
 <style scoped>
 section {
-  width: 80%;
+  width: 100%;
   max-height: 60%;
   overflow-y: auto;
   overflow-x: hidden;
