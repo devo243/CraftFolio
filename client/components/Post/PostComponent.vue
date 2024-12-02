@@ -2,11 +2,13 @@
 import { useUserStore } from "@/stores/user";
 import { formatDate } from "@/utils/formatDate";
 import { storeToRefs } from "pinia";
+import { useRouter } from "vue-router";
 import { fetchy } from "../../utils/fetchy";
 
 const props = defineProps(["post"]);
 const emit = defineEmits(["refreshPosts"]);
 const { currentUsername } = storeToRefs(useUserStore());
+const router = useRouter();
 
 const deletePost = async () => {
   try {
@@ -15,6 +17,7 @@ const deletePost = async () => {
     return;
   }
   emit("refreshPosts");
+  router.push("/myposts");
 };
 </script>
 
