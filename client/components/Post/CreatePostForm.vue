@@ -4,6 +4,9 @@ import { fetchy } from "../../utils/fetchy";
 
 const title = ref("");
 const content = ref("");
+const fibers = ref(undefined);
+const tips = ref(undefined);
+const mistakes = ref(undefined);
 const emit = defineEmits(["refreshPosts"]);
 
 const createPost = async (title:string, content: string) => {
