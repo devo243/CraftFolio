@@ -150,7 +150,7 @@ class Routes {
     return usableGuides;
   }
 
-  @Router.post("/projects/:id/fibers")
+  @Router.post("/posts/:id/fibers")
   async addNewFiberToPost(session: SessionDoc, id: string, alternative_to: string, type: string, yardage: number) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
