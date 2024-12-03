@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CreatePostFibers from "@/components/Post/CreatePostFibers.vue";
 import CreatePostTips from "@/components/Post/CreatePostTips.vue";
 import CreatePostTitle from "@/components/Post/CreatePostTitle.vue";
 import { fetchy } from "@/utils/fetchy";
@@ -21,10 +22,16 @@ const handleTitleMDChange = async (titleUploaded:string, contentUploaded:string)
   currentPage.value=2;
 };
 
+const handleFiberChange = async (types:string[][], yards:number[][])=>{
+  fiberTypes.value = types;
+  fiberYards.value = yards;
+  currentPage.value=3;
+};
+
 const handleTipsMistakesChange = async(tipsUploaded:string[], mistakesUploaded:string[])=>{
   tips.value = tipsUploaded;
   mistakes.value = mistakesUploaded;
-  currentPage.value=3;
+  currentPage.value=4;
 };
 const handleBack = async()=>{
   currentPage.value-=1;
@@ -60,6 +67,7 @@ const emptyForm = () => {
 <template>
   <form @submit.prevent="createPost(title, content,tips, mistakes)">
     <CreatePostTitle v-if="currentPage===1" :title="title" :content="content" @create-title-m-d="handleTitleMDChange"/>
+    <CreatePostFibers v-else-if="currentPage==2" :fiber-types="fiberTypes" :fiber-yards="fiberYards" @create-fibers="handleFiberChange" @go-back="handleBack"/>
     <CreatePostTips v-else :tips="tips" :mistakes="mistakes" @create-tips-mistakes="handleTipsMistakesChange" @go-back="handleBack" @finish="handleFinish"/>
   </form>
 
