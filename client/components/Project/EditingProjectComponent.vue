@@ -27,7 +27,7 @@ const saveProject = () => {
 
 <template>
   <div class="container">
-    <div class="project">
+    <div class="edit-project">
 
       <div class="header">
         <input class="title" type="text" id="title" v-model="project.title" :placeholder="project.title" />
@@ -58,7 +58,7 @@ const saveProject = () => {
   color: var(--dark-green);
 }
 
-.project {
+.edit-project {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -67,6 +67,7 @@ const saveProject = () => {
   border-radius: 1em;
   cursor: pointer;
   box-shadow: 0px 4px 0px lightgrey;  
+  gap: 0.5em;
 }
 
 .status {
@@ -97,12 +98,17 @@ p {
 .container {
   display: flex;
   flex-direction: row;
+  gap: 1em;
+  align-items: center;
 }
 
 .edit {
+  height: 100%;
+  /* border: none; */
+  border-radius: 4px;
   background-color: var(--earthy-green);
   border: none;
-  border-radius: 4px;
   cursor: pointer;
+  padding: 12px;
 }
 </style>

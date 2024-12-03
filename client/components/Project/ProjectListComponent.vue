@@ -8,7 +8,6 @@ import ProjectComponent from "./ProjectComponent.vue";
 const projects = ref(ref<Array<Record<string, string>>>([]));
 const router = useRouter();
 
-const editing = ref(false);
 const editingProject = ref("");
 
 const createProject = async () => {
@@ -52,18 +51,11 @@ const editProject = async (title: string, status: string, project_id: string) =>
 }
 
 const toggleEditing = async (title: string, status: string, project_id: string) => {
-  if (!editing.value) {
-    editing.value = true;
+  if (!editingProject.value) {
     editingProject.value = project_id;
   } else {
     await editProject(title, status, editingProject.value);
-    editing.value = false;
-    if (project_id === editingProject.value) {
-      editingProject.value = "";
-    } else {
-      editingProject.value = project_id;
-    }
-    
+    editingProject.value = "";
   }
 };
 
@@ -81,7 +73,7 @@ onBeforeMount(async () => {
       <article v-for="project in projects" :key="project._id">
         <ProjectComponent :project="project" @click="openProject(project._id)" class="project" v-if="project._id!==editingProject"/>
         <EditingProjectComponent :project="project" class="project" v-else @refresh-project="toggleEditing"/>
-        <button v-if="project._id!==editingProject" v-on:click="toggleEditing('', '', project._id)" class="edit edit-button"><img src="@/assets/icons/pencil.svg" /></button>
+        <button v-if="!editingProject" v-on:click="toggleEditing('', '', project._id)" class="edit edit-button"><img src="@/assets/icons/pencil.svg" /></button>
         <button v-on:click="deleteProject(project._id)" class="trash edit-button"><img src="@/assets/icons/thrash.svg" /></button>
       </article>
     </section>
@@ -90,15 +82,10 @@ onBeforeMount(async () => {
   <section class="create">
     <button v-on:click="createProject" class="pure-button custom-button">Create Project</button>
   </section>
-  <!-- <div>{{ currentProject }}</div> -->
-  <!-- <div>
-    <FiberComponent :fiber="fiber" />
-  </div> -->
 </template>
 
 <style scoped>
 section {
-  /* width: 80%; */
   max-width: 70em;
   max-height: 90%;
   margin: 0 auto;
@@ -134,7 +121,6 @@ button {
   height: fit-content;
   font-size: 1.5em;
   padding: 0.5em;
-  /* border: none; */
   border-radius: 1em;
 }
 
@@ -177,6 +163,5 @@ article {
 
 .edit {
   background-color: var(--earthy-green);
-  border-color: var(--earthy-green);
 }
 </style>
