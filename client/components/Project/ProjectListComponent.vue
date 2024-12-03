@@ -2,10 +2,13 @@
 import { fetchy } from "@/utils/fetchy";
 import { onBeforeMount, ref } from "vue";
 import { useRouter } from "vue-router";
+import EditingProjectComponent from "./EditingProjectComponent.vue";
 import ProjectComponent from "./ProjectComponent.vue";
 
 const projects = ref(ref<Array<Record<string, string>>>([]));
 const router = useRouter();
+
+const editingProject = ref("");
 
 const createProject = async () => {
   await router.push("/create/project");
@@ -36,6 +39,26 @@ const deleteProject = async (id: string) => {
   getProjects();
 };
 
+const editProject = async (title: string, status: string, project_id: string) => {
+  try {
+    await fetchy(`/api/projects/${project_id}`, "PATCH", {body : {
+      title, status
+    }});
+  } catch {
+    return;
+  }
+  getProjects();
+}
+
+const toggleEditing = async (title: string, status: string, project_id: string) => {
+  if (!editingProject.value) {
+    editingProject.value = project_id;
+  } else {
+    await editProject(title, status, editingProject.value);
+    editingProject.value = "";
+  }
+};
+
 onBeforeMount(async () => {
   await getProjects();
 });
@@ -48,8 +71,10 @@ onBeforeMount(async () => {
     </section>
     <section class="projects" v-if="projects.length !== 0">
       <article v-for="project in projects" :key="project._id">
-        <ProjectComponent :project="project" @click="openProject(project._id)" class="project"/>
-        <button v-on:click="deleteProject(project._id)" class="trash"><img src="@/assets/icons/thrash.svg" /></button>
+        <ProjectComponent :project="project" @click="openProject(project._id)" class="project" v-if="project._id!==editingProject"/>
+        <EditingProjectComponent :project="project" class="project" v-else @refresh-project="toggleEditing"/>
+        <button v-if="!editingProject" v-on:click="toggleEditing('', '', project._id)" class="edit edit-button"><img src="@/assets/icons/pencil.svg" /></button>
+        <button v-on:click="deleteProject(project._id)" class="trash edit-button"><img src="@/assets/icons/thrash.svg" /></button>
       </article>
     </section>
     <p v-else>No Projects</p>
@@ -57,15 +82,10 @@ onBeforeMount(async () => {
   <section class="create">
     <button v-on:click="createProject" class="pure-button custom-button">Create Project</button>
   </section>
-  <!-- <div>{{ currentProject }}</div> -->
-  <!-- <div>
-    <FiberComponent :fiber="fiber" />
-  </div> -->
 </template>
 
 <style scoped>
 section {
-  /* width: 80%; */
   max-width: 70em;
   max-height: 90%;
   margin: 0 auto;
@@ -101,7 +121,6 @@ button {
   height: fit-content;
   font-size: 1.5em;
   padding: 0.5em;
-  /* border: none; */
   border-radius: 1em;
 }
 
@@ -114,11 +133,15 @@ img {
   width: 36px;
   height: 100%;
 }
-.trash {
+
+.edit-button {
   height: 100%;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.trash {
   background-color: var(--red);
 }
 
@@ -136,5 +159,9 @@ article {
 .custom-button {
   box-shadow: 0px 4px 0px lightgrey;  
   margin: 1em 0 5% 0;
+}
+
+.edit {
+  background-color: var(--earthy-green);
 }
 </style>

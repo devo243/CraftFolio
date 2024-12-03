@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, CommentOnPost, GuideInventorying, Inventorying, Posting, ProjectInventorying, ProjectManaging, Sessioning } from "./app";
+import { Authing, BeginnerFriendlyRating, CommentOnPost, EcoFriendlyRating, GuideInventorying, Inventorying, Posting, ProjectInventorying, ProjectManaging, Sessioning } from "./app";
 import { PostDoc, PostHelpOptions, PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -11,6 +11,7 @@ import { z } from "zod";
 import { CommentOptions } from "./concepts/commenting";
 import { NotAllowedError } from "./concepts/errors";
 import { FiberDoc } from "./concepts/inventorying";
+import RatingConcept, { RatingDoc } from "./concepts/rating";
 
 /**
  * Web server routes for the app. Implements synchronizations between concepts.
@@ -112,15 +113,26 @@ class Routes {
       await Posting.update(post_id, undefined, undefined, { fibers: created_fibers });
     }
 
+    const eco_rating = RatingConcept.calculateEcoRating(fiber_types || []);
+    const beginner_rating = RatingConcept.calculateBeginnerRating(options);
+    await EcoFriendlyRating.create(post_id, eco_rating);
+    await BeginnerFriendlyRating.create(post_id, beginner_rating);
+
     return { msg: created.msg, post: await Responses.post(created.post) };
   }
 
   // to update anything fiber realted use addNewFiberToPost, editFiberInGuide, deleteFiberInPost
   @Router.patch("/posts/:id")
-  async updatePost(session: SessionDoc, id: string, title?: string, content?: string, options?: PostOptions) {
+  async updatePost(session: SessionDoc, id: string, title: string, content?: string, options?: PostOptions, fiber_types?: string[][]) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
+
+    const eco_rating = RatingConcept.calculateEcoRating(fiber_types || []);
+    const beginner_rating = RatingConcept.calculateBeginnerRating(options);
+    await EcoFriendlyRating.update(oid, eco_rating);
+    await BeginnerFriendlyRating.update(oid, beginner_rating);
+
     return await Posting.update(oid, title, content, options);
   }
 
@@ -131,7 +143,88 @@ class Routes {
     await Posting.assertAuthorIsUser(oid, user);
     // delete all the fibers related to the post
     await GuideInventorying.deleteOwnersFibers(oid);
+    await EcoFriendlyRating.delete(oid);
+    await BeginnerFriendlyRating.delete(oid);
     return Posting.delete(oid);
+  }
+
+  @Router.get("/posts/top")
+  @Router.validate(z.object({ minScore: z.number().optional(), ratingType: z.enum(["eco", "beginner"]) }))
+  async getTopPosts(ratingType: "eco" | "beginner", minScore: number = 0) {
+    const Rating = ratingType === "eco" ? EcoFriendlyRating : BeginnerFriendlyRating;
+    const ratings = (await (await Rating.getObjectsWithMinRating(minScore)).toArray()) as RatingDoc[];
+    const posts = await Promise.all(
+      ratings.map(async (rating: RatingDoc) => {
+        const post = await Posting.getById(rating.object);
+        return post ? { ...post, rating: rating.rating } : null;
+      }),
+    );
+    return posts;
+  }
+
+  // Tips and Mistakes on Posts
+  @Router.get("/posts/:id/tips")
+  async getTips(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.getTips(oid);
+  }
+
+  @Router.get("/posts/:id/mistakes")
+  async getMistakes(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.getMistakes(oid);
+  }
+
+  @Router.post("/posts/:id/tips")
+  async addTip(session: SessionDoc, id: string, newTip: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.addTip(oid, newTip);
+  }
+
+  @Router.post("/posts/:id/mistakes")
+  async addMistake(session: SessionDoc, id: string, newMistake: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.addMistake(oid, newMistake);
+  }
+
+  @Router.delete("/posts/:id/tips")
+  async deleteTip(session: SessionDoc, id: string, tipToDelete: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.deleteTip(oid, tipToDelete);
+  }
+
+  @Router.delete("/posts/:id/mistakes")
+  async deleteMistake(session: SessionDoc, id: string, mistakeToDelete: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.deleteMistake(oid, mistakeToDelete);
+  }
+
+  @Router.patch("/posts/:id/tips")
+  async editTip(session: SessionDoc, id: string, oldTip: string, newTip: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.editTip(oid, oldTip, newTip);
+  }
+
+  @Router.patch("/posts/:id/mistakes")
+  async editMistake(session: SessionDoc, id: string, oldMistake: string, newMistake: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.editMistake(oid, oldMistake, newMistake);
   }
 
   async getGuidesWith(availableFibers: ObjectId[]) {
@@ -227,28 +320,6 @@ class Routes {
     return { msg: created.msg, comment: await Responses.comment(created.comment) };
   }
 
-  // POST CONCEPT
-  // sync postGuide(user: User, content: String, fibers: set (set Fiber), tips: set String, mistakes: set String, out guide: Guide, out rating: Rating)
-  // Posting.postGuide(content, fibers, tips, mistakes, user)
-  // Rating.giveRating(guide, someScore)
-
-  // sync editGuide(guide: Guide, ?content, ?fibers, ?tips, ?mistakes)
-  // Posting.editGuide(guide, content, fibers, tips, mistakes)
-  // Rating.updateRating(guide, newScore)
-
-  // sync importGuide(user: User, guide: Guide, out project: Project)
-  // title = title of the guide
-  // ProjectManaging.createProject(title, “To Do”)
-  // guideLink = link of the guide
-  // ProjectManaging.editLinks(project, guideLink)
-  // for fiber in guide.fibers:
-  //   Inventorying.editFiberCount(fiber, amount)
-
-  // sync getTopGuides(minScore: float, out guides: set Guide)
-  // Rating.getObjectsWithMinRating(minScore, ratings)
-  // for rating in ratings:
-  //   guides |= rating.object
-
   // INVENTORY CONCEPT
   @Router.post("/fibers")
   async createFiber(session: SessionDoc, name: string, yardage: number, type: string, brand?: string, color?: string) {
@@ -282,8 +353,31 @@ class Routes {
 
   // PROJECT MANAGING CONCEPT
   @Router.post("/projects")
-  async createProject(session: SessionDoc, title: string, status: string) {
+  async createProject(session: SessionDoc, title?: string, status?: string, guideId?: string, guideLink?: string, selectedFibers?: string, selectedAmounts?: string) {
     const user = Sessioning.getUser(session);
+    if (guideId && guideLink && selectedFibers && selectedAmounts) {
+      const guide = await Posting.getById(new ObjectId(guideId));
+      if (!guide) {
+        throw new Error(`Guide with ID ${guideId} does not exist.`);
+      }
+      const project = await ProjectManaging.createProject(user, guide.title, "To Do");
+      if (!project.project) {
+        throw new Error("Failed to create project from guide.");
+      }
+      if (!URL.canParse(guideLink)) {
+        throw new NotAllowedError(`Expected a valid link but got: ${guideLink}`);
+      }
+      await ProjectManaging.addLink(user, project.project._id, guideLink);
+      const fibers: ObjectId[] = selectedFibers.split(",").map((fiberId) => new ObjectId(fiberId));
+      const amounts: number[] = selectedAmounts.split(",").map((amount) => parseFloat(amount));
+
+      await Promise.all(fibers.map((fiber: ObjectId, idx: number) => Inventorying.editFiber(fiber, undefined, undefined, undefined, undefined, amounts[idx])));
+
+      return Responses.project(project.project);
+    }
+    if (!title || !status) {
+      throw new Error("Project must have a title.");
+    }
     return ProjectManaging.createProject(user, title, status);
   }
 
@@ -413,6 +507,7 @@ class Routes {
     await Promise.all(fiber_ids.fibers.map((fiber_id: ObjectId) => ProjectInventorying.deleteFiber(fiber_id)));
     return await ProjectManaging.deleteProject(user, oid);
   }
+<<<<<<< HEAD
 
   @Router.post("/guides/:id")
   async importGuide(session: SessionDoc, id: string, title: string, guide_link: string, selected_fibers: string, selected_amounts: string) {
@@ -483,6 +578,8 @@ class Routes {
   //     const fromOid = (await Authing.getUserByUsername(from))._id;
   //     return await Friending.rejectRequest(fromOid, user);
   //   }
+=======
+>>>>>>> main
 }
 
 /** The web app. */

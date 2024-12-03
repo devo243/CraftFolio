@@ -1,4 +1,5 @@
-import { Authing, ProjectInventorying } from "./app";
+import { ObjectId } from "mongodb";
+import { Authing, GuideInventorying, ProjectInventorying } from "./app";
 import { CommentDoc } from "./concepts/commenting";
 import { AlreadyFriendsError, FriendNotFoundError, FriendRequestAlreadyExistsError, FriendRequestDoc, FriendRequestNotFoundError } from "./concepts/friending";
 import { PostAuthorNotMatchError, PostDoc } from "./concepts/posting";
@@ -18,7 +19,13 @@ export default class Responses {
       return post;
     }
     const author = await Authing.getUserById(post.author);
-    return { ...post, author: author.username };
+    const postFibers = post.options?.fibers;
+    if (postFibers) {
+      const formattedFibers = await Promise.all(postFibers.map(async (fiberSet: ObjectId[]) => await GuideInventorying.idsToFibers(fiberSet)));
+      const fibers = formattedFibers.map((fiberSet) => ({recommended: fiberSet[0], alternatives: fiberSet.slice(1)}));
+      return { ...post, author: author.username, fibers};
+    }
+    return { ...post, author: author.username};
   }
 
   /**
@@ -26,7 +33,15 @@ export default class Responses {
    */
   static async posts(posts: PostDoc[]) {
     const authors = await Authing.idsToUsernames(posts.map((post) => post.author));
-    return posts.map((post, i) => ({ ...post, author: authors[i] }));
+    return await Promise.all(posts.map(async (post, i) => {
+      const postFibers = post.options?.fibers;
+      if (postFibers) {
+        const formattedFibers = await Promise.all(postFibers.map(async (fiberSet: ObjectId[]) => await GuideInventorying.idsToFibers(fiberSet)));
+        const fibers = formattedFibers.map((fiberSet) => ({recommended: fiberSet[0], alternatives: fiberSet.slice(1)}));
+        return { ...post, author: authors[i], fibers};
+      }
+      return { ...post, author: authors[i]};
+    }));
   }
 
   /**
