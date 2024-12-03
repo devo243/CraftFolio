@@ -1,19 +1,32 @@
 <script setup lang="ts">
+import { useToastStore } from "@/stores/toast";
 import { ref } from "vue";
 
-const props = defineProps(["title","content"]);
+const props = defineProps(["title","content","links"]);
 const title = ref(props.title);
 const content = ref(props.content);
+const links = ref(props.links);
+const currentLink = ref("");
 const emit = defineEmits(["createTitleMD"]);
 
-const updateTitleMD = async (title:string, content: string) => {
-    emit("createTitleMD",title,content);
+const updateTitleMD = async (title:string, content: string, links: string[]) => {
+    emit("createTitleMD",title,content,links);
 };
+
+const addLink = () => {
+  if (!URL.canParse(currentLink.value)) {
+    useToastStore().showToast({ message: `${currentLink.value} is not a valid link`, style: "error" });
+  } else {
+    links.value = links.value.concat([currentLink.value]);
+    currentLink.value = "";
+  }
+
+}
 
 </script>
 
 <template>
-  <form @submit.prevent="updateTitleMD(title, content)">
+  <form @submit.prevent="updateTitleMD(title, content, links)">
     <div class="field">
       <label>Write Your Guide</label>
       <div class="text">
@@ -23,6 +36,15 @@ const updateTitleMD = async (title:string, content: string) => {
       <div class="text">
         <label for="content">Post Contents:</label>
         <textarea id="content" v-model="content" placeholder="Write a markdown..." required> </textarea>
+      </div>
+      <div class="text">
+        <label for="content">Add Resources:</label>
+        <a v-for="(link, index) of links" :key="index">{{link}}</a>
+        <div>
+          <input id="content" v-model="currentLink" placeholder="Add a link..."> </input>
+          <button v-on:click="addLink" type="button">+</button>
+        </div>
+        
       </div>
     </div>
     <div class="buttons">
