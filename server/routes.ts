@@ -104,9 +104,9 @@ class Routes {
   }
 
   @Router.post("/posts")
-  async createPost(session: SessionDoc, content: string, options?: PostHelpOptions, fiber_types?: string[][], fiber_yardages?: number[][]) {
+  async createPost(session: SessionDoc, title: string, content: string, options?: PostHelpOptions, fiber_types?: string[][], fiber_yardages?: number[][]) {
     const user = Sessioning.getUser(session);
-    const created = await Posting.create(user, content, options);
+    const created = await Posting.create(user, title, content, options);
     const post_id = created.post?._id;
     if (!post_id) {
       throw new Error(created.msg);
@@ -126,7 +126,7 @@ class Routes {
         ),
       );
       const created_fibers = guide_fibers.map((fiber_ids) => fiber_ids.filter((fiber_id) => fiber_id !== undefined));
-      await Posting.update(post_id, undefined, { fibers: created_fibers });
+      await Posting.update(post_id, undefined, undefined, { fibers: created_fibers });
     }
 
     const eco_rating = this.calculateEcoRating(fiber_types || []);
@@ -139,7 +139,7 @@ class Routes {
 
   // to update anything fiber realted use addNewFiberToPost, editFiberInGuide, deleteFiberInPost
   @Router.patch("/posts/:id")
-  async updatePost(session: SessionDoc, id: string, content?: string, options?: PostOptions, fiber_types?: string[][]) {
+  async updatePost(session: SessionDoc, id: string, title: string, content?: string, options?: PostOptions, fiber_types?: string[][]) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
@@ -149,7 +149,7 @@ class Routes {
     await EcoFriendlyRating.update(oid, eco_rating);
     await BeginnerFriendlyRating.update(oid, beginner_rating);
 
-    return await Posting.update(oid, content, options);
+    return await Posting.update(oid, title, content, options);
   }
 
   @Router.delete("/posts/:id")
@@ -272,7 +272,7 @@ class Routes {
       const altid = new ObjectId(alternative_to);
       const existing_fiber = await Posting.getFibersForPost(oid);
       const new_fibers = existing_fiber?.map((fibers: ObjectId[]) => (alternative_to in fibers.map((fiber) => fiber.toString()) ? fibers.concat([altid]) : fibers));
-      return await Posting.update(oid, undefined, { fibers: new_fibers });
+      return await Posting.update(oid, undefined, undefined, { fibers: new_fibers });
     } else {
       return created.msg;
     }
@@ -298,7 +298,7 @@ class Routes {
     await GuideInventorying.assertOwnerIsUser(fid, oid);
     const existing_fibers = await Posting.getFibersForPost(oid);
     const new_fibers = existing_fibers?.map((existing_fiber_alternatives: ObjectId[]) => existing_fiber_alternatives.filter((existing_fiber: ObjectId) => existing_fiber !== fid));
-    await Posting.update(oid, undefined, { fibers: new_fibers });
+    await Posting.update(oid, undefined, undefined, { fibers: new_fibers });
     return await GuideInventorying.deleteFiber(fid);
   }
 

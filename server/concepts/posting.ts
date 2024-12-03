@@ -16,6 +16,7 @@ export interface PostHelpOptions {
 
 export interface PostDoc extends BaseDoc {
   author: ObjectId;
+  title: string;
   content: string;
   options?: PostOptions;
 }
@@ -33,7 +34,7 @@ export default class PostingConcept {
     this.posts = new DocCollection<PostDoc>(collectionName);
   }
 
-  async create(author: ObjectId, content: string, options?: PostOptions) {
+  async create(author: ObjectId, title: string, content: string, options?: PostOptions) {
     const _id = await this.posts.createOne({ author, content, options });
     return { msg: "Post successfully created!", post: await this.posts.readOne({ _id }) };
   }
@@ -51,10 +52,10 @@ export default class PostingConcept {
     return await this.posts.readMany({ author });
   }
 
-  async update(_id: ObjectId, content?: string, options?: PostOptions) {
+  async update(_id: ObjectId, title?: string, content?: string, options?: PostOptions) {
     // Note that if content or options is undefined, those fields will *not* be updated
     // since undefined values for partialUpdateOne are ignored.
-    await this.posts.partialUpdateOne({ _id }, { content, options });
+    await this.posts.partialUpdateOne({ _id }, { title, content, options });
     return { msg: "Post successfully updated!" };
   }
 
@@ -85,7 +86,7 @@ export default class PostingConcept {
       throw new NotFoundError(`Post ${_id} does not exist!`);
     }
     const updatedTips = [...(post.options?.tips || []), newTip];
-    await this.update(_id, undefined, { ...post.options, tips: updatedTips });
+    await this.update(_id, undefined, undefined, { ...post.options, tips: updatedTips });
     return { msg: "Tip added successfully!", tips: updatedTips };
   }
 
@@ -95,7 +96,7 @@ export default class PostingConcept {
       throw new NotFoundError(`Post ${_id} does not exist!`);
     }
     const updatedTips = post.options?.tips?.filter((tip) => tip !== tipToDelete) || [];
-    await this.update(_id, undefined, { ...post.options, tips: updatedTips });
+    await this.update(_id, undefined, undefined, { ...post.options, tips: updatedTips });
     return { msg: "Tip deleted successfully!", tips: updatedTips };
   }
 
@@ -105,7 +106,7 @@ export default class PostingConcept {
       throw new NotFoundError(`Post ${_id} does not exist!`);
     }
     const updatedTips = post.options?.tips?.map((tip) => (tip === oldTip ? newTip : tip)) || [];
-    await this.update(_id, undefined, { ...post.options, tips: updatedTips });
+    await this.update(_id, undefined, undefined, { ...post.options, tips: updatedTips });
     return { msg: "Tip updated successfully!", tips: updatedTips };
   }
 
@@ -123,7 +124,7 @@ export default class PostingConcept {
       throw new NotFoundError(`Post ${_id} does not exist!`);
     }
     const updatedMistakes = [...(post.options?.mistakes || []), newMistake];
-    await this.update(_id, undefined, { ...post.options, mistakes: updatedMistakes });
+    await this.update(_id, undefined, undefined, { ...post.options, mistakes: updatedMistakes });
     return { msg: "Mistake added successfully!", mistakes: updatedMistakes };
   }
 
@@ -133,7 +134,7 @@ export default class PostingConcept {
       throw new NotFoundError(`Post ${_id} does not exist!`);
     }
     const updatedMistakes = post.options?.mistakes?.filter((mistake) => mistake !== mistakeToDelete) || [];
-    await this.update(_id, undefined, { ...post.options, mistakes: updatedMistakes });
+    await this.update(_id, undefined, undefined, { ...post.options, mistakes: updatedMistakes });
     return { msg: "Mistake deleted successfully!", mistakes: updatedMistakes };
   }
 
@@ -143,7 +144,7 @@ export default class PostingConcept {
       throw new NotFoundError(`Post ${_id} does not exist!`);
     }
     const updatedMistakes = post.options?.mistakes?.map((mistake) => (mistake === oldMistake ? newMistake : mistake)) || [];
-    await this.update(_id, undefined, { ...post.options, mistakes: updatedMistakes });
+    await this.update(_id, undefined, undefined, { ...post.options, mistakes: updatedMistakes });
     return { msg: "Mistake updated successfully!", mistakes: updatedMistakes };
   }
 
