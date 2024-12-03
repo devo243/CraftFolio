@@ -46,14 +46,14 @@ const toggleEdit = () => {
 <style scoped>
 .container {
   width: 100%;
-  height: 35vh;
+  /* height: 35vh; */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
   /* margin: 0 0 0 1em; */
-  background-color: rgb(226, 226, 226);
-  border-radius: 2em;
+  background-color: var(--grey);
+  border-radius: 1em;
 }
 p {
   padding: 1em;
@@ -70,7 +70,7 @@ p {
   margin: 1em;
   width: 97%;
   height: 55vh;
-  background-color: rgb(226, 226, 226);
+  background-color: var(--grey);
   border: none;
   font-size: 1.5em;
   padding: 0;
