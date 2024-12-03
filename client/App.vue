@@ -25,9 +25,9 @@ onBeforeMount(async () => {
   <header>
     <nav>
       <div class="title">
-        <img src="@/assets/images/logo.svg" />
+        <img src="@/assets/images/snip.png" />
         <RouterLink :to="{ name: 'Home' }">
-          <h1>Carftfolio</h1>
+          <h1>Craftfolio</h1>
         </RouterLink>
       </div>
       <ul>
@@ -82,7 +82,7 @@ img {
 
 a {
   font-size: large;
-  color: #FCF2CF;
+  color: #fcf2cf;
   text-decoration: none;
 }
 
