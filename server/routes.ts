@@ -369,8 +369,31 @@ class Routes {
 
   // PROJECT MANAGING CONCEPT
   @Router.post("/projects")
-  async createProject(session: SessionDoc, title: string, status: string) {
+  async createProject(session: SessionDoc, title?: string, status: string = "To Do", guideId?: string, guideLink?: string, selectedFibers?: string, selectedAmounts?: string) {
     const user = Sessioning.getUser(session);
+    if (guideId && guideLink && selectedFibers && selectedAmounts) {
+      const guide = await Posting.getById(new ObjectId(guideId));
+      if (!guide) {
+        throw new Error(`Guide with ID ${guideId} does not exist.`);
+      }
+      const project = await ProjectManaging.createProject(user, guide.title, status);
+      if (!project.project) {
+        throw new Error("Failed to create project from guide.");
+      }
+      if (!URL.canParse(guideLink)) {
+        throw new NotAllowedError(`Expected a valid link but got: ${guideLink}`);
+      }
+      await ProjectManaging.addLink(user, project.project._id, guideLink);
+      const fibers: ObjectId[] = selectedFibers.split(",").map((fiberId) => new ObjectId(fiberId));
+      const amounts: number[] = selectedAmounts.split(",").map((amount) => parseFloat(amount));
+
+      await Promise.all(fibers.map((fiber: ObjectId, idx: number) => Inventorying.editFiber(fiber, undefined, undefined, undefined, undefined, amounts[idx])));
+
+      return Responses.project(project.project);
+    }
+    if (!title) {
+      throw new Error("Project must have a title.");
+    }
     return ProjectManaging.createProject(user, title, status);
   }
 
@@ -500,76 +523,6 @@ class Routes {
     await Promise.all(fiber_ids.fibers.map((fiber_id: ObjectId) => ProjectInventorying.deleteFiber(fiber_id)));
     return await ProjectManaging.deleteProject(user, oid);
   }
-
-  @Router.post("/guides/:id")
-  async importGuide(session: SessionDoc, id: string, title: string, guide_link: string, selected_fibers: string, selected_amounts: string) {
-    const user = Sessioning.getUser(session);
-    const oid = new ObjectId(id);
-    // TODO: get guide name from posting
-    const project = await ProjectManaging.createProject(user, title, "To Do");
-    if (project.project) {
-      if (!URL.canParse(guide_link)) {
-        throw new NotAllowedError(`expected VALID link but got ${guide_link}`);
-      }
-      await ProjectManaging.addLink(user, project.project._id, guide_link);
-    } else {
-      throw new Error("failed creating new project");
-    }
-    const fibers: ObjectId[] = selected_fibers.split(",").map((fiber_id: string) => new ObjectId(fiber_id));
-    // get amounts from the guide
-    const amounts: number[] = selected_amounts.split(",").map((amount: string) => parseFloat(amount));
-    await Promise.all(fibers.map((fiber: ObjectId, idx: number) => Inventorying.editFiber(fiber, undefined, undefined, undefined, undefined, amounts[idx])));
-    return Responses.project(project.project);
-  }
-
-  // FRIENDS CONCEPT
-
-  //   @Router.get("/friends")
-  //   async getFriends(session: SessionDoc) {
-  //     const user = Sessioning.getUser(session);
-  //     return await Authing.idsToUsernames(await Friending.getFriends(user));
-  //   }
-
-  //   @Router.delete("/friends/:friend")
-  //   async removeFriend(session: SessionDoc, friend: string) {
-  //     const user = Sessioning.getUser(session);
-  //     const friendOid = (await Authing.getUserByUsername(friend))._id;
-  //     return await Friending.removeFriend(user, friendOid);
-  //   }
-
-  //   @Router.get("/friend/requests")
-  //   async getRequests(session: SessionDoc) {
-  //     const user = Sessioning.getUser(session);
-  //     return await Responses.friendRequests(await Friending.getRequests(user));
-  //   }
-
-  //   @Router.post("/friend/requests/:to")
-  //   async sendFriendRequest(session: SessionDoc, to: string) {
-  //     const user = Sessioning.getUser(session);
-  //     const toOid = (await Authing.getUserByUsername(to))._id;
-  //     return await Friending.sendRequest(user, toOid);
-  //   }
-
-  //   @Router.delete("/friend/requests/:to")
-  //   async removeFriendRequest(session: SessionDoc, to: string) {
-  //     const user = Sessioning.getUser(session);
-  //     const toOid = (await Authing.getUserByUsername(to))._id;
-  //     return await Friending.removeRequest(user, toOid);
-  //   }
-
-  //   @Router.put("/friend/accept/:from")
-  //   async acceptFriendRequest(session: SessionDoc, from: string) {
-  //     const user = Sessioning.getUser(session);
-  //     const fromOid = (await Authing.getUserByUsername(from))._id;
-  //     return await Friending.acceptRequest(fromOid, user);
-  //   }
-
-  //   @Router.put("/friend/reject/:from")
-  //   async rejectFriendRequest(session: SessionDoc, from: string) {
-  //     const user = Sessioning.getUser(session);
-  //     const fromOid = (await Authing.getUserByUsername(from))._id;
-  //     return await Friending.rejectRequest(fromOid, user);
-  //   }
 }
 
 /** The web app. */
