@@ -11,9 +11,7 @@ import { z } from "zod";
 import { CommentOptions } from "./concepts/commenting";
 import { NotAllowedError } from "./concepts/errors";
 import { FiberDoc } from "./concepts/inventorying";
-import { RatingDoc } from "./concepts/rating";
-
-const ECO_FRIENDLY_FIBERS = ["organic hemp", "organic cotton", "organic linen", "lyocell", "econyl", "pinatex", "qmonos", "bamboo"];
+import RatingConcept, { RatingDoc } from "./concepts/rating";
 
 /**
  * Web server routes for the app. Implements synchronizations between concepts.
@@ -89,20 +87,6 @@ class Routes {
     return Responses.posts(posts);
   }
 
-  private calculateEcoRating(fiber_types: string[][]) {
-    const total_fibers = fiber_types.length;
-    const eco_friendly_count = fiber_types.filter((fiber_row) => ECO_FRIENDLY_FIBERS.includes(fiber_row[2]?.toLowerCase())).length;
-    return total_fibers > 0 ? (eco_friendly_count / total_fibers) * 5 : 0;
-  }
-
-  private calculateBeginnerRating(options?: PostHelpOptions) {
-    const tips_count = options?.tips?.length || 0;
-    const mistakes_count = options?.mistakes?.length || 0;
-    const max_tips_mistakes = 3;
-
-    return Math.min(((tips_count + mistakes_count) / max_tips_mistakes) * 5, 5);
-  }
-
   @Router.post("/posts")
   async createPost(session: SessionDoc, title: string, content: string, options?: PostHelpOptions, fiber_types?: string[][], fiber_yardages?: number[][]) {
     const user = Sessioning.getUser(session);
@@ -129,8 +113,8 @@ class Routes {
       await Posting.update(post_id, undefined, undefined, { fibers: created_fibers });
     }
 
-    const eco_rating = this.calculateEcoRating(fiber_types || []);
-    const beginner_rating = this.calculateBeginnerRating(options);
+    const eco_rating = RatingConcept.calculateEcoRating(fiber_types || []);
+    const beginner_rating = RatingConcept.calculateBeginnerRating(options);
     await EcoFriendlyRating.create(post_id, eco_rating);
     await BeginnerFriendlyRating.create(post_id, beginner_rating);
 
@@ -144,8 +128,8 @@ class Routes {
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
 
-    const eco_rating = this.calculateEcoRating(fiber_types || []);
-    const beginner_rating = this.calculateBeginnerRating(options);
+    const eco_rating = RatingConcept.calculateEcoRating(fiber_types || []);
+    const beginner_rating = RatingConcept.calculateBeginnerRating(options);
     await EcoFriendlyRating.update(oid, eco_rating);
     await BeginnerFriendlyRating.update(oid, beginner_rating);
 
