@@ -34,7 +34,7 @@ onBeforeMount(async () => {
         <span >Color</span>
         <span >Amount (yd)</span>
     </article>
-    <article v-for="fiber in fibers" :key="fiber._id">
+    <article v-for="fiber of fibers" :key="fiber._id">
       <FiberComponent :fiber="fiber" @refreshFibers="getInventory" />
     </article>
   </section>

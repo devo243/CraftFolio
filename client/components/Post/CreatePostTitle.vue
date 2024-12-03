@@ -41,7 +41,7 @@ const addLink = () => {
         <label for="content">Add Resources:</label>
         <a v-for="(link, index) of links" :key="index">{{link}}</a>
         <div>
-          <input id="content" v-model="currentLink" placeholder="Add a link..."> </input>
+          <input id="content" type="url" v-model="currentLink" placeholder="Add a link..."> </input>
           <button v-on:click="addLink" type="button">+</button>
         </div>
         

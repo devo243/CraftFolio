@@ -37,7 +37,7 @@ const addLink = async () => {
     <p class="placeholder" v-else>Add some links...</p>
     <form @submit.prevent="addLink()">
       <!-- <label for="link">Add a new link:</label> -->
-      <input id="link" v-model="newLink" required />
+      <input type="url" id="link" v-model="newLink" required />
       <button type="submit">+</button>
     </form>
   </div>
