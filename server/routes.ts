@@ -227,7 +227,7 @@ class Routes {
     return await Posting.editMistake(oid, oldMistake, newMistake);
   }
 
-  async getGuidesWith(availbaleFibers: ObjectId[]) {
+  async getGuidesWith(availableFibers: ObjectId[]) {
     const allGuides: PostDoc[] = await Posting.getPosts();
     const usableGuides: PostDoc[] = [];
     // this is not foolproof: especially if a type of fabric is mentionaed across multiple arrays
@@ -235,7 +235,7 @@ class Routes {
       let isUsableGuide = true;
       const guideFibers = guide.options?.fibers ?? [];
       for (const guideFiberOptions of guideFibers) {
-        if (guideFiberOptions.every((guidefiber: ObjectId) => availbaleFibers.every((available_fiber) => available_fiber < guidefiber))) {
+        if (guideFiberOptions.every((guidefiber: ObjectId) => availableFibers.every((available_fiber) => available_fiber < guidefiber))) {
           isUsableGuide = false;
         }
       }
