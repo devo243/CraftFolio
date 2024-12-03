@@ -369,14 +369,14 @@ class Routes {
 
   // PROJECT MANAGING CONCEPT
   @Router.post("/projects")
-  async createProject(session: SessionDoc, title?: string, status: string = "To Do", guideId?: string, guideLink?: string, selectedFibers?: string, selectedAmounts?: string) {
+  async createProject(session: SessionDoc, title?: string, status?: string, guideId?: string, guideLink?: string, selectedFibers?: string, selectedAmounts?: string) {
     const user = Sessioning.getUser(session);
     if (guideId && guideLink && selectedFibers && selectedAmounts) {
       const guide = await Posting.getById(new ObjectId(guideId));
       if (!guide) {
         throw new Error(`Guide with ID ${guideId} does not exist.`);
       }
-      const project = await ProjectManaging.createProject(user, guide.title, status);
+      const project = await ProjectManaging.createProject(user, guide.title, "To Do");
       if (!project.project) {
         throw new Error("Failed to create project from guide.");
       }
@@ -391,7 +391,7 @@ class Routes {
 
       return Responses.project(project.project);
     }
-    if (!title) {
+    if (!title || !status) {
       throw new Error("Project must have a title.");
     }
     return ProjectManaging.createProject(user, title, status);
