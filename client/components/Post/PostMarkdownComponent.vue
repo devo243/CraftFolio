@@ -52,7 +52,7 @@ const toggleEdit = () => {
   justify-content: space-between;
   align-items: flex-start;
   /* margin: 0 0 0 1em; */
-  background-color: var(--grey);
+  background-color: var(--base-bg);
   border-radius: 1em;
 }
 p {

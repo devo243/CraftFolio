@@ -40,15 +40,15 @@ const handleBack = async()=>{
 }
 const handleFinish = async()=>{
   currentPage.value=1;
-  await createPost(title.value,content.value, links.value, tips.value,mistakes.value);
+  await createPost();
   await router.push("/myposts");
 }
 
-const createPost = async (title:string, content: string, links: string[], tips:string[], mistakes:string[]) => {
+const createPost = async () => {
   try {
-    const options = {tips:tips, mistakes: mistakes, links: links};
+    const options = {tips:tips.value, mistakes: mistakes.value, links: links.value};
     await fetchy("/api/posts", "POST", {
-      body: { title, content, options },
+      body: { title: title.value, content: content.value, options, fiber_types: fiberTypes.value, fiber_yardages: fiberYards.value},
     });
   } catch (_) {
     return;
@@ -67,7 +67,7 @@ const emptyForm = () => {
 </script>
 
 <template>
-  <form @submit.prevent="createPost(title, content, links, tips, mistakes)">
+  <form @submit.prevent="createPost">
     <CreatePostTitle v-if="currentPage===1" :title="title" :content="content" :links="links" @create-title-m-d="handleTitleMDChange"/>
     <CreatePostFibers v-else-if="currentPage==2" :fiber-types="fiberTypes" :fiber-yards="fiberYards" @create-fibers="handleFiberChange" @go-back="handleBack"/>
     <CreatePostTips v-else :tips="tips" :mistakes="mistakes" @create-tips-mistakes="handleTipsMistakesChange" @go-back="handleBack" @finish="handleFinish"/>

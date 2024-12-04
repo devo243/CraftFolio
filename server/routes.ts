@@ -110,7 +110,7 @@ class Routes {
         ),
       );
       const created_fibers = guide_fibers.map((fiber_ids) => fiber_ids.filter((fiber_id) => fiber_id !== undefined));
-      await Posting.update(post_id, undefined, undefined, { fibers: created_fibers });
+      await Posting.update(post_id, created.post?.title, created.post?.content, { fibers: created_fibers, tips: created.post?.options?.tips, links: created.post?.options?.links, mistakes: created.post?.options?.mistakes});
     }
 
     const eco_rating = RatingConcept.calculateEcoRating(fiber_types || []);
@@ -284,6 +284,26 @@ class Routes {
     const new_fibers = existing_fibers?.map((existing_fiber_alternatives: ObjectId[]) => existing_fiber_alternatives.filter((existing_fiber: ObjectId) => existing_fiber !== fid));
     await Posting.update(oid, undefined, undefined, { fibers: new_fibers });
     return await GuideInventorying.deleteFiber(fid);
+  }
+
+  @Router.get("/posts/:id/presentfibers")
+  async getAvailableFibers(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session); // the user is the owner of the inventory
+    const oid = new ObjectId(id); // the guide is considered the owner of the inventory
+    const availableFibers = await Inventorying.getUserInventory(user);
+    const neededFibers = await GuideInventorying.getUserInventory(oid);
+    const usableGuides = new Set<ObjectId>();
+    console.log("mine: ", availableFibers, " post: ", neededFibers);
+    for (const fiber of neededFibers) {
+      for (const availableFiber of availableFibers) {
+        console.log("mine: ", availableFiber, " post: ", fiber);
+        if (fiber.type === availableFiber.type && fiber.remainingYardage <= availableFiber.remainingYardage) {
+          usableGuides.add(fiber._id);
+        }
+      }
+    }
+    console.log(usableGuides)
+    return new Array(...usableGuides);
   }
 
   //Comments on Posts

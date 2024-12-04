@@ -49,6 +49,7 @@ const toggleEditing = async () => {
 </script>
 
 <template>
+  <!-- {{fiber}} -->
   <div class="fiber">
     <div class="container">
       <div class="block">
@@ -57,7 +58,7 @@ const toggleEditing = async () => {
       </div>
       <div class="block">
         <span v-if="!editing">{{ fiber.remainingYardage }} yd</span>
-        <input v-else type="number" step="any" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
+        <input v-else type="text" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
       </div>
     </div>
     <div v-if="props.post_author === currentUsername">
