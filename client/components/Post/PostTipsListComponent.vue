@@ -2,59 +2,73 @@
 import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
 import { storeToRefs } from "pinia";
-import { ref } from "vue";
+import { onBeforeMount, ref } from "vue";
+import TipComponent from "./TipComponent.vue";
+import TipEditComponent from "./TipEditComponent.vue";
 
 const props = defineProps(["post"]);
 const { currentUsername } = storeToRefs(useUserStore());
 
-
-
-let currentOptions = props.post.options;
-if(currentOptions===null){
-    const empty: string[] = [];
-    currentOptions={fibers:undefined, tips:empty};
-}
 const newTip = ref("");
+const tips = ref(Array<String>);
+const editingTip = ref({type:"", index:0});
 
 const emit = defineEmits(["refreshPost"]);
 
 const addTip = async () => {
-  currentOptions.tips.push(newTip.value);
   try {
-    await fetchy(`/api/posts/${props.post._id}/`, "PATCH", {
-      body: { id: props.post._id, title:props.post.title, content: props.post.content, options:currentOptions },
+    await fetchy(`/api/posts/${props.post._id}/tips/`, "POST", {
+      body: { newTip: newTip.value },
     });
   } catch (_) {
     console.log(_);
     return;
   }
+  await getTips();
   emit("refreshPost");
 };
+
+const getTips = async() => {
+  let tipResults = Array<String>;
+  try {
+    tipResults = await fetchy(`/api/posts/${props.post._id}/tips/`, "GET");
+  } catch (_) {
+    console.log(_);
+    return;
+  }
+  tips.value = tipResults;
+}
+
+const toggleEditing = async (type:string, index: number) => {
+  if (!editingTip.value.type) {
+    editingTip.value = {type:type, index:index};
+  } else {
+    editingTip.value = {type:"", index:0};
+  }
+};
+
+onBeforeMount(async () => {
+  await getTips();
+});
 
 
 </script>
 
 <template>
-  <section class="header" v-if="currentOptions.tips.length !== 0 || currentUsername===props.post.author">
+  <section class="header" v-if="tips.length !== 0 || currentUsername===props.post.author">
     <h2 class="title">Tips/Common Mistakes</h2>
   </section>
   <section class="container">
-    <div class="hints" v-if="currentOptions.tips.length !== 0">
-      <div v-for="(tip, index) in currentOptions.tips" :key="index" class="hint">
-        <img src="@/assets/icons/check.svg" class="tip"/>
-        <a > {{ tip }}</a>
-      </div>
-    </div>
-    <div class="hints" v-if="currentOptions.mistakes.length !== 0">
-      <div v-for="(mistake, index) in currentOptions.mistakes" :key="index" class="hint">
-        <img src="@/assets/icons/mistake.svg" class="mistake"/>
-        <a > {{ mistake }}</a>
+    <div class="hints" v-if="tips.length !== 0">
+      <div v-for="(tip, index) in tips" :key="index" class="hint">
+        <TipComponent v-if="editingTip.type!=='tip'||editingTip.index!=Number.parseInt(index.toString())" :post="props.post" :tip="tip" @refresh-tips="getTips" @edit-tip="toggleEditing('tip', Number.parseInt(index.toString()))"/>
+        <TipEditComponent v-else :post="props.post" :tip="tip" @refresh-tips="getTips" @edit-tip="toggleEditing('tip', Number.parseInt(index.toString()))"/>
       </div>
     </div>
     
     <form @submit.prevent="addTip()" v-if="currentUsername===props.post.author">
       <!-- <label for="link">Add a new link:</label> -->
-      <p class="placeholder" v-if="currentOptions.mistakes.length === 0">Add some tips...</p>
+      <p class="placeholder" v-if="tips.length === 0">Add some tips...</p>
       <input id="tip" v-model="newTip" required />
       <button type="submit">+</button>
     </form>
@@ -63,8 +77,9 @@ const addTip = async () => {
 
 <style scoped>
 .hint{
+  width: 100%;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   font-size: small;
 }
@@ -123,6 +138,7 @@ button {
 }
 
 .hints {
+  width: 95%;
   display: flex;
   flex-direction: column;
   gap: 1em;

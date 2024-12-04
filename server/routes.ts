@@ -110,7 +110,12 @@ class Routes {
         ),
       );
       const created_fibers = guide_fibers.map((fiber_ids) => fiber_ids.filter((fiber_id) => fiber_id !== undefined));
-      await Posting.update(post_id, created.post?.title, created.post?.content, { fibers: created_fibers, tips: created.post?.options?.tips, links: created.post?.options?.links, mistakes: created.post?.options?.mistakes});
+      await Posting.update(post_id, created.post?.title, created.post?.content, {
+        fibers: created_fibers,
+        tips: created.post?.options?.tips,
+        links: created.post?.options?.links,
+        mistakes: created.post?.options?.mistakes,
+      });
     }
 
     const eco_rating = RatingConcept.calculateEcoRating(fiber_types || []);
@@ -195,7 +200,7 @@ class Routes {
     return await Posting.addMistake(oid, newMistake);
   }
 
-  @Router.delete("/posts/:id/tips")
+  @Router.delete("/posts/:id/tips/:tipToDelete")
   async deleteTip(session: SessionDoc, id: string, tipToDelete: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
