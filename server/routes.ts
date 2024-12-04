@@ -476,7 +476,7 @@ class Routes {
     return await ProjectManaging.addLink(user, oid, link);
   }
 
-  @Router.delete("/projects/:id/link")
+  @Router.patch("/projects/:id/link")
   async deleteLink(session: SessionDoc, id: string, link: string) {
     if (!URL.canParse(link)) {
       throw new NotAllowedError(`expected VALID link but got ${link}`);
@@ -493,7 +493,7 @@ class Routes {
     return await ProjectManaging.addImage(user, oid, image);
   }
 
-  @Router.delete("/projects/:id/image")
+  @Router.patch("/projects/:id/image")
   async deleteImage(session: SessionDoc, id: string, image: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
