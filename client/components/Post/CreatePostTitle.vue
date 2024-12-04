@@ -1,30 +1,19 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { fetchy } from "../../utils/fetchy";
 
-const title = ref("");
-const content = ref("");
-const emit = defineEmits(["refreshPosts"]);
+const props = defineProps(["title","content"]);
+const title = ref(props.title);
+const content = ref(props.content);
+const emit = defineEmits(["createTitleMD"]);
 
-const createPost = async (title:string, content: string) => {
-  try {
-    await fetchy("/api/posts", "POST", {
-      body: { title, content },
-    });
-  } catch (_) {
-    return;
-  }
-  emit("refreshPosts");
-  emptyForm();
+const updateTitleMD = async (title:string, content: string) => {
+    emit("createTitleMD",title,content);
 };
 
-const emptyForm = () => {
-  content.value = "";
-};
 </script>
 
 <template>
-  <form @submit.prevent="createPost(title, content)">
+  <form @submit.prevent="updateTitleMD(title, content)">
     <div class="field">
       <label>Write Your Guide</label>
       <div class="text">
@@ -37,7 +26,7 @@ const emptyForm = () => {
       </div>
     </div>
     <div class="buttons">
-      <button type="submit" class="pure-button-primary pure-button">Create</button>
+      <button type="submit" class="pure-button-primary pure-button">Next</button>
     </div>
   </form>
 </template>

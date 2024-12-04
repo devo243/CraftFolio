@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, CommentOnPost, GuideInventorying, Inventorying, Posting, ProjectInventorying, ProjectManaging, Sessioning } from "./app";
+import { Authing, BeginnerFriendlyRating, CommentOnPost, EcoFriendlyRating, GuideInventorying, Inventorying, Posting, ProjectInventorying, ProjectManaging, Sessioning } from "./app";
 import { PostDoc, PostHelpOptions, PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -11,6 +11,7 @@ import { z } from "zod";
 import { CommentOptions } from "./concepts/commenting";
 import { NotAllowedError } from "./concepts/errors";
 import { FiberDoc } from "./concepts/inventorying";
+import RatingConcept, { RatingDoc } from "./concepts/rating";
 
 /**
  * Web server routes for the app. Implements synchronizations between concepts.
@@ -87,9 +88,9 @@ class Routes {
   }
 
   @Router.post("/posts")
-  async createPost(session: SessionDoc, content: string, options?: PostHelpOptions, fiber_types?: string[][], fiber_yardages?: number[][]) {
+  async createPost(session: SessionDoc, title: string, content: string, options?: PostHelpOptions, fiber_types?: string[][], fiber_yardages?: number[][]) {
     const user = Sessioning.getUser(session);
-    const created = await Posting.create(user, content, options);
+    const created = await Posting.create(user, title, content, options);
     const post_id = created.post?._id;
     if (!post_id) {
       throw new Error(created.msg);
@@ -98,27 +99,41 @@ class Routes {
     // TODO: currently only takes in yardage and type
     if (fiber_types && fiber_yardages) {
       const guide_fibers = await Promise.all(
-        fiber_types.map(
-          async (fiber_type_alternatives: string[], idx: number) => (await Promise.all(
-            fiber_type_alternatives.map((fiber_type_alternative: string, fiber_type_alternative_idx: number) => 
-              GuideInventorying.addNewFiber(post_id, "", "", fiber_type_alternative, "", fiber_yardages[idx][fiber_type_alternative_idx]))
-          )).map((fiber_msg) => fiber_msg.fiber?._id)
-        )
+        fiber_types.map(async (fiber_type_alternatives: string[], idx: number) =>
+          (
+            await Promise.all(
+              fiber_type_alternatives.map((fiber_type_alternative: string, fiber_type_alternative_idx: number) =>
+                GuideInventorying.addNewFiber(post_id, "", "", fiber_type_alternative, "", fiber_yardages[idx][fiber_type_alternative_idx]),
+              ),
+            )
+          ).map((fiber_msg) => fiber_msg.fiber?._id),
+        ),
       );
       const created_fibers = guide_fibers.map((fiber_ids) => fiber_ids.filter((fiber_id) => fiber_id !== undefined));
-      await Posting.update(post_id, undefined, {fibers: created_fibers});
+      await Posting.update(post_id, undefined, undefined, { fibers: created_fibers });
     }
-    
+
+    const eco_rating = RatingConcept.calculateEcoRating(fiber_types || []);
+    const beginner_rating = RatingConcept.calculateBeginnerRating(options);
+    await EcoFriendlyRating.create(post_id, eco_rating);
+    await BeginnerFriendlyRating.create(post_id, beginner_rating);
+
     return { msg: created.msg, post: await Responses.post(created.post) };
   }
 
   // to update anything fiber realted use addNewFiberToPost, editFiberInGuide, deleteFiberInPost
   @Router.patch("/posts/:id")
-  async updatePost(session: SessionDoc, id: string, content?: string, options?: PostOptions) {
+  async updatePost(session: SessionDoc, id: string, title: string, content?: string, options?: PostOptions, fiber_types?: string[][]) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
-    return await Posting.update(oid, content, options);
+
+    const eco_rating = RatingConcept.calculateEcoRating(fiber_types || []);
+    const beginner_rating = RatingConcept.calculateBeginnerRating(options);
+    await EcoFriendlyRating.update(oid, eco_rating);
+    await BeginnerFriendlyRating.update(oid, beginner_rating);
+
+    return await Posting.update(oid, title, content, options);
   }
 
   @Router.delete("/posts/:id")
@@ -128,24 +143,105 @@ class Routes {
     await Posting.assertAuthorIsUser(oid, user);
     // delete all the fibers related to the post
     await GuideInventorying.deleteOwnersFibers(oid);
+    await EcoFriendlyRating.delete(oid);
+    await BeginnerFriendlyRating.delete(oid);
     return Posting.delete(oid);
   }
 
-  async	getGuidesWith(availbaleFibers: ObjectId[]){
-    const allGuides: PostDoc[]= await Posting.getPosts();
+  @Router.get("/posts/top")
+  @Router.validate(z.object({ minScore: z.number().optional(), ratingType: z.enum(["eco", "beginner"]) }))
+  async getTopPosts(ratingType: "eco" | "beginner", minScore: number = 0) {
+    const Rating = ratingType === "eco" ? EcoFriendlyRating : BeginnerFriendlyRating;
+    const ratings = (await (await Rating.getObjectsWithMinRating(minScore)).toArray()) as RatingDoc[];
+    const posts = await Promise.all(
+      ratings.map(async (rating: RatingDoc) => {
+        const post = await Posting.getById(rating.object);
+        return post ? { ...post, rating: rating.rating } : null;
+      }),
+    );
+    return posts;
+  }
+
+  // Tips and Mistakes on Posts
+  @Router.get("/posts/:id/tips")
+  async getTips(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.getTips(oid);
+  }
+
+  @Router.get("/posts/:id/mistakes")
+  async getMistakes(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.getMistakes(oid);
+  }
+
+  @Router.post("/posts/:id/tips")
+  async addTip(session: SessionDoc, id: string, newTip: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.addTip(oid, newTip);
+  }
+
+  @Router.post("/posts/:id/mistakes")
+  async addMistake(session: SessionDoc, id: string, newMistake: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.addMistake(oid, newMistake);
+  }
+
+  @Router.delete("/posts/:id/tips")
+  async deleteTip(session: SessionDoc, id: string, tipToDelete: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.deleteTip(oid, tipToDelete);
+  }
+
+  @Router.delete("/posts/:id/mistakes")
+  async deleteMistake(session: SessionDoc, id: string, mistakeToDelete: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.deleteMistake(oid, mistakeToDelete);
+  }
+
+  @Router.patch("/posts/:id/tips")
+  async editTip(session: SessionDoc, id: string, oldTip: string, newTip: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.editTip(oid, oldTip, newTip);
+  }
+
+  @Router.patch("/posts/:id/mistakes")
+  async editMistake(session: SessionDoc, id: string, oldMistake: string, newMistake: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.editMistake(oid, oldMistake, newMistake);
+  }
+
+  async getGuidesWith(availableFibers: ObjectId[]) {
+    const allGuides: PostDoc[] = await Posting.getPosts();
     const usableGuides: PostDoc[] = [];
     // this is not foolproof: especially if a type of fabric is mentionaed across multiple arrays
-		for (const guide of allGuides){
+    for (const guide of allGuides) {
       let isUsableGuide = true;
       const guideFibers = guide.options?.fibers ?? [];
       for (const guideFiberOptions of guideFibers) {
-        if (guideFiberOptions.every((guidefiber: ObjectId) => availbaleFibers.every((available_fiber) => available_fiber < guidefiber))) {
+        if (guideFiberOptions.every((guidefiber: ObjectId) => availableFibers.every((available_fiber) => available_fiber < guidefiber))) {
           isUsableGuide = false;
         }
       }
       if (isUsableGuide) {
-        usableGuides.concat([guide])
-      }     
+        usableGuides.concat([guide]);
+      }
     }
     return usableGuides;
   }
@@ -155,12 +251,12 @@ class Routes {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
-    const created = await GuideInventorying.addNewFiber(oid, "", "", type ,"", yardage);
+    const created = await GuideInventorying.addNewFiber(oid, "", "", type, "", yardage);
     if (created.fiber !== null) {
       const altid = new ObjectId(alternative_to);
       const existing_fiber = await Posting.getFibersForPost(oid);
-      const new_fibers = existing_fiber?.map((fibers: ObjectId[]) => alternative_to in fibers.map((fiber) => fiber.toString()) ? fibers.concat([altid]) : fibers)
-      return await Posting.update(oid, undefined, {fibers : new_fibers});
+      const new_fibers = existing_fiber?.map((fibers: ObjectId[]) => (alternative_to in fibers.map((fiber) => fiber.toString()) ? fibers.concat([altid]) : fibers));
+      return await Posting.update(oid, undefined, undefined, { fibers: new_fibers });
     } else {
       return created.msg;
     }
@@ -186,7 +282,7 @@ class Routes {
     await GuideInventorying.assertOwnerIsUser(fid, oid);
     const existing_fibers = await Posting.getFibersForPost(oid);
     const new_fibers = existing_fibers?.map((existing_fiber_alternatives: ObjectId[]) => existing_fiber_alternatives.filter((existing_fiber: ObjectId) => existing_fiber !== fid));
-    await Posting.update(oid, undefined, {fibers: new_fibers});
+    await Posting.update(oid, undefined, undefined, { fibers: new_fibers });
     return await GuideInventorying.deleteFiber(fid);
   }
 
@@ -224,28 +320,6 @@ class Routes {
     return { msg: created.msg, comment: await Responses.comment(created.comment) };
   }
 
-  // POST CONCEPT
-  // sync postGuide(user: User, content: String, fibers: set (set Fiber), tips: set String, mistakes: set String, out guide: Guide, out rating: Rating)
-  // Posting.postGuide(content, fibers, tips, mistakes, user)
-  // Rating.giveRating(guide, someScore)
-
-  // sync editGuide(guide: Guide, ?content, ?fibers, ?tips, ?mistakes)
-  // Posting.editGuide(guide, content, fibers, tips, mistakes)
-  // Rating.updateRating(guide, newScore)
-
-  // sync importGuide(user: User, guide: Guide, out project: Project)
-  // title = title of the guide
-  // ProjectManaging.createProject(title, “To Do”)
-  // guideLink = link of the guide
-  // ProjectManaging.editLinks(project, guideLink)
-  // for fiber in guide.fibers:
-  //   Inventorying.editFiberCount(fiber, amount)
-
-  // sync getTopGuides(minScore: float, out guides: set Guide)
-  // Rating.getObjectsWithMinRating(minScore, ratings)
-  // for rating in ratings:
-  //   guides |= rating.object
-
   // INVENTORY CONCEPT
   @Router.post("/fibers")
   async createFiber(session: SessionDoc, name: string, yardage: number, type: string, brand?: string, color?: string) {
@@ -279,8 +353,31 @@ class Routes {
 
   // PROJECT MANAGING CONCEPT
   @Router.post("/projects")
-  async createProject(session: SessionDoc, title: string, status: string) {
+  async createProject(session: SessionDoc, title?: string, status?: string, guideId?: string, guideLink?: string, selectedFibers?: string, selectedAmounts?: string) {
     const user = Sessioning.getUser(session);
+    if (guideId && guideLink && selectedFibers && selectedAmounts) {
+      const guide = await Posting.getById(new ObjectId(guideId));
+      if (!guide) {
+        throw new Error(`Guide with ID ${guideId} does not exist.`);
+      }
+      const project = await ProjectManaging.createProject(user, guide.title, "To Do");
+      if (!project.project) {
+        throw new Error("Failed to create project from guide.");
+      }
+      if (!URL.canParse(guideLink)) {
+        throw new NotAllowedError(`Expected a valid link but got: ${guideLink}`);
+      }
+      await ProjectManaging.addLink(user, project.project._id, guideLink);
+      const fibers: ObjectId[] = selectedFibers.split(",").map((fiberId) => new ObjectId(fiberId));
+      const amounts: number[] = selectedAmounts.split(",").map((amount) => parseFloat(amount));
+
+      await Promise.all(fibers.map((fiber: ObjectId, idx: number) => Inventorying.editFiber(fiber, undefined, undefined, undefined, undefined, amounts[idx])));
+
+      return Responses.project(project.project);
+    }
+    if (!title || !status) {
+      throw new Error("Project must have a title.");
+    }
     return ProjectManaging.createProject(user, title, status);
   }
 
@@ -410,76 +507,6 @@ class Routes {
     await Promise.all(fiber_ids.fibers.map((fiber_id: ObjectId) => ProjectInventorying.deleteFiber(fiber_id)));
     return await ProjectManaging.deleteProject(user, oid);
   }
-
-  @Router.post("/guides/:id")
-  async importGuide(session: SessionDoc, id: string, title: string, guide_link: string, selected_fibers: string, selected_amounts: string) {
-    const user = Sessioning.getUser(session);
-    const oid = new ObjectId(id);
-    // TODO: get guide name from posting
-    const project = await ProjectManaging.createProject(user, title, "To Do");
-    if (project.project) {
-      if (!URL.canParse(guide_link)) {
-        throw new NotAllowedError(`expected VALID link but got ${guide_link}`);
-      }
-      await ProjectManaging.addLink(user, project.project._id, guide_link);
-    } else {
-      throw new Error("failed creating new project");
-    }
-    const fibers: ObjectId[] = selected_fibers.split(",").map((fiber_id: string) => new ObjectId(fiber_id));
-    // get amounts from the guide
-    const amounts: number[] = selected_amounts.split(",").map((amount: string) => parseFloat(amount));;
-    await Promise.all(fibers.map((fiber: ObjectId, idx: number) => Inventorying.editFiber(fiber, undefined, undefined, undefined, undefined, amounts[idx])));
-    return Responses.project(project.project);
-  }
-
-  // FRIENDS CONCEPT
-
-  //   @Router.get("/friends")
-  //   async getFriends(session: SessionDoc) {
-  //     const user = Sessioning.getUser(session);
-  //     return await Authing.idsToUsernames(await Friending.getFriends(user));
-  //   }
-
-  //   @Router.delete("/friends/:friend")
-  //   async removeFriend(session: SessionDoc, friend: string) {
-  //     const user = Sessioning.getUser(session);
-  //     const friendOid = (await Authing.getUserByUsername(friend))._id;
-  //     return await Friending.removeFriend(user, friendOid);
-  //   }
-
-  //   @Router.get("/friend/requests")
-  //   async getRequests(session: SessionDoc) {
-  //     const user = Sessioning.getUser(session);
-  //     return await Responses.friendRequests(await Friending.getRequests(user));
-  //   }
-
-  //   @Router.post("/friend/requests/:to")
-  //   async sendFriendRequest(session: SessionDoc, to: string) {
-  //     const user = Sessioning.getUser(session);
-  //     const toOid = (await Authing.getUserByUsername(to))._id;
-  //     return await Friending.sendRequest(user, toOid);
-  //   }
-
-  //   @Router.delete("/friend/requests/:to")
-  //   async removeFriendRequest(session: SessionDoc, to: string) {
-  //     const user = Sessioning.getUser(session);
-  //     const toOid = (await Authing.getUserByUsername(to))._id;
-  //     return await Friending.removeRequest(user, toOid);
-  //   }
-
-  //   @Router.put("/friend/accept/:from")
-  //   async acceptFriendRequest(session: SessionDoc, from: string) {
-  //     const user = Sessioning.getUser(session);
-  //     const fromOid = (await Authing.getUserByUsername(from))._id;
-  //     return await Friending.acceptRequest(fromOid, user);
-  //   }
-
-  //   @Router.put("/friend/reject/:from")
-  //   async rejectFriendRequest(session: SessionDoc, from: string) {
-  //     const user = Sessioning.getUser(session);
-  //     const fromOid = (await Authing.getUserByUsername(from))._id;
-  //     return await Friending.rejectRequest(fromOid, user);
-  //   }
 }
 
 /** The web app. */

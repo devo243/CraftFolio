@@ -25,9 +25,9 @@ onBeforeMount(async () => {
   <header>
     <nav>
       <div class="title">
-        <img src="@/assets/images/logo.svg" />
+        <img src="@/assets/images/snip.png" />
         <RouterLink :to="{ name: 'Home' }">
-          <h1>Carftfolio</h1>
+          <h1>Craftfolio</h1>
         </RouterLink>
       </div>
       <ul>
@@ -39,6 +39,9 @@ onBeforeMount(async () => {
         </li>
         <li v-else>
           <RouterLink :to="{ name: 'Login' }" :class="{ underline: currentRouteName == 'Login' }"> Login </RouterLink>
+        </li>
+        <li v-if="isLoggedIn">
+          <RouterLink :to="{ name: 'MyPosts' }" :class="{ underline: currentRouteName == 'MyPosts' }"> MyGuides </RouterLink>
         </li>
         <li>
           <RouterLink :to="{ name: 'Inventory' }" :class="{ underline: currentRouteName == 'Inventory' }"> Inventory </RouterLink>
@@ -82,7 +85,7 @@ img {
 
 a {
   font-size: large;
-  color: #FCF2CF;
+  color: #fcf2cf;
   text-decoration: none;
 }
 

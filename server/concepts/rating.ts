@@ -7,6 +7,8 @@ export interface RatingDoc extends BaseDoc {
   object: ObjectId;
 }
 
+const ECO_FRIENDLY_FIBERS = ["organic hemp", "organic cotton", "organic linen", "lyocell", "econyl", "pinatex", "qmonos", "bamboo"];
+
 /**
  * concept: Rating[Object]
  */
@@ -31,8 +33,7 @@ export default class RatingConcept {
   }
 
   async getObjectsWithMinRating(score: number) {
-    return await this.ratings.aggregateMatch([{$match: { rating: { $gte:  score} } },
-      { $sort: { rating: -1 } }]);
+    return await this.ratings.aggregateMatch([{ $match: { rating: { $gte: score } } }, { $sort: { rating: -1 } }]);
   }
 
   async update(_id: ObjectId, rating: number) {
@@ -43,5 +44,19 @@ export default class RatingConcept {
   async delete(_id: ObjectId) {
     await this.ratings.deleteOne({ _id });
     return { msg: "Rating deleted successfully!" };
+  }
+
+  static calculateEcoRating(fiber_types: string[][]) {
+    const total_fibers = fiber_types.length;
+    const eco_friendly_count = fiber_types.filter((fiber_row) => ECO_FRIENDLY_FIBERS.includes(fiber_row[2]?.toLowerCase())).length;
+    return total_fibers > 0 ? (eco_friendly_count / total_fibers) * 5 : 0;
+  }
+
+  static calculateBeginnerRating(options?: { tips?: string[]; mistakes?: string[] }) {
+    const tips_count = options?.tips?.length || 0;
+    const mistakes_count = options?.mistakes?.length || 0;
+    const max_tips_mistakes = 3;
+
+    return Math.min(((tips_count + mistakes_count) / max_tips_mistakes) * 5, 5);
   }
 }
