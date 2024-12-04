@@ -53,7 +53,7 @@ const toggleEditing = () => {
       <button v-else class="edit" @click="toggleEditing">Edit</button>
       <form @submit.prevent="addImage()">
         <!-- <label for="link">Add a new link:</label> -->
-        <input id="link" v-model="imageLink" required />
+        <input type="url" id="link" v-model="imageLink" required />
         <button class="submit" type="submit">+</button>
       </form>
     </div>

@@ -10,18 +10,6 @@ const emit = defineEmits(["refreshFibers"]);
 
 const fiber = ref(props.fiber);
 const editing = ref(false);
-// const customType = ref("");
-// const availableTypes = [
-//   "cotton",
-//   "linen",
-//   "acrylic",
-//   "polyester",
-//   "flannel",
-//   "shiffon",
-//   "interfacing",
-//   "zipper",
-//   "button",
-// ];
 
 const deleteFiber = async () => {
   try {
@@ -67,14 +55,13 @@ const cancel = async () => {
 </script>
 
 <template>
-  <!-- {{ props.id }} -->
+  <!-- {{fiber}} -->
   <div class="fiber">
     <div class="container">
       <div class="block">
         <span v-if="!editing">{{ fiber.type }}</span>
         <input v-else type="text" id="type" v-model="fiber.type" :placeholder="fiber.type" />
       </div>
-      
       <div class="block">
         <span v-if="!editing">{{ fiber.remainingYardage }} yd</span>
         <input v-else type="number" step="any" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />

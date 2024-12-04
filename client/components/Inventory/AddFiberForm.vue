@@ -69,8 +69,8 @@ const emptyForm = () => {
         placeholder="Enter custom type" 
         v-if="type === 'custom'"
       />
-    <input type="text" id="color" v-model="color" placeholder="Color" />
-    <input type="text" id="yardage" v-model="yardage" placeholder="Yardage" required />
+    <input type="color" id="color" v-model="color" placeholder="Color" />
+    <input type="number"  step="any" id="yardage" v-model="yardage" placeholder="Yardage" required />
     <button type="submit" class="button-custom pure-button pure-button-primary">Add</button>
   </form>
 </template>
@@ -83,6 +83,7 @@ form {
   flex-direction: row;
   gap: 0.5em;
   padding: 1em;
+  align-items: center;
 }
 
 input {

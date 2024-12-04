@@ -111,7 +111,11 @@ export default class DocCollection<Schema extends BaseDoc> {
   async partialUpdateOne(filter: Filter<Schema>, update: Partial<Schema>, options?: FindOneAndUpdateOptions): Promise<UpdateResult<Schema>> {
     const safe = this.withoutInternal(update);
     safe.dateUpdated = new Date();
-    return await this.collection.updateOne(filter, { $set: safe as Partial<Schema> }, options);
+    // Remove keys with undefined values
+    const updatedSafe = Object.fromEntries(
+      Object.entries(safe).filter(([key, value]) => value !== undefined)
+    );
+    return await this.collection.updateOne(filter, { $set: updatedSafe as Partial<Schema> }, options);
   }
 
   /**

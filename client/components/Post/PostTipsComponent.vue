@@ -35,16 +35,26 @@ const addTip = async () => {
 </script>
 
 <template>
-  <section class="header">
-    <h1 class="title">Tips/Mistakes</h1>
+  <section class="header" v-if="currentOptions.tips.length !== 0 || currentUsername===props.post.author">
+    <h2 class="title">Tips/Common Mistakes</h2>
   </section>
   <section class="container">
-    <div class="tips" v-if="currentOptions.tips.length !== 0">
-      <a class="tip" v-for="(tip, index) in currentOptions.tips" :key="index" >- {{ tip }}</a>
+    <div class="hints" v-if="currentOptions.tips.length !== 0">
+      <div v-for="(tip, index) in currentOptions.tips" :key="index" class="hint">
+        <img src="@/assets/icons/check.svg" class="tip"/>
+        <a > {{ tip }}</a>
+      </div>
     </div>
-    <p class="placeholder" v-else>Add some tips...</p>
+    <div class="hints" v-if="currentOptions.mistakes.length !== 0">
+      <div v-for="(mistake, index) in currentOptions.mistakes" :key="index" class="hint">
+        <img src="@/assets/icons/mistake.svg" class="mistake"/>
+        <a > {{ mistake }}</a>
+      </div>
+    </div>
+    
     <form @submit.prevent="addTip()" v-if="currentUsername===props.post.author">
       <!-- <label for="link">Add a new link:</label> -->
+      <p class="placeholder" v-if="currentOptions.mistakes.length === 0">Add some tips...</p>
       <input id="tip" v-model="newTip" required />
       <button type="submit">+</button>
     </form>
@@ -52,23 +62,39 @@ const addTip = async () => {
 </template>
 
 <style scoped>
+.hint{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: small;
+}
+
+.title {
+  color: var(--dark-blue);
+}
+
+.hint a {
+  padding: 0.5em;
+  box-shadow: 0px 4px 0px rgba(181, 181, 181, 0.3);  
+}
+
 .container {
   width: 100%;
-  height: 35vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   align-items: flex-start;
-  /* margin: 0 0 0 1em; */
-  background-color: rgb(226, 226, 226);
+  /* background-color: rgb(226, 226, 226); */
   border-radius: 2em;
 }
 a,
 p,
 form {
-  padding: 1em;
+  margin-left: 1em;
   font-size: 1.5em;
-  margin: 0;
+  /* margin: 0; */
+  background-color: var(--grey);
+  border-radius: 0.5em;
+  box-shadow: darkgray;
 }
 
 form {
@@ -96,15 +122,26 @@ button {
   border-radius: 1em;
 }
 
-.tips {
+.hints {
   display: flex;
   flex-direction: column;
   gap: 1em;
-  padding: 1em;
+  padding: 0em 1em 1em;
 }
 
 .tip {
-  padding: 0;
+  background-color: var(--green);
+}
+
+.mistake {
+  background-color: var(--red);
+}
+
+img {
+  width: 32px;
+  height: 100%;
+  border-radius: 1em;
+  padding: 0.5em;
 }
 
 section {
@@ -115,6 +152,6 @@ section {
   margin: auto;
   max-width: 90em;
   max-height: 90%;
-  padding-top: 1em;
+  /* padding-top: 1em; */
 }
 </style>

@@ -2,6 +2,7 @@
 import { fetchy } from "@/utils/fetchy";
 import { onBeforeMount, ref } from "vue";
 import { useRouter } from "vue-router";
+import PostInventoryComponent from "./PostInventory/PostInventoryComponent.vue";
 import PostMarkdownComponent from "./PostMarkdownComponent.vue";
 import PostTipsComponent from "./PostTipsComponent.vue";
 
@@ -46,20 +47,26 @@ onBeforeMount(async () => {
       <img class="back" src="@/assets/icons/back-arrow.svg" @click="goBack" />
       <h1 class="title">{{ post.title }}</h1>
     </section>
+    <PostTipsComponent :post="post" @refresh-post="getPost"/>
     <section>
       <PostMarkdownComponent :content="post.content" :post="post" @refresh-post="getPost"/>
     </section>
-    <PostTipsComponent :post="post" @refresh-post="getPost"/>
+    <!-- <section> -->
+      <PostInventoryComponent :fibers="post.fibers" :post_id="post._id" :author="post.author" @refresh-post="getPost"/>
+    <!-- </section> -->
   </div>
 
 </template>
 
 <style scoped>
-section {
+.header {
   display: flex;
   flex-direction: row;
   gap: 1em;
   align-items: center;
+}
+
+section {
   margin: auto;
   max-width: 90em;
   max-height: 90%;
@@ -102,5 +109,8 @@ input:checked + .nav {
   padding-top: 1em;
 }
 
-
+h1 {
+  margin: 0px;
+  color: var(--earthy-green);
+}
 </style>

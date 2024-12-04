@@ -45,6 +45,7 @@ export default class PostingConcept {
   }
 
   async getFibersForPost(_id: ObjectId) {
+    console.log("get: ", _id, typeof(_id))
     return (await this.posts.readOne({ _id }))?.options?.fibers;
   }
 
@@ -57,6 +58,42 @@ export default class PostingConcept {
     // since undefined values for partialUpdateOne are ignored.
     await this.posts.partialUpdateOne({ _id }, { title, content, options });
     return { msg: "Post successfully updated!" };
+  }
+
+  async updateFibers(_id: ObjectId, created_id: ObjectId, alternative_to: string) {
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    const existing_fiber = post.options?.fibers;
+    let new_fibers: ObjectId[][] | undefined;
+    if (!existing_fiber) {
+      new_fibers = [[created_id]];
+    }
+    else if (alternative_to === "") {
+      new_fibers = existing_fiber.concat([[created_id]]);
+    } else  {
+      new_fibers = existing_fiber.map((fibers: ObjectId[]) => (fibers.map((fiber) => fiber.toString()).includes(alternative_to) ? fibers.concat([created_id]) : fibers));
+    }
+    return await this.posts.partialUpdateOne({_id}, {options: { fibers: new_fibers, tips: post.options?.tips, mistakes: post.options?.mistakes, links: post.options?.links}});
+  }
+
+  async deleteFibers(_id: ObjectId, fiber_id: string) {
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    const existing_fibers = post.options?.fibers;
+    const new_fibers: ObjectId[][] = [];
+    if (!existing_fibers) {
+      throw new NotAllowedError(`Fiber ${fiber_id} does not exist!`);
+    }
+    for (const fiberSet of existing_fibers) {
+      if (fiberSet[0].toString() !== fiber_id) {
+        new_fibers.push(fiberSet.filter((existing_fiber: ObjectId) => existing_fiber.toString() !== fiber_id));
+      }
+    }
+    return await this.posts.partialUpdateOne({_id}, {options: { fibers: new_fibers, tips: post.options?.tips, mistakes: post.options?.mistakes, links: post.options?.links}});
   }
 
   async delete(_id: ObjectId) {
