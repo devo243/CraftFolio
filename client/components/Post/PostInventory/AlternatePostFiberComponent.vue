@@ -4,7 +4,7 @@ import { fetchy } from "@/utils/fetchy";
 import { storeToRefs } from "pinia";
 import { ref } from "vue";
 
-const props = defineProps(["fiber", "id"]);
+const props = defineProps(["fiber", "id","post_author"]);
 const { currentUsername } = storeToRefs(useUserStore());
 const emit = defineEmits(["refreshFibers"]);
 
@@ -13,7 +13,7 @@ const editing = ref(false);
 
 const deleteFiber = async () => {
   try {
-    await fetchy(`/api/projects/${props.id}/fibers/${props.fiber._id}`, "DELETE");
+    await fetchy(`/api/posts/${props.id}/fibers/${props.fiber._id}`, "DELETE");
   } catch (_) {
     console.log(_);
     return;
@@ -23,7 +23,7 @@ const deleteFiber = async () => {
 
 const editFiber = async () => {
   try {
-    await fetchy(`/api/projects/${props.id}/fibers/${props.fiber._id}`, "PATCH", {
+    await fetchy(`/api/posts/${props.id}/fibers/${props.fiber._id}`, "PATCH", {
       body: {
         name: fiber.value.name,
         brand: fiber.value.brand,
@@ -55,40 +55,24 @@ const cancel = async () => {
 </script>
 
 <template>
+  <!-- {{fiber}} -->
   <div class="fiber">
     <div class="container">
-      <div class="block">
-        <span v-if="!editing">{{ fiber.name }}</span>
-        <input v-else type="text" id="name" v-model="fiber.name" :placeholder="fiber.name" />
-      </div>
-      <div class="vl"></div>
-      <div class="block">
-        <span v-if="!editing">{{ fiber.brand }}</span>
-        <input v-else type="text" id="brand" v-model="fiber.brand" :placeholder="fiber.brand" />
-      </div>
-      <div class="vl"></div>
       <div class="block">
         <span v-if="!editing">{{ fiber.type }}</span>
         <input v-else type="text" id="type" v-model="fiber.type" :placeholder="fiber.type" />
       </div>
-      <div class="vl"></div>
-      <div class="block">
-        <span v-if="!editing && fiber.color.startsWith('#') && fiber.color.length === 7">    <div
-      :style="{ backgroundColor: fiber.color, width: 'auto', height: '15px', border: `1px solid grey` }"
-    ></div></span>
-        <span v-else-if="!editing">{{ fiber.color }}</span>
-        <input v-else type="color" id="color" v-model="fiber.color" :placeholder="fiber.color" />
-      </div>
-      <div class="vl"></div>
       <div class="block">
         <span v-if="!editing">{{ fiber.remainingYardage }} yd</span>
         <input v-else type="number" step="any" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
       </div>
     </div>
-    <button v-if="!editing" v-on:click="toggleEditing"><img src="@/assets/icons/pencil.svg" /></button>
-    <button v-else v-on:click="toggleEditing" class="edit"><img src="@/assets/icons/check.svg" /></button>
-    <button v-if="editing" v-on:click="cancel" class="cancel"><img src="@/assets/icons/cancel.svg" /></button>
-    <button v-on:click="deleteFiber" class="trash"><img src="@/assets/icons/thrash.svg" /></button>
+    <div v-if="props.post_author === currentUsername" class="editing-buttons">
+      <button v-if="!editing" v-on:click="toggleEditing"><img src="@/assets/icons/pencil.svg" /></button>
+      <button v-else v-on:click="toggleEditing" class="edit"><img src="@/assets/icons/check.svg" /></button>
+      <button v-if="editing" v-on:click="cancel" class="cancel"><img src="@/assets/icons/cancel.svg" /></button>
+      <button v-on:click="deleteFiber" class="trash"><img src="@/assets/icons/thrash.svg" /></button>
+    </div>
   </div>
 </template>
 
@@ -101,28 +85,31 @@ const cancel = async () => {
 }
 
 .container {
-  width: 80%;
+  width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  padding: 0px 10px 0px 10px;
-  height: 60px;
-  background-color: #E8E8E8;
-  border-radius: 2em;
+  gap: 0.5em;
+
 }
 
 .block {
+  display: flex;
+  align-items: center;
   width: 20%;
   overflow: hidden;
-  text-align: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0px 10px 0px 10px;
+  box-shadow: 0px 4px 0px rgba(181, 181, 181, 0.6);  
+  background-color: var(--grey);
+  border-radius: 1em;
 }
 
 input {
   width: 90%;
   overflow: hidden;
   text-align: center;
-  background-color: var(--base-bg);
+  background-color: rgb(238, 238, 238);
   border: none;
   border-radius: 2em;
   box-shadow: none;
@@ -155,8 +142,9 @@ button {
   background-color: var(--grey);
 }
 
-.vl {
-  border-left: 1px solid white;
-  height: 100%;
+.editing-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5em;
 }
 </style>

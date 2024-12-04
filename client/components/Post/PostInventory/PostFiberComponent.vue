@@ -4,16 +4,28 @@ import { fetchy } from "@/utils/fetchy";
 import { storeToRefs } from "pinia";
 import { ref } from "vue";
 
-const props = defineProps(["post", "fiber", "id"]);
+const props = defineProps(["fiber", "id","post_author"]);
 const { currentUsername } = storeToRefs(useUserStore());
 const emit = defineEmits(["refreshFibers"]);
 
 const fiber = ref(props.fiber);
 const editing = ref(false);
+// const customType = ref("");
+// const availableTypes = [
+//   "cotton",
+//   "linen",
+//   "acrylic",
+//   "polyester",
+//   "flannel",
+//   "shiffon",
+//   "interfacing",
+//   "zipper",
+//   "button",
+// ];
 
 const deleteFiber = async () => {
   try {
-    await fetchy(`/api/projects/${props.id}/fibers/${props.fiber._id}`, "DELETE");
+    await fetchy(`/api/posts/${props.id}/fibers/${props.fiber._id}`, "DELETE");
   } catch (_) {
     console.log(_);
     return;
@@ -23,13 +35,13 @@ const deleteFiber = async () => {
 
 const editFiber = async () => {
   try {
-    await fetchy(`/api/projects/${props.id}/fibers/${props.fiber._id}`, "PATCH", {
+    await fetchy(`/api/posts/${props.id}/fibers/${props.fiber._id}`, "PATCH", {
       body: {
         name: fiber.value.name,
         brand: fiber.value.brand,
         type: fiber.value.type,
         color: fiber.value.color,
-        yardage: fiber.value.yardage,
+        yardage: fiber.value.remainingYardage,
       },
     });
   } catch {
@@ -46,39 +58,34 @@ const toggleEditing = async () => {
     editing.value = false;
   }
 };
+
+const cancel = async () => {
+  editing.value = false;
+  fiber.value = props.fiber;
+  emit("refreshFibers");
+}
 </script>
 
 <template>
+  <!-- {{ props.id }} -->
   <div class="fiber">
     <div class="container">
-      <div class="block">
-        <span v-if="!editing">{{ fiber.name }}</span>
-        <input v-else type="text" id="name" v-model="fiber.name" :placeholder="fiber.name" />
-      </div>
-      <div class="vl"></div>
-      <div class="block">
-        <span v-if="!editing">{{ fiber.brand }}</span>
-        <input v-else type="text" id="brand" v-model="fiber.brand" :placeholder="fiber.brand" />
-      </div>
-      <div class="vl"></div>
       <div class="block">
         <span v-if="!editing">{{ fiber.type }}</span>
         <input v-else type="text" id="type" v-model="fiber.type" :placeholder="fiber.type" />
       </div>
-      <div class="vl"></div>
+      
       <div class="block">
-        <span v-if="!editing">{{ fiber.color }}</span>
-        <input v-else type="text" id="yardage" v-model="fiber.color" :placeholder="fiber.color" />
-      </div>
-      <div class="vl"></div>
-      <div class="block">
-        <span v-if="!editing">{{ fiber.remainingYardage }} ft</span>
-        <input v-else type="text" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
+        <span v-if="!editing">{{ fiber.remainingYardage }} yd</span>
+        <input v-else type="number" step="any" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
       </div>
     </div>
-    <button v-if="!editing" v-on:click="toggleEditing"><img src="@/assets/icons/pencil.svg" /></button>
-    <button v-else v-on:click="toggleEditing" class="edit"><img src="@/assets/icons/pencil.svg" /></button>
-    <button v-on:click="deleteFiber"><img src="@/assets/icons/thrash.svg" /></button>
+    <div v-if="props.post_author === currentUsername" class="editing-buttons">
+      <button v-if="!editing" v-on:click="toggleEditing"><img src="@/assets/icons/pencil.svg" /></button>
+      <button v-else v-on:click="toggleEditing" class="edit"><img src="@/assets/icons/check.svg" /></button>
+      <button v-if="editing" v-on:click="cancel" class="cancel"><img src="@/assets/icons/cancel.svg" /></button>
+      <button v-on:click="deleteFiber" class="trash"><img src="@/assets/icons/thrash.svg" /></button>
+    </div>
   </div>
 </template>
 
@@ -91,21 +98,24 @@ const toggleEditing = async () => {
 }
 
 .container {
-  width: 70em;
+  width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  padding: 0px 10px 0px 10px;
-  height: 60px;
-  background-color: rgb(190, 190, 190);
-  border-radius: 2em;
+  gap: 0.5em;
+
 }
 
 .block {
+  display: flex;
+  align-items: center;
   width: 20%;
   overflow: hidden;
-  text-align: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0px 10px 0px 10px;
+  box-shadow: 0px 4px 0px rgba(181, 181, 181, 0.6);  
+  background-color: var(--grey);
+  border-radius: 1em;
 }
 
 input {
@@ -126,14 +136,28 @@ img {
 button {
   width: 40px;
   height: 40px;
+  background-color: var(--earthy-green);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .edit {
-  background-color: lightgray;
+  background-color: var(--green);
+  border-color: var(--green);
 }
 
-.vl {
-  border-left: 1px solid black;
-  height: 100%;
+.trash {
+  background-color: var(--red);
+}
+
+.cancel {
+  background-color: var(--grey);
+}
+
+.editing-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5em;
 }
 </style>

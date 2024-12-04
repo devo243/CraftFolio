@@ -30,7 +30,7 @@ const addImage = async () => {
     <p class="placeholder" v-else>Add some images...</p>
     <form @submit.prevent="addImage()">
       <!-- <label for="link">Add a new link:</label> -->
-      <input id="link" v-model="imageLink" required />
+      <input type="url" id="link" v-model="imageLink" required />
       <button type="submit">+</button>
     </form>
   </div>

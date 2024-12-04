@@ -11,8 +11,11 @@ const updateFibers = async (fiberTypes:string[][], fiberYards: string[][]) => {
 };
 
 const newType = ref("");
+const alternateNewType = ref("");
 const customType = ref("");
+const alternateCustomType = ref("");
 const newYards = ref(0);
+const alternateNewYards = ref(0);
 const availableTypes = [
   "cotton",
   "linen",
@@ -26,7 +29,9 @@ const availableTypes = [
 ];
 const emptyForm = ()=>{
     newType.value="";
+    alternateNewType.value=""
     newYards.value = 0;
+    alternateNewYards.value = 0;
 };
 
 const addFiber = async () => {
@@ -40,12 +45,12 @@ const addFiber = async () => {
 }
 
 const addAlternateFiber = async (row: number) => {
-    if(newType.value==='custom')
+    if(alternateNewType.value==='custom')
     {
-        newType.value = customType.value;
+      alternateNewType.value = alternateCustomType.value;
     }
-    fiberTypes.value[row].push(newType.value);
-    fiberYards.value[row].push(newYards.value);
+    fiberTypes.value[row].push(alternateNewType.value);
+    fiberYards.value[row].push(alternateNewYards.value);
     emptyForm();
 }
 
@@ -70,6 +75,7 @@ const deleteFiber = async (row: number, column: number)=>{
     <section class="header">
     <h1 class="title">Fibers</h1>
     </section>
+    
     <section v-for="(fibers,index) of fiberTypes" :key="index">
         <div class="container">
             <div class="block">
@@ -79,10 +85,10 @@ const deleteFiber = async (row: number, column: number)=>{
                 <span>{{ fiberYards[index][0] }} yd </span>
             </div>
             <div class="block">
-                <button class="button-error btn-small pure-button" @click="deleteFiber(index, 0)">Delete</button>
+                <button class="button-error btn-small pure-button" @click="deleteFiber(index, 0)" type="button">Delete</button>
             </div>
         </div>
-        <div  v-if="fibers.length>1" class="encapsulation">
+        <div  v-if="fibers.length>=1" class="encapsulation">
             <h2>Alternate Fibers</h2>
             <div class="alternate" v-for="index2 in fibers.length-1" :key="index2">
                 <div class="block">
@@ -92,33 +98,35 @@ const deleteFiber = async (row: number, column: number)=>{
                     <span>{{ fiberYards[index][index2] }} yd</span>
                 </div>
                 <div class="block">
-                    <button class="button-error btn-small pure-button" @click="deleteFiber(index, index2)">Delete</button>
+                    <button type="button" class="button-error btn-small pure-button" @click="deleteFiber(index, index2)">Delete</button>
                 </div>
             </div>
-        </div>
-        <form @submit.prevent="addAlternateFiber(index)">
-            <p>add alternate fibers</p>
-            <select v-model="newType" required>
-            <option disabled value="">Please select one</option>
-            <option v-for="(type, index) of availableTypes" :key="index">{{ type }}</option>
-            <option value="custom">Custom...</option>
-            </select>
-            <input 
-                type="text" 
-                v-model="customType" 
-                placeholder="Enter custom type" 
-                v-if="newType === 'custom'"
-            />
-            <input type="number" id="yardage" v-model="newYards" placeholder="Yardage" required />
-            <button type="submit" class="button-custom pure-button pure-button-primary">Add</button>
+
+            <form @submit.prevent="addAlternateFiber(index)" class="newFiberForm">
+                <select v-model="alternateNewType" required>
+                  <option disabled value="">Please select one</option>
+                  <option v-for="(type, index) of availableTypes" :key="index">{{ type }}</option>
+                  <option value="custom">Custom...</option>
+                </select>
+                <input 
+                    type="text" 
+                    v-model="alternateCustomType" 
+                    placeholder="Enter custom type" 
+                    v-if="alternateNewType === 'custom'"
+                    class="custom"
+                />
+                <input type="number" step="any" id="yardage" v-model="alternateNewYards" placeholder="Yardage" required />
+                <button type="submit" class="button-custom pure-button pure-button-primary">Add</button>
         </form>
+        </div>
+
     </section>
 
     <section class="header">
     <h1 class="title">Add Fibers</h1>
     </section>
     <section>
-        <form @submit.prevent="addFiber()">
+        <form @submit.prevent="addFiber()" class="newFiberForm">
             <select v-model="newType" required>
             <option disabled value="">Please select one</option>
             <option v-for="(type, index) of availableTypes" :key="index">{{ type }}</option>
@@ -130,7 +138,7 @@ const deleteFiber = async (row: number, column: number)=>{
                 placeholder="Enter custom type" 
                 v-if="newType === 'custom'"
             />
-            <input type="number" id="yardage" v-model="newYards" placeholder="Yardage" required />
+            <input type="number" step="any" id="yardage" v-model="newYards" placeholder="Yardage" required />
             <button type="submit" class="button-custom pure-button pure-button-primary">Add</button>
         </form>
     </section>
@@ -150,6 +158,13 @@ p{
   margin: 0;
 }
 
+h2 {
+  margin-bottom: 0px;
+}
+
+.custom {
+  flex: 1;
+}
 
 input {
   width: 100%;
@@ -158,7 +173,7 @@ input {
 }
 
 button {
-  border-radius: 1em;
+  border-radius: 0.5em;
 }
 
 .tips {
@@ -200,7 +215,7 @@ section {
 }
 
 input {
-  width: 18%;
+  width: 10%;
 }
 
 .button-custom {
@@ -225,21 +240,27 @@ input {
   flex-direction: column;
   justify-content: left;
   align-items: left;
-  padding: 0px 10px 0px 10px;
-  background-color: #E8E8E8;
+  padding: 0px 10px 10px 10px;
+  /* background-color: #E8E8E8; */
+  background-color: #676767;
+  color: #E8E8E8;
   border-radius: 1em;
+  gap: 1em;
+  margin: 0px 20px;
 }
 
 .alternate {
-  width: 90%;
+  width: auto;
   display: flex;
   flex-direction: row;
   justify-content: left;
   align-items: center;
-  padding: 0px 10px 0px 10px;
+  padding: 0px 10px;
+  margin: 0px 10px;
   height: 60px;
-  background-color: #676767;
-  color:#E8E8E8;
+  /* background-color: #676767; */
+  background-color: #E8E8E8;
+  color:#676767;
   border-radius: 1em;
 }
 
@@ -261,4 +282,10 @@ input {
   border-radius: 1em;
 }
 
+.newFiberForm {
+  display: flex;
+  gap: 0.5em;
+  padding: 0px 10px;
+  width: auto;
+}
 </style>
