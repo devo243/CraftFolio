@@ -13,7 +13,7 @@ const editing = ref(false);
 
 const deleteFiber = async () => {
   try {
-    await fetchy(`/api/projects/${props.id}/fibers/${props.fiber._id}`, "DELETE");
+    await fetchy(`/api/posts/${props.id}/fibers/${props.fiber._id}`, "DELETE");
   } catch (_) {
     console.log(_);
     return;
@@ -23,13 +23,13 @@ const deleteFiber = async () => {
 
 const editFiber = async () => {
   try {
-    await fetchy(`/api/projects/${props.id}/fibers/${props.fiber._id}`, "PATCH", {
+    await fetchy(`/api/posts/${props.id}/fibers/${props.fiber._id}`, "PATCH", {
       body: {
         name: fiber.value.name,
         brand: fiber.value.brand,
         type: fiber.value.type,
         color: fiber.value.color,
-        yardage: fiber.value.yardage,
+        yardage: fiber.value.remainingYardage,
       },
     });
   } catch {
@@ -46,6 +46,12 @@ const toggleEditing = async () => {
     editing.value = false;
   }
 };
+
+const cancel = async () => {
+  editing.value = false;
+  fiber.value = props.fiber;
+  emit("refreshFibers");
+}
 </script>
 
 <template>
@@ -58,13 +64,14 @@ const toggleEditing = async () => {
       </div>
       <div class="block">
         <span v-if="!editing">{{ fiber.remainingYardage }} yd</span>
-        <input v-else type="text" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
+        <input v-else type="number" step="any" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
       </div>
     </div>
-    <div v-if="props.post_author === currentUsername">
+    <div v-if="props.post_author === currentUsername" class="editing-buttons">
       <button v-if="!editing" v-on:click="toggleEditing"><img src="@/assets/icons/pencil.svg" /></button>
-      <button v-else v-on:click="toggleEditing" class="edit"><img src="@/assets/icons/pencil.svg" /></button>
-      <button v-on:click="deleteFiber"><img src="@/assets/icons/thrash.svg" /></button>
+      <button v-else v-on:click="toggleEditing" class="edit"><img src="@/assets/icons/check.svg" /></button>
+      <button v-if="editing" v-on:click="cancel" class="cancel"><img src="@/assets/icons/cancel.svg" /></button>
+      <button v-on:click="deleteFiber" class="trash"><img src="@/assets/icons/thrash.svg" /></button>
     </div>
   </div>
 </template>
@@ -116,14 +123,28 @@ img {
 button {
   width: 40px;
   height: 40px;
+  background-color: var(--earthy-green);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .edit {
-  background-color: lightgray;
+  background-color: var(--green);
+  border-color: var(--green);
 }
 
-.vl {
-  border-left: 1px solid black;
-  height: 100%;
+.trash {
+  background-color: var(--red);
+}
+
+.cancel {
+  background-color: var(--grey);
+}
+
+.editing-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5em;
 }
 </style>

@@ -28,6 +28,29 @@ const getAvailableMaterialsPost = async () => {
 
 };
 
+const addRecommendedFiber = async (type: string, yardage: number) => {
+  await fetchy(`/api/posts/${props.post_id}/fibers`, "POST", {
+        body: {
+          alternative_to: "",
+          type,
+          yardage,
+        },
+      });
+}
+
+const addAlternativeFiber = (alternative_to: string) => {
+  const addFiber = async (type: string, yardage: number) => {
+    await fetchy(`/api/posts/${props.post_id}/fibers`, "POST", {
+        body: {
+          alternative_to,
+          type,
+          yardage,
+        },
+      });
+  }
+  return addFiber;
+}
+
 onBeforeMount(async () => {
   await getAvailableMaterialsPost();
   loaded.value = true;
@@ -36,7 +59,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <section v-if="loaded">
+  <section v-if="loaded" class="main-container">
     <section class="header">
       <h1>Fibers</h1>
       <div>
@@ -56,17 +79,22 @@ onBeforeMount(async () => {
       </div>
       <article v-for="fiber in props.fibers" :key="fiber._id">
         <div class="separation">
-          <div class="fiber-selection grid-item">
+          <div class="fiber-selection grid-item recommended">
             <div :class="presentFibers.includes(fiber.recommended._id) ? 'present' : 'absent'">
             <input type="checkbox" v-model="selectedItems" :value="fiber.recommended._id"/>
             </div>
             <PostFiberComponent :fiber="fiber.recommended" :id="props.post_id" :post_author="author" @refreshFibers="getInventory" :style="{flex : 1}"/>
           </div>
-          <div class="fiber-selection grid-item" v-for="alternative_fiber of fiber.alternatives">
-            <div :class="presentFibers.includes(alternative_fiber._id) ? 'present' : 'absent'">
-            <input type="checkbox" v-model="selectedItems" :value="alternative_fiber._id"/>
+          <div class="fiber-selection grid-item alternative">
+            <div v-for="alternative_fiber of fiber.alternatives" class="recommended">
+              <div :class="presentFibers.includes(alternative_fiber._id) ? 'present' : 'absent'">
+                <input type="checkbox" v-model="selectedItems" :value="alternative_fiber._id"/>
+              </div>
+              <AlternatePostFiberComponent :fiber="alternative_fiber" :id="props.post_id" :post_author="author" @refreshFibers="getInventory" :style="{flex : 1}" />
             </div>
-            <AlternatePostFiberComponent :fiber="alternative_fiber" :id="props.post_id" :post_author="author" @refreshFibers="getInventory" :style="{flex : 1}" />
+            <section v-if="currentUsername===props.author" class="add-fiber">
+                <AddPostFiberForm :add_fiber="addAlternativeFiber(fiber.recommended._id)" :post_id="props.post_id" @refreshFibers="getInventory" />
+            </section>
           </div>
         </div>
       </article>
@@ -74,7 +102,7 @@ onBeforeMount(async () => {
     <p v-else>No inventory</p>
     <section v-if="currentUsername===props.author">
       <h2>Add fiber:</h2>
-      <AddPostFiberForm :id="props.post_id" @refreshFibers="getInventory" />
+      <AddPostFiberForm :add_fiber="addRecommendedFiber" :post_id="props.post_id" @refreshFibers="getInventory" />
     </section>
   </section>
   <!-- <div>
@@ -83,6 +111,13 @@ onBeforeMount(async () => {
 </template>
 
 <style scoped>
+.add-fiber {
+  max-height: 100%;
+}
+
+.main-container {
+  margin-bottom: 5em;
+}
 .header {
   display: flex;
   flex-direction: row;
@@ -103,32 +138,43 @@ onBeforeMount(async () => {
 }
 
 .fiber-selection input {
-  width: 30px;
-  height: 100%;
+  width: 24px;
+  height: 24px;
+}
+
+.present, .absent {
+  border-radius: 0.5em;
+  width: 24px;
+  height: 24px;
 }
 
 .present {
   border: 5px solid var(--green);
-  border-radius: 0.5em;
   accent-color: var(--green);
 }
 
 .absent {
   border: 5px dashed var(--yellow);
-  border-radius: 0.5em;
   accent-color: var(--yellow);
 }
 
-.fiber-selection {
+.recommended{
   display: flex;
   flex-direction: row;
+  gap: 0.5em;
+  align-items: flex-start;
+}
+
+.alternative {
+  display: flex;
+  flex-direction: column;
   gap: 0.5em;
 }
 
 .separation {
   display: grid;
   grid-template-columns: 1fr 1fr; /* Two equal columns */
-  gap: 16px;
+  gap: 4em;
 }
 
 article .separation {

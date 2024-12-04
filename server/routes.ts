@@ -252,11 +252,9 @@ class Routes {
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
     const created = await GuideInventorying.addNewFiber(oid, "", "", type, "", yardage);
-    if (created.fiber !== null) {
-      const altid = new ObjectId(alternative_to);
-      const existing_fiber = await Posting.getFibersForPost(oid);
-      const new_fibers = existing_fiber?.map((fibers: ObjectId[]) => (alternative_to in fibers.map((fiber) => fiber.toString()) ? fibers.concat([altid]) : fibers));
-      return await Posting.update(oid, undefined, undefined, { fibers: new_fibers });
+    const created_id = created.fiber?._id;
+    if (created_id) {
+      return await Posting.updateFibers(oid, created_id, alternative_to);
     } else {
       return created.msg;
     }
@@ -267,7 +265,7 @@ class Routes {
     const user = Sessioning.getUser(session); // the user is considered the author of the guide
     const oid = new ObjectId(id); // the guide is considered the owner of the inventory
     const fid = new ObjectId(fiber_id);
-    await Posting.assertAuthorIsUser(user, oid);
+    await Posting.assertAuthorIsUser(oid, user);
     await GuideInventorying.assertOwnerIsUser(fid, oid);
     return GuideInventorying.editFiber(fid, name, brand, type, color, yardage);
   }
@@ -278,11 +276,9 @@ class Routes {
     const oid = new ObjectId(id); // the guide is considered the owner of the inventory
     const fid = new ObjectId(fiber_id);
     console.log(fid);
-    await Posting.assertAuthorIsUser(user, oid);
+    await Posting.assertAuthorIsUser(oid, user);
     await GuideInventorying.assertOwnerIsUser(fid, oid);
-    const existing_fibers = await Posting.getFibersForPost(oid);
-    const new_fibers = existing_fibers?.map((existing_fiber_alternatives: ObjectId[]) => existing_fiber_alternatives.filter((existing_fiber: ObjectId) => existing_fiber !== fid));
-    await Posting.update(oid, undefined, undefined, { fibers: new_fibers });
+    await Posting.deleteFibers(oid, fiber_id);
     return await GuideInventorying.deleteFiber(fid);
   }
 
@@ -293,16 +289,13 @@ class Routes {
     const availableFibers = await Inventorying.getUserInventory(user);
     const neededFibers = await GuideInventorying.getUserInventory(oid);
     const usableGuides = new Set<ObjectId>();
-    console.log("mine: ", availableFibers, " post: ", neededFibers);
     for (const fiber of neededFibers) {
       for (const availableFiber of availableFibers) {
-        console.log("mine: ", availableFiber, " post: ", fiber);
         if (fiber.type === availableFiber.type && fiber.remainingYardage <= availableFiber.remainingYardage) {
           usableGuides.add(fiber._id);
         }
       }
     }
-    console.log(usableGuides)
     return new Array(...usableGuides);
   }
 
@@ -457,7 +450,6 @@ class Routes {
     const user = Sessioning.getUser(session); // the user is considered the owner of the project
     const oid = new ObjectId(id); // the project is considered the owner of the inventory
     const fid = new ObjectId(fiber_id);
-    console.log(fid);
     await ProjectManaging.assertOwnerIsUser(user, oid);
     await ProjectInventorying.assertOwnerIsUser(fid, oid);
     // update total inventory to contain add back the fiber
