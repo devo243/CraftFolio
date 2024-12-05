@@ -13,6 +13,8 @@ const loaded = ref(false);
 const router = useRouter();
 let posts = ref<Array<Record<string, string>>>([]);
 let searchAuthor = ref("");
+let ratingType = ref("");
+let minScore = ref(0);
 const props = defineProps(["username"]);
 
 async function getPosts(author?: string) {
