@@ -5,14 +5,19 @@ import { storeToRefs } from "pinia";
 
 const { currentUsername } = storeToRefs(useUserStore());
 
-const props = defineProps(["post", "tip"]);
+const props = defineProps(["post", "content", "type"]);
 const emit = defineEmits(["editTip", "refreshTips"]);
 
 
 
 const deleteTip = async () => {
   try {
-    await fetchy(`/api/posts/${props.post._id}/tips/${props.tip}`, "DELETE");
+    if(props.type==='tip'){
+      await fetchy(`/api/posts/${props.post._id}/tips/${props.content}`, "DELETE");
+    }
+    else{
+      await fetchy(`/api/posts/${props.post._id}/mistakes/${props.content}`, "DELETE");
+    }
   } catch (_) {
     console.log(_);
     return;
@@ -26,8 +31,9 @@ const deleteTip = async () => {
 <template>
     <div class="container">
         <div class="flex-container1">
-            <img src="@/assets/icons/check.svg" class="tip"/>
-            <a class="hint"> {{ props.tip }}</a>
+            <img v-if="props.type==='tip'" src="@/assets/icons/check.svg" class="tip"/>
+            <img v-else-if="props.type==='mistake'" src="@/assets/icons/mistake.svg" class="mistake"/>
+            <a class="hint"> {{ props.content }}</a>
         </div>
         <div class="flex-container2">
             <button @click="emit('editTip')" class="edit edit-button"><img src="@/assets/icons/pencil.svg" /></button>

@@ -6,16 +6,23 @@ import { ref } from "vue";
 
 const { currentUsername } = storeToRefs(useUserStore());
 
-const props = defineProps(["post", "tip"]);
+const props = defineProps(["post", "content", "type"]);
 const emit = defineEmits(["editTip", "refreshTips"]);
-const newTip = ref("");
+const newContent = ref("");
 
-const editTip = async (newTip:string) => {
+const editTip = async (newContent:string) => {
   try {
-    console.log(props.tip, newTip);
-    await fetchy(`/api/posts/${props.post._id}/tips/`, "PATCH",{
-      body: { oldTip: props.tip, newTip:newTip},
-    });
+    if(props.type==='tip'){
+      await fetchy(`/api/posts/${props.post._id}/tips/`, "PATCH",{
+        body: { oldTip: props.content, newTip:newContent},
+      });
+    }
+    else{
+      await fetchy(`/api/posts/${props.post._id}/mistakes/`, "PATCH",{
+        body: { oldMistake: props.content, newMistake:newContent},
+      });
+    }
+    
   } catch (_) {
     console.log(_);
     return;
@@ -28,24 +35,19 @@ const editTip = async (newTip:string) => {
 </script>
 
 <template>
-    <div class="container">
-        <form @submit.prevent="editTip(newTip)">
-            <div class="flex-container1">
-                <img src="@/assets/icons/check.svg" class="tip"/>
-                <textarea id="newTip" v-model="newTip" class="hint"></textarea>
-            </div>
-            <div class="flex-container2">
-                <button class="edit" type="submit"><img src="@/assets/icons/check.svg" /></button>
-            </div>
-        </form>
-        
-        
-    </div>
-    
+    <form @submit.prevent="editTip(newContent)" class="container">
+        <div class="flex-container1">
+            <img v-if="props.type==='tip'" src="@/assets/icons/check.svg" class="tip"/>
+            <img v-else-if="props.type==='mistake'" src="@/assets/icons/mistake.svg" class="mistake"/>
+            <textarea id="newContent" v-model="newContent" class="hint"></textarea>
+        </div>
+        <div class="flex-container2">
+            <button class="edit" type="submit"><img src="@/assets/icons/check.svg" /></button>
+        </div>
+    </form>
 </template>
 
 <style scoped>
-
 .container {
   width: 100%;
   display: flex;
@@ -57,15 +59,16 @@ const editTip = async (newTip:string) => {
 }
 
 
-a,
-p,
+
 form {
+  width:100%;
   margin-left: 1em;
   font-size: 1.5em;
   /* margin: 0; */
   padding: 0.5em;
-  background-color: var(--grey);
   border-radius: 0.5em;
+  flex-direction: column;
+  display: flex;
 }
 
 
@@ -77,6 +80,7 @@ input {
   padding-left: 0.5em;
 }
 .flex-container1 {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: left;
@@ -85,6 +89,7 @@ input {
 
 
 .flex-container2 {
+  width: 100%;
   display:flex;
   align-items: center;
   justify-content: flex-end;
@@ -95,12 +100,6 @@ button{
     border-radius: 1em;
 }
 
-.hints {
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
-  padding: 0em 1em 1em;
-}
 
 .tip {
   background-color: var(--green);
@@ -115,17 +114,6 @@ img {
   height: 100%;
   border-radius: 1em;
   padding: 0.5em;
-}
-
-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
-  align-items: left;
-  margin: auto;
-  max-width: 90em;
-  max-height: 90%;
-  /* padding-top: 1em; */
 }
 
 .edit {

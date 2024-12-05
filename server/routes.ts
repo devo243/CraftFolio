@@ -208,7 +208,7 @@ class Routes {
     return await Posting.deleteTip(oid, tipToDelete);
   }
 
-  @Router.delete("/posts/:id/mistakes")
+  @Router.delete("/posts/:id/mistakes/:mistakeToDelete")
   async deleteMistake(session: SessionDoc, id: string, mistakeToDelete: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
