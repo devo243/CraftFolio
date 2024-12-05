@@ -10,19 +10,17 @@ const props = defineProps(["post", "content", "type"]);
 const emit = defineEmits(["editTip", "refreshTips"]);
 const newContent = ref(props.content);
 
-const editTip = async (newContent:string) => {
+const editTip = async (newContent: string) => {
   try {
-    if(props.type==='tip'){
-      await fetchy(`/api/posts/${props.post._id}/tips/`, "PATCH",{
-        body: { oldTip: props.content, newTip:newContent},
+    if (props.type === "tip") {
+      await fetchy(`/api/posts/${props.post._id}/tips/`, "PATCH", {
+        body: { oldTip: props.content, newTip: newContent },
+      });
+    } else {
+      await fetchy(`/api/posts/${props.post._id}/mistakes/`, "PATCH", {
+        body: { oldMistake: props.content, newMistake: newContent },
       });
     }
-    else{
-      await fetchy(`/api/posts/${props.post._id}/mistakes/`, "PATCH",{
-        body: { oldMistake: props.content, newMistake:newContent},
-      });
-    }
-    
   } catch (_) {
     console.log(_);
     return;
@@ -30,21 +28,19 @@ const editTip = async (newContent:string) => {
   emit("editTip");
   emit("refreshTips");
 };
-
-
 </script>
 
 <template>
-    <form @submit.prevent="editTip(newContent)" class="container">
-        <div class="flex-container1">
-            <img v-if="props.type==='tip'" src="@/assets/icons/check.svg" class="tip"/>
-            <img v-else-if="props.type==='mistake'" src="@/assets/icons/mistake.svg" class="mistake"/>
-            <textarea id="newContent" v-model="newContent" class="hint"></textarea>
-        </div>
-        <div class="flex-container2">
-            <button class="edit" type="submit"><img src="@/assets/icons/check.svg" /></button>
-        </div>
-    </form>
+  <form @submit.prevent="editTip(newContent)" class="container">
+    <div class="flex-container1">
+      <img v-if="props.type === 'tip'" src="@/assets/icons/check.svg" class="tip" />
+      <img v-else-if="props.type === 'mistake'" src="@/assets/icons/mistake.svg" class="mistake" />
+      <textarea id="newContent" v-model="newContent" class="hint"></textarea>
+    </div>
+    <div class="flex-container2">
+      <button class="edit" type="submit"><img src="@/assets/icons/check.svg" /></button>
+    </div>
+  </form>
 </template>
 
 <style scoped>
@@ -58,10 +54,8 @@ const editTip = async (newContent:string) => {
   border-radius: 2em;
 }
 
-
-
 form {
-  width:100%;
+  width: 100%;
   margin-left: 1em;
   font-size: 1.5em;
   /* margin: 0; */
@@ -71,35 +65,30 @@ form {
   display: flex;
 }
 
-
-
-
 input {
   width: 100%;
   border-radius: 0.5em;
   padding-left: 0.5em;
 }
 .flex-container1 {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: left;
-    height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  height: 100%;
 }
-
 
 .flex-container2 {
   width: 100%;
-  display:flex;
+  display: flex;
   align-items: center;
   justify-content: flex-end;
   height: 100%;
 }
 
-button{
-    border-radius: 1em;
+button {
+  border-radius: 1em;
 }
-
 
 .tip {
   background-color: var(--green);

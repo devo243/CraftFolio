@@ -8,14 +8,11 @@ const { currentUsername } = storeToRefs(useUserStore());
 const props = defineProps(["post", "content", "type"]);
 const emit = defineEmits(["editTip", "refreshTips"]);
 
-
-
 const deleteTip = async () => {
   try {
-    if(props.type==='tip'){
+    if (props.type === "tip") {
       await fetchy(`/api/posts/${props.post._id}/tips/${props.content}`, "DELETE");
-    }
-    else{
+    } else {
       await fetchy(`/api/posts/${props.post._id}/mistakes/${props.content}`, "DELETE");
     }
   } catch (_) {
@@ -24,28 +21,23 @@ const deleteTip = async () => {
   }
   emit("refreshTips");
 };
-
-
 </script>
 
 <template>
-    <div class="container">
-        <div class="flex-container1">
-            <img v-if="props.type==='tip'" src="@/assets/icons/check.svg" class="tip"/>
-            <img v-else-if="props.type==='mistake'" src="@/assets/icons/mistake.svg" class="mistake"/>
-            <a class="hint"> {{ props.content }}</a>
-        </div>
-        <div class="flex-container2">
-            <button @click="emit('editTip')" class="edit edit-button"><img src="@/assets/icons/pencil.svg" /></button>
-            <button class="button-error btn-small pure-button " @click="deleteTip()" type="button"><img src="@/assets/icons/thrash.svg" /></button>
-        </div>
-        
+  <div class="container">
+    <div class="flex-container1">
+      <img v-if="props.type === 'tip'" src="@/assets/icons/check.svg" class="tip" />
+      <img v-else-if="props.type === 'mistake'" src="@/assets/icons/mistake.svg" class="mistake" />
+      <a class="hint"> {{ props.content }}</a>
     </div>
-    
+    <div class="flex-container2">
+      <button @click="emit('editTip')" class="edit edit-button"><img src="@/assets/icons/pencil.svg" /></button>
+      <button class="button-error btn-small pure-button" @click="deleteTip()" type="button"><img src="@/assets/icons/thrash.svg" /></button>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-
 .container {
   width: 100%;
   display: flex;
@@ -55,7 +47,6 @@ const deleteTip = async () => {
   /* background-color: rgb(226, 226, 226); */
   border-radius: 2em;
 }
-
 
 a,
 p,
@@ -68,35 +59,30 @@ form {
   border-radius: 0.5em;
 }
 
-
-
-
 input {
   width: 100%;
   border-radius: 0.5em;
   padding-left: 0.5em;
 }
 .flex-container1 {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: left;
-    height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  height: 100%;
 }
-
 
 .flex-container2 {
   width: 100%;
-  display:flex;
+  display: flex;
   align-items: center;
   justify-content: flex-end;
   height: 100%;
 }
 
-button{
-    border-radius: 1em;
+button {
+  border-radius: 1em;
 }
-
 
 .tip {
   background-color: var(--green);

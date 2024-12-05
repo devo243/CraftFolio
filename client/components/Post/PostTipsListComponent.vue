@@ -10,10 +10,10 @@ const props = defineProps(["post"]);
 const { currentUsername } = storeToRefs(useUserStore());
 
 const newTip = ref("");
-const tips = ref(Array<String>);
+const tips = ref(Array<string>);
 const newMistake = ref("");
-const mistakes =ref(Array<String>);
-const editingTip = ref({type:"", index:0});
+const mistakes = ref(Array<string>);
+const editingTip = ref({ type: "", index: 0 });
 
 const emit = defineEmits(["refreshPost"]);
 
@@ -30,8 +30,8 @@ const addTip = async () => {
   emit("refreshPost");
 };
 
-const getTips = async() => {
-  let tipResults = Array<String>;
+const getTips = async () => {
+  let tipResults = Array<string>;
   try {
     tipResults = await fetchy(`/api/posts/${props.post._id}/tips/`, "GET");
   } catch (_) {
@@ -39,7 +39,7 @@ const getTips = async() => {
     return;
   }
   tips.value = tipResults;
-}
+};
 
 const addMistake = async () => {
   try {
@@ -54,8 +54,8 @@ const addMistake = async () => {
   emit("refreshPost");
 };
 
-const getMistakes = async() => {
-  let mistakeResults = Array<String>;
+const getMistakes = async () => {
+  let mistakeResults = Array<string>;
   try {
     mistakeResults = await fetchy(`/api/posts/${props.post._id}/mistakes/`, "GET");
   } catch (_) {
@@ -63,13 +63,13 @@ const getMistakes = async() => {
     return;
   }
   mistakes.value = mistakeResults;
-}
+};
 
-const toggleEditing = async (type:string, index: number) => {
+const toggleEditing = async (type: string, index: number) => {
   if (!editingTip.value.type) {
-    editingTip.value = {type:type, index:index};
+    editingTip.value = { type: type, index: index };
   } else {
-    editingTip.value = {type:"", index:0};
+    editingTip.value = { type: "", index: 0 };
   }
 };
 
@@ -77,23 +77,28 @@ onBeforeMount(async () => {
   await getTips();
   await getMistakes();
 });
-
-
 </script>
 
 <template>
-  <section class="header" v-if="tips.length !== 0 || currentUsername===props.post.author">
+  <section class="header" v-if="tips.length !== 0 || currentUsername === props.post.author">
     <h2 class="title">Tips</h2>
   </section>
   <section>
     <div class="hints" v-if="tips.length !== 0">
       <div v-for="(tip, index) in tips" :key="index" class="hint">
-        <TipComponent v-if="editingTip.type!=='tip'||editingTip.index!=Number.parseInt(index.toString())" :post="props.post" :content="tip" :type="'tip'" @refresh-tips="getTips" @edit-tip="toggleEditing('tip', Number.parseInt(index.toString()))"/>
-        <TipEditComponent v-else :post="props.post" :content="tip" :type="'tip'" @refresh-tips="getTips" @edit-tip="toggleEditing('tip', Number.parseInt(index.toString()))"/>
+        <TipComponent
+          v-if="editingTip.type !== 'tip' || editingTip.index != Number.parseInt(index.toString())"
+          :post="props.post"
+          :content="tip"
+          :type="'tip'"
+          @refresh-tips="getTips"
+          @edit-tip="toggleEditing('tip', Number.parseInt(index.toString()))"
+        />
+        <TipEditComponent v-else :post="props.post" :content="tip" :type="'tip'" @refresh-tips="getTips" @edit-tip="toggleEditing('tip', Number.parseInt(index.toString()))" />
       </div>
     </div>
-    
-    <form @submit.prevent="addTip()" v-if="currentUsername===props.post.author">
+
+    <form @submit.prevent="addTip()" v-if="currentUsername === props.post.author">
       <!-- <label for="link">Add a new link:</label> -->
       <p class="placeholder" v-if="tips.length === 0">Add some tips...</p>
       <input id="tip" v-model="newTip" required />
@@ -101,19 +106,25 @@ onBeforeMount(async () => {
     </form>
   </section>
 
-
-  <section class="header" v-if="mistakes.length !== 0 || currentUsername===props.post.author">
+  <section class="header" v-if="mistakes.length !== 0 || currentUsername === props.post.author">
     <h2 class="title">Mistakes</h2>
   </section>
   <section>
     <div class="hints" v-if="mistakes.length !== 0">
       <div v-for="(mistake, index) in mistakes" :key="index" class="hint">
-        <TipComponent v-if="editingTip.type!=='mistake'||editingTip.index!=Number.parseInt(index.toString())" :post="props.post" :content="mistake" :type="'mistake'" @refresh-tips="getMistakes" @edit-tip="toggleEditing('mistake', Number.parseInt(index.toString()))"/>
-        <TipEditComponent v-else :post="props.post" :content="mistake" :type="'mistake'" @refresh-tips="getMistakes" @edit-tip="toggleEditing('mistake', Number.parseInt(index.toString()))"/>
+        <TipComponent
+          v-if="editingTip.type !== 'mistake' || editingTip.index != Number.parseInt(index.toString())"
+          :post="props.post"
+          :content="mistake"
+          :type="'mistake'"
+          @refresh-tips="getMistakes"
+          @edit-tip="toggleEditing('mistake', Number.parseInt(index.toString()))"
+        />
+        <TipEditComponent v-else :post="props.post" :content="mistake" :type="'mistake'" @refresh-tips="getMistakes" @edit-tip="toggleEditing('mistake', Number.parseInt(index.toString()))" />
       </div>
     </div>
-    
-    <form @submit.prevent="addMistake()" v-if="currentUsername===props.post.author">
+
+    <form @submit.prevent="addMistake()" v-if="currentUsername === props.post.author">
       <!-- <label for="link">Add a new link:</label> -->
       <p class="placeholder" v-if="mistakes.length === 0">Add some mistakes...</p>
       <input id="tip" v-model="newMistake" required />
@@ -123,7 +134,7 @@ onBeforeMount(async () => {
 </template>
 
 <style scoped>
-.hint{
+.hint {
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -137,7 +148,7 @@ onBeforeMount(async () => {
 
 .hint a {
   padding: 0.5em;
-  box-shadow: 0px 4px 0px rgba(181, 181, 181, 0.3);  
+  box-shadow: 0px 4px 0px rgba(181, 181, 181, 0.3);
 }
 
 a,
@@ -150,7 +161,7 @@ form {
   border-radius: 0.5em;
 }
 
-p{
+p {
   font-size: small;
 }
 

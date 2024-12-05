@@ -1,74 +1,70 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-const props = defineProps(["tips","mistakes"]);
+const props = defineProps(["tips", "mistakes"]);
 const tips = ref(props.tips);
 const mistakes = ref(props.mistakes);
 const newTip = ref("");
 const newMistake = ref("");
 const emit = defineEmits(["createTipsMistakes", "goBack", "finish"]);
 
-const updateTips = async (tips:string[], mistakes: string[]) => {
-    emit("createTipsMistakes",tips, mistakes);
+const updateTips = async (tips: string[], mistakes: string[]) => {
+  emit("createTipsMistakes", tips, mistakes);
 };
 
 const addTip = async () => {
-    tips.value.push(newTip.value);
-}
+  tips.value.push(newTip.value);
+  newTip.value = "";
+};
 const addMistake = async () => {
-    mistakes.value.push(newMistake.value);
-}
+  mistakes.value.push(newMistake.value);
+  newMistake.value = "";
+};
 
-const deleteTip = async(index:number)=>{
-  tips.value.splice(index,1);
-}
+const deleteTip = async (index: number) => {
+  tips.value.splice(index, 1);
+};
 
-const deleteMistake = async(index:number)=>{
-  mistakes.value.splice(index,1);
-}
-
+const deleteMistake = async (index: number) => {
+  mistakes.value.splice(index, 1);
+};
 </script>
 
 <template>
   <form @submit.prevent="updateTips(tips, mistakes)">
     <section class="header">
-    <h1 class="title">Tips</h1>
+      <h1 class="title">Tips</h1>
     </section>
     <section class="container">
-        <div class="tips" v-if="tips.length !== 0">
-            <a class="tip" v-for="(tip, index) in tips" :key="index" >
-              <div class="flex-container1">+ {{ tip }}</div>
-              <div class="flex-container2">
-                <button class="button-error btn-small pure-button" @click="deleteTip(index)" type="button"><img src="@/assets/icons/thrash.svg" /></button>
-              </div>
-            </a>
-            
-        </div>
-        <p class="placeholder" v-else>Add some tips...</p>
-        <form class="add" @submit.prevent="addTip()">
-            <!-- <label for="link">Add a new link:</label> -->
-            <input id="tip" v-model="newTip" required />
-            <button type="submit">+</button>
-        </form>
+      <div class="content" v-if="tips.length !== 0">
+        <a class="tip" v-for="(tip, index) in tips" :key="index">
+          <div class="flex-container1">+ {{ tip }}</div>
+          <div class="flex-container2">
+            <button class="button-error btn-small pure-button" @click="deleteTip(index)" type="button"><img src="@/assets/icons/thrash.svg" /></button>
+          </div>
+        </a>
+      </div>
+      <form class="add" @submit.prevent="addTip()">
+        <input id="tip" v-model="newTip" required />
+        <button type="submit">+</button>
+      </form>
     </section>
     <section class="header">
-    <h1 class="title">Mistakes</h1>
+      <h1 class="title">Mistakes</h1>
     </section>
     <section class="container">
-        <div class="tips" v-if="mistakes.length !== 0">
-            <a class="tip" v-for="(mistake, index) in mistakes" :key="index" >
-              <div class="flex-container1">x {{ mistake }}</div>
-              <div class="flex-container2">
-                <button class="button-error btn-small pure-button" @click="deleteMistake(index)" type="button"><img src="@/assets/icons/thrash.svg" /></button>
-              </div>
-            </a>
-        </div>
-        <p class="placeholder" v-else>Add some tips...</p>
-        <form class="add" @submit.prevent="addMistake()">
-            <!-- <label for="link">Add a new link:</label> -->
-            <input id="tip" v-model="newMistake" required />
-            <button type="submit">+</button>
-        </form>
+      <div class="content" v-if="mistakes.length !== 0">
+        <a class="tip" v-for="(mistake, index) in mistakes" :key="index">
+          <div class="flex-container1">x {{ mistake }}</div>
+          <div class="flex-container2">
+            <button class="button-error btn-small pure-button" @click="deleteMistake(index)" type="button"><img src="@/assets/icons/thrash.svg" /></button>
+          </div>
+        </a>
+      </div>
+      <form class="add" @submit.prevent="addMistake()">
+        <input id="tip" v-model="newMistake" required />
+        <button type="submit">+</button>
+      </form>
     </section>
     <section class="header"></section>
     <div class="buttons">
@@ -81,21 +77,28 @@ const deleteMistake = async(index:number)=>{
 <style scoped>
 .container {
   width: 100%;
-  height: 25vh;
+  height: 30vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
-  /* margin: 0 0 0 1em; */
+  justify-content: flex-end;
   background-color: rgb(226, 226, 226);
   border-radius: 2em;
 }
+
+.content {
+  width: 95%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  padding: 1em;
+}
+
 a,
 p,
 .add {
-  padding: 1em;
+  padding: 0.5em;
   font-size: 1.5em;
-  margin: 0;
 }
 
 .add {
@@ -107,10 +110,8 @@ p,
 }
 
 .add {
-  background-color: rgb(177, 175, 175);
   width: 70%;
   border-radius: 2em;
-  margin: 0 0 1em 0;
 }
 
 input {
@@ -142,12 +143,10 @@ button {
 section {
   display: flex;
   flex-direction: row;
-  gap: 1em;
   align-items: left;
   margin: auto;
   max-width: 90em;
   max-height: 90%;
-  padding-top: 1em;
 }
 
 .buttons {
@@ -155,20 +154,20 @@ section {
   flex-direction: row;
   justify-content: center;
   gap: 2em;
+  margin-top: 1em;
 }
 
 .flex-container1 {
-    display: flex;
-    align-items: center;
-    justify-content: left;
-    height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  height: 100%;
 }
 
 .flex-container2 {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
 }
-
 </style>
