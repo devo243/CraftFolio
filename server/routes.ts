@@ -186,9 +186,7 @@ class Routes {
   //links on posts
   @Router.get("/posts/:id/links")
   async getLinks(session: SessionDoc, id: string) {
-    const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    await Posting.assertAuthorIsUser(oid, user);
     return await Posting.getLinks(oid);
   }
 
@@ -219,17 +217,13 @@ class Routes {
   // Tips and Mistakes on Posts
   @Router.get("/posts/:id/tips")
   async getTips(session: SessionDoc, id: string) {
-    const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    await Posting.assertAuthorIsUser(oid, user);
     return await Posting.getTips(oid);
   }
 
   @Router.get("/posts/:id/mistakes")
   async getMistakes(session: SessionDoc, id: string) {
-    const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    await Posting.assertAuthorIsUser(oid, user);
     return await Posting.getMistakes(oid);
   }
 
