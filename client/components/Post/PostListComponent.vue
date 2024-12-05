@@ -126,10 +126,7 @@ article {
 .create {
   display: flex;
   flex-direction: row;
-  justify-content: flex-end;
-}
-.page {
-  height: 80vh;
+  justify-content: center;
 }
 
 button {
