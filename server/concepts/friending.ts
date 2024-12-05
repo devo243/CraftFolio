@@ -15,6 +15,7 @@ export interface FriendRequestDoc extends BaseDoc {
 
 /**
  * concept: Friending [User]
+ * 
  */
 export default class FriendingConcept {
   public readonly friends: DocCollection<FriendshipDoc>;

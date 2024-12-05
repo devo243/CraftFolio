@@ -154,9 +154,10 @@ class Routes {
   }
 
   @Router.get("/posts/top")
-  @Router.validate(z.object({ minScore: z.string().optional(), ratingType: z.string().optional() }))
-  async getTopPosts(ratingType: string, minScore: string = "0") {
+  @Router.validate(z.object({ ratingType: z.string().optional(), minScore: z.string().optional() }))
+  async getTopPosts(ratingType: string, minScore: string) {
     const numberMinScore = Number(minScore);
+    console.log(numberMinScore);
     const Rating = ratingType === "eco" ? EcoFriendlyRating : BeginnerFriendlyRating;
     const ratings = (await (await Rating.getObjectsWithMinRating(numberMinScore)).toArray()) as RatingDoc[];
     const posts = await Promise.all(
