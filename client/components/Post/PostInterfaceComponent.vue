@@ -14,7 +14,9 @@ let post = ref<Record<string, string>>();
 
 const loaded = ref(false);
 
-const currentPage = ref("");
+const ecoRating = ref(0);
+const beginnerRating = ref(0);
+
 const router = useRouter();
 
 const goBack = async () => {
@@ -40,7 +42,7 @@ const getPost = async () => {
 const createProject = async() => {
   try {
     if(post.value!==undefined){
-      
+
       await fetchy("/api/projects", "POST", {
         body: {title: post.value.title, status: "To Do", guideId: post.value._id , guideLink: `https://craft-folio.vercel.app/posts/${post.value._id}`}
       });
@@ -52,8 +54,20 @@ const createProject = async() => {
 
 }
 
+const getRatings = async()=>{
+  try {
+    const ratings = await fetchy(`/api/posts/${props.id}/ratings`, "GET");
+    console.log(ratings);
+    ecoRating.value = ratings.ecoRating;
+    beginnerRating.value = ratings.beginnerRating;
+  } catch (_) {
+    return;
+  }
+}
+
 onBeforeMount(async () => {
   await getPost();
+  await getRatings();
   loaded.value = true;
 });
 </script>
@@ -63,6 +77,7 @@ onBeforeMount(async () => {
     <section class="header">
       <img class="back" src="@/assets/icons/back-arrow.svg" @click="goBack" />
       <h1 class="title">{{ post.title }}</h1>
+      <p>Eco rating: {{ ecoRating }}, Beginner Rating: {{ beginnerRating }}</p>
     </section>
     <PostTipsComponent :post="post" @refresh-post="getPost"/>
     <section>
