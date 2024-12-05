@@ -3,6 +3,7 @@ import { fetchy } from "@/utils/fetchy";
 import { onBeforeMount, ref } from "vue";
 import { useRouter } from "vue-router";
 import PostInventoryComponent from "./PostInventory/PostInventoryComponent.vue";
+import PostLinksListComponent from "./PostLinksListComponent.vue";
 import PostMarkdownComponent from "./PostMarkdownComponent.vue";
 import PostTipsComponent from "./PostTipsListComponent.vue";
 
@@ -54,6 +55,7 @@ onBeforeMount(async () => {
     <!-- <section> -->
       <PostInventoryComponent :fibers="post.fibers" :post_id="post._id" :author="post.author" @refresh-post="getPost"/>
     <!-- </section> -->
+    <PostLinksListComponent :post="post" @refresh-post="getPost" />
   </div>
 
 </template>

@@ -167,6 +167,39 @@ class Routes {
     return posts;
   }
 
+  //links on posts
+  @Router.get("/posts/:id/links")
+  async getLinks(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.getLinks(oid);
+  }
+
+  @Router.post("/posts/:id/links")
+  async addLinkToPost(session: SessionDoc, id: string, newLink: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.addLink(oid, newLink);
+  }
+
+  @Router.delete("/posts/:id/links/:linkToDelete")
+  async deleteLinkFromPost(session: SessionDoc, id: string, linkToDelete: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.deleteLink(oid, linkToDelete);
+  }
+
+  @Router.patch("/posts/:id/links")
+  async editLink(session: SessionDoc, id: string, oldLink: string, newLink: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    await Posting.assertAuthorIsUser(oid, user);
+    return await Posting.editLink(oid, oldLink, newLink);
+  }
+
   // Tips and Mistakes on Posts
   @Router.get("/posts/:id/tips")
   async getTips(session: SessionDoc, id: string) {
