@@ -17,10 +17,14 @@ const addLink = () => {
   if (!URL.canParse(currentLink.value)) {
     useToastStore().showToast({ message: `${currentLink.value} is not a valid link`, style: "error" });
   } else {
+    if (links.value.includes(currentLink.value)) {
+      useToastStore().showToast({ message: `${currentLink.value} is already added`, style: "error" });
+      currentLink.value = "";
+      return;
+    }
     links.value = links.value.concat([currentLink.value]);
     currentLink.value = "";
   }
-
 }
 
 </script>
