@@ -17,6 +17,9 @@ const loaded = ref(false);
 const ecoRating = ref(0);
 const beginnerRating = ref(0);
 
+const fiberTypes = ref(new Array<string>);
+const fiberYards = ref(new Array<number>);
+
 const router = useRouter();
 
 const goBack = async () => {
@@ -41,10 +44,16 @@ const getPost = async () => {
 
 const createProject = async() => {
   try {
-    if(post.value!==undefined){
+    if(post.value!==undefined && fiberTypes.value!==undefined && fiberYards.value!==undefined){
 
       await fetchy("/api/projects", "POST", {
-        body: {title: post.value.title, status: "To Do", guideId: post.value._id , guideLink: `https://craft-folio.vercel.app/posts/${post.value._id}`}
+        body: {title: post.value.title,
+          status: "To Do",
+          guideId: post.value._id ,
+          guideLink: `https://craft-folio.vercel.app/posts/${post.value._id}`,
+          fiber_types: fiberTypes.value,
+          fiber_yardages: fiberYards.value
+        }
       });
       router.push("/projects");
     }
@@ -52,6 +61,14 @@ const createProject = async() => {
     return;
   }
 
+}
+
+const updateFibersSelected = async(types:string[], yards: number[]) =>{
+  console.log("updated fibers");
+  // console.log(types);
+  // console.log(yards);
+  fiberTypes.value = types;
+  fiberYards.value = yards;
 }
 
 const getRatings = async()=>{
@@ -84,7 +101,7 @@ onBeforeMount(async () => {
       <PostMarkdownComponent :content="post.content" :post="post" @refresh-post="getPost"/>
     </section>
     <!-- <section> -->
-      <PostInventoryComponent :fibers="post.fibers" :post_id="post._id" :author="post.author" @refresh-post="getPost"/>
+      <PostInventoryComponent :fibers="post.fibers" :post_id="post._id" :author="post.author" @refresh-post="getPost" @refresh-fibers="updateFibersSelected"/>
     <!-- </section> -->
     <PostLinksListComponent :post="post" @refresh-post="getPost" />
     <div class="buttons">

@@ -10,14 +10,25 @@ import PostFiberComponent from "./PostFiberComponent.vue";
 const { currentUsername } = storeToRefs(useUserStore());
 
 const props = defineProps(["fibers", "post_id", "author"]);
-const emit = defineEmits(["refreshPost"]);
+const emit = defineEmits(["refreshPost", "refreshFibers"]);
 const loaded = ref(false);
 const presentFibers = ref(new Array<string>);
-const selectedItems = ref(new Array<string>);
+const selectedItems = ref(new Array<Record<string,string>>);
 
 const getInventory = async () => {
   emit("refreshPost");
 };
+
+const updateFibersSelected = async()=>{
+  const fiber_types = new Array<string>;
+  const fiber_yards = new Array<number>;
+  for(const fiber of selectedItems.value){
+    fiber_types.push(fiber.type);
+    fiber_yards.push(Number.parseFloat(fiber.remainingYardage));
+  }
+  console.log(fiber_types, fiber_yards);
+  emit("refreshFibers", fiber_types,fiber_yards);
+}
 
 const getAvailableMaterialsPost = async () => {
   try {
@@ -81,14 +92,14 @@ onBeforeMount(async () => {
         <div class="separation">
           <div class="fiber-selection grid-item recommended">
             <div :class="presentFibers.includes(fiber.recommended._id) ? 'present' : 'absent'">
-            <input type="checkbox" v-model="selectedItems" :value="fiber.recommended._id"/>
+            <input type="checkbox" v-model="selectedItems" :value="fiber.recommended" @click="updateFibersSelected"/>
             </div>
             <PostFiberComponent :fiber="fiber.recommended" :id="props.post_id" :post_author="author" @refreshFibers="getInventory" :style="{flex : 1}"/>
           </div>
           <div class="fiber-selection grid-item alternative">
             <div v-for="alternative_fiber of fiber.alternatives" class="recommended">
               <div :class="presentFibers.includes(alternative_fiber._id) ? 'present' : 'absent'">
-                <input type="checkbox" v-model="selectedItems" :value="alternative_fiber._id"/>
+                <input type="checkbox" v-model="selectedItems" :value="alternative_fiber" @click="updateFibersSelected"/>
               </div>
               <AlternatePostFiberComponent :fiber="alternative_fiber" :id="props.post_id" :post_author="author" @refreshFibers="getInventory" :style="{flex : 1}" />
             </div>
