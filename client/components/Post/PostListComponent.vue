@@ -84,7 +84,7 @@ article {
   display: flex;
   flex-direction: column;
   padding: 0;
-  width: 19.4%;
+  width: 21.5%;
   height: fit-content;
 }
 
@@ -92,7 +92,7 @@ article {
   flex-direction: row;
   flex-wrap: wrap;
   padding: 1em;
-  gap: 5em;
+  gap: 4em;
   row-gap: 2em;
 }
 
