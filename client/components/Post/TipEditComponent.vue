@@ -8,7 +8,7 @@ const { currentUsername } = storeToRefs(useUserStore());
 
 const props = defineProps(["post", "content", "type"]);
 const emit = defineEmits(["editTip", "refreshTips"]);
-const newContent = ref("");
+const newContent = ref(props.content);
 
 const editTip = async (newContent:string) => {
   try {
