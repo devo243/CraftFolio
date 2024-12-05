@@ -33,7 +33,7 @@ async function getPosts(author?: string) {
 }
 
 const getFilteredPosts = async (ratingType: string, minScore: string) => {
-  let query: Record<string, string> = { ratingType, minScore };
+  let query: Record<string, string> = { "ratingType": ratingType, "minScore": minScore };
   let postResults;
   try {
     postResults = await fetchy("/api/posts/top", "GET", { query });
@@ -41,6 +41,10 @@ const getFilteredPosts = async (ratingType: string, minScore: string) => {
     console.log(_);
     return;
   }
+
+  postResults = postResults.filter((x: any) => x !== null);
+
+  console.log(postResults);
 
   posts.value = postResults;
 };
