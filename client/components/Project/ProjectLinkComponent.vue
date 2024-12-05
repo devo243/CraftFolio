@@ -5,8 +5,8 @@ import { computed, ref } from "vue";
 const props = defineProps(["links", "id"]);
 const editing = ref(false);
 
-const guideLinks = computed(() => props.links.filter((link: string) => link.startsWith('https://craft-folio.vercel.app/')));
-const otherLinks = computed(() => props.links.filter((link: string) => !link.startsWith('https://craft-folio.vercel.app/'))); 
+const guideLinks = computed(() => props.links.filter((link: string) => link.startsWith("https://craft-folio.vercel.app/")));
+const otherLinks = computed(() => props.links.filter((link: string) => !link.startsWith("https://craft-folio.vercel.app/")));
 
 const newLink = ref("");
 const emit = defineEmits(["refreshProject"]);
@@ -36,17 +36,17 @@ const deleteLink = async (link: string) => {
   }
 
   emit("refreshProject");
-}
+};
 
 const toggleEditing = () => {
   editing.value = !editing.value;
-}
+};
 </script>
 
 <template>
   <div class="container">
     <div class="links" v-if="props.links.length !== 0">
-      <div v-if="guideLinks.length !== 0">
+      <div class="guideLinks" v-if="guideLinks.length !== 0">
         <h2>Guide Links</h2>
         <a class="link" v-for="(link, index) in guideLinks" :key="index" :href="link">- {{ link }}</a>
       </div>
@@ -61,10 +61,10 @@ const toggleEditing = () => {
       <button v-if="editing" class="save" @click="toggleEditing">Save</button>
       <button v-else class="edit" @click="toggleEditing">Edit</button>
       <form @submit.prevent="addLink()">
-      <!-- <label for="link">Add a new link:</label> -->
-      <input type="url" id="link" v-model="newLink" required />
-      <button class="submit" type="submit">+</button>
-    </form>
+        <!-- <label for="link">Add a new link:</label> -->
+        <input type="url" id="link" v-model="newLink" required />
+        <button class="submit" type="submit">+</button>
+      </form>
     </div>
   </div>
 </template>
@@ -73,7 +73,6 @@ const toggleEditing = () => {
 .container {
   width: 100%;
   height: 65vh;
-  /* margin: 0 0 0 1em; */
   background-color: var(--base-bg);
   border-radius: 2em;
   display: flex;
@@ -101,7 +100,6 @@ form {
   background-color: var(--grey);
   width: 70%;
   border-radius: 2em;
-  /* margin: 0 0 1em 0; */
 }
 
 input {
@@ -151,6 +149,12 @@ img {
   flex-direction: row;
   gap: 1em;
   align-items: center;
+}
+
+.guideLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
 }
 
 .edit {
