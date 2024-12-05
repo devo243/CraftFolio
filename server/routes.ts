@@ -502,7 +502,7 @@ class Routes {
     await ProjectInventorying.assertOwnerIsUser(fid, oid);
     // update total inventory to contain add back the fiber
     const fiber = await ProjectInventorying.idsToFibers([fid]);
-    await Inventorying.updateCorrespondingFibers(user, fiber);
+    // await Inventorying.updateCorrespondingFibers(user, fiber);
     await ProjectInventorying.deleteFiber(fid);
     return await ProjectManaging.deleteFiber(user, oid, fid);
   }

@@ -2,6 +2,7 @@
 import { fetchy } from "@/utils/fetchy";
 import { onBeforeMount, ref } from "vue";
 import { useRouter } from "vue-router";
+import CommentListComponent from "../CommentOnPost/CommentListComponent.vue";
 import PostInventoryComponent from "./PostInventory/PostInventoryComponent.vue";
 import PostLinksListComponent from "./PostLinksListComponent.vue";
 import PostMarkdownComponent from "./PostMarkdownComponent.vue";
@@ -13,7 +14,9 @@ let post = ref<Record<string, string>>();
 
 const loaded = ref(false);
 
-const currentPage = ref("");
+const ecoRating = ref(0);
+const beginnerRating = ref(0);
+
 const router = useRouter();
 
 const goBack = async () => {
@@ -36,8 +39,35 @@ const getPost = async () => {
   post.value = postResults;
 };
 
+const createProject = async() => {
+  try {
+    if(post.value!==undefined){
+
+      await fetchy("/api/projects", "POST", {
+        body: {title: post.value.title, status: "To Do", guideId: post.value._id , guideLink: `https://craft-folio.vercel.app/posts/${post.value._id}`}
+      });
+      router.push("/projects");
+    }
+  } catch (_) {
+    return;
+  }
+
+}
+
+const getRatings = async()=>{
+  try {
+    const ratings = await fetchy(`/api/posts/${props.id}/ratings`, "GET");
+    console.log(ratings);
+    ecoRating.value = ratings.ecoRating;
+    beginnerRating.value = ratings.beginnerRating;
+  } catch (_) {
+    return;
+  }
+}
+
 onBeforeMount(async () => {
   await getPost();
+  await getRatings();
   loaded.value = true;
 });
 </script>
@@ -47,6 +77,7 @@ onBeforeMount(async () => {
     <section class="header">
       <img class="back" src="@/assets/icons/back-arrow.svg" @click="goBack" />
       <h1 class="title">{{ post.title }}</h1>
+      <p>Eco rating: {{ ecoRating }}, Beginner Rating: {{ beginnerRating }}</p>
     </section>
     <PostTipsComponent :post="post" @refresh-post="getPost"/>
     <section>
@@ -56,6 +87,13 @@ onBeforeMount(async () => {
       <PostInventoryComponent :fibers="post.fibers" :post_id="post._id" :author="post.author" @refresh-post="getPost"/>
     <!-- </section> -->
     <PostLinksListComponent :post="post" @refresh-post="getPost" />
+    <div class="buttons">
+      <button class="pure-button-primary pure-button" @click="createProject">Import Guide</button>
+    </div>
+    <section class="header">
+      <h2>Comments</h2>
+    </section>
+    <CommentListComponent :post="post"></CommentListComponent>
   </div>
 
 </template>
@@ -114,5 +152,23 @@ input:checked + .nav {
 h1 {
   margin: 0px;
   color: var(--earthy-green);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 2em;
+  margin: 1em 0 5% 0;
+}
+
+button {
+  box-shadow: 0px 4px 0px lightgrey;  
+  width: fit-content;
+  height: fit-content;
+  font-size: 1.5em;
+  padding: 0.5em;
+  border-radius: 1em;
+  
 }
 </style>

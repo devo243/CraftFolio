@@ -30,7 +30,7 @@ const deleteTip = async () => {
       <img v-else-if="props.type === 'mistake'" src="@/assets/icons/mistake.svg" class="mistake" />
       <a class="hint"> {{ props.content }}</a>
     </div>
-    <div class="flex-container2">
+    <div class="flex-container2" v-if="currentUsername===props.post.author">
       <button @click="emit('editTip')" class="edit edit-button"><img src="@/assets/icons/pencil.svg" /></button>
       <button class="button-error btn-small pure-button" @click="deleteTip()" type="button"><img src="@/assets/icons/thrash.svg" /></button>
     </div>
