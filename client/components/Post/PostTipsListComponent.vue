@@ -102,7 +102,7 @@ onBeforeMount(async () => {
   </section>
 
 
-  <section class="header" v-if="tips.length !== 0 || currentUsername===props.post.author">
+  <section class="header" v-if="mistakes.length !== 0 || currentUsername===props.post.author">
     <h2 class="title">Mistakes</h2>
   </section>
   <section>
@@ -115,7 +115,7 @@ onBeforeMount(async () => {
     
     <form @submit.prevent="addMistake()" v-if="currentUsername===props.post.author">
       <!-- <label for="link">Add a new link:</label> -->
-      <p class="placeholder" v-if="tips.length === 0">Add some mistakes...</p>
+      <p class="placeholder" v-if="mistakes.length === 0">Add some mistakes...</p>
       <input id="tip" v-model="newMistake" required />
       <button type="submit">+</button>
     </form>
@@ -148,7 +148,10 @@ form {
   /* margin: 0; */
   background-color: var(--grey);
   border-radius: 0.5em;
-  box-shadow: darkgray;
+}
+
+p{
+  font-size: small;
 }
 
 form {
