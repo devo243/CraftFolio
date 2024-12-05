@@ -19,6 +19,14 @@ const addMistake = async () => {
     mistakes.value.push(newMistake.value);
 }
 
+const deleteTip = async(index:number)=>{
+  tips.value.splice(index,1);
+}
+
+const deleteMistake = async(index:number)=>{
+  mistakes.value.splice(index,1);
+}
+
 </script>
 
 <template>
@@ -28,7 +36,13 @@ const addMistake = async () => {
     </section>
     <section class="container">
         <div class="tips" v-if="tips.length !== 0">
-            <a class="tip" v-for="(tip, index) in tips" :key="index" >+ {{ tip }}</a>
+            <a class="tip" v-for="(tip, index) in tips" :key="index" >
+              <div class="flex-container1">+ {{ tip }}</div>
+              <div class="flex-container2">
+                <button class="button-error btn-small pure-button" @click="deleteTip(index)" type="button"><img src="@/assets/icons/thrash.svg" /></button>
+              </div>
+            </a>
+            
         </div>
         <p class="placeholder" v-else>Add some tips...</p>
         <form class="add" @submit.prevent="addTip()">
@@ -42,7 +56,12 @@ const addMistake = async () => {
     </section>
     <section class="container">
         <div class="tips" v-if="mistakes.length !== 0">
-            <a class="tip" v-for="(mistake, index) in mistakes" :key="index" >x {{ mistake }}</a>
+            <a class="tip" v-for="(mistake, index) in mistakes" :key="index" >
+              <div class="flex-container1">x {{ mistake }}</div>
+              <div class="flex-container2">
+                <button class="button-error btn-small pure-button" @click="deleteMistake(index)" type="button"><img src="@/assets/icons/thrash.svg" /></button>
+              </div>
+            </a>
         </div>
         <p class="placeholder" v-else>Add some tips...</p>
         <form class="add" @submit.prevent="addMistake()">
@@ -105,6 +124,7 @@ button {
 }
 
 .tips {
+  width: 95%;
   display: flex;
   flex-direction: column;
   gap: 1em;
@@ -112,7 +132,11 @@ button {
 }
 
 .tip {
+  width: 100%;
   padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 section {
@@ -131,6 +155,20 @@ section {
   flex-direction: row;
   justify-content: center;
   gap: 2em;
+}
+
+.flex-container1 {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    height: 100%;
+}
+
+.flex-container2 {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
 }
 
 </style>

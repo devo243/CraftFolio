@@ -108,6 +108,51 @@ export default class PostingConcept {
     return await this.posts.readOne({ _id });
   }
 
+  async getLinks(_id: ObjectId) {
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    return post.options?.links || [];
+  }
+
+  async addLink(_id: ObjectId, newLink: string) {
+    if (!URL.canParse(newLink)) {
+      throw new NotAllowedError("Please submit a valid URL!");
+    }
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    const updatedLinks = [...(post.options?.links || []), newLink];
+    await this.update(_id, undefined, undefined, { ...post.options, links: updatedLinks });
+    console.log(updatedLinks);
+    return { msg: "Link added successfully!", links: updatedLinks };
+  }
+
+  async deleteLink(_id: ObjectId, linkToDelete: string) {
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    const updatedLinks = post.options?.links?.filter((link) => link !== linkToDelete) || [];
+    await this.update(_id, undefined, undefined, { ...post.options, links: updatedLinks });
+    return { msg: "Link deleted successfully!", tips: updatedLinks };
+  }
+
+  async editLink(_id: ObjectId, oldLink: string, newLink: string) {
+    if (!URL.canParse(newLink)) {
+      throw new NotAllowedError("Please submit a valid URL!");
+    }
+    const post = await this.posts.readOne({ _id });
+    if (!post) {
+      throw new NotFoundError(`Post ${_id} does not exist!`);
+    }
+    const updatedLinks = post.options?.tips?.map((link) => (link === oldLink ? newLink : link)) || [];
+    await this.update(_id, undefined, undefined, { ...post.options, links: updatedLinks });
+    return { msg: "Link updated successfully!", tips: updatedLinks };
+  }
+
   async getTips(_id: ObjectId) {
     const post = await this.posts.readOne({ _id });
     if (!post) {
@@ -137,6 +182,9 @@ export default class PostingConcept {
   }
 
   async editTip(_id: ObjectId, oldTip: string, newTip: string) {
+    if (newTip.length === 0) {
+      throw new NotAllowedError("New tip must be non-empty!");
+    }
     const post = await this.posts.readOne({ _id });
     if (!post) {
       throw new NotFoundError(`Post ${_id} does not exist!`);
@@ -175,6 +223,9 @@ export default class PostingConcept {
   }
 
   async editMistake(_id: ObjectId, oldMistake: string, newMistake: string) {
+    if (newMistake.length === 0) {
+      throw new NotAllowedError("New mistake must be non-empty!");
+    }
     const post = await this.posts.readOne({ _id });
     if (!post) {
       throw new NotFoundError(`Post ${_id} does not exist!`);
