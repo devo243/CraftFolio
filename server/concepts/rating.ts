@@ -7,7 +7,7 @@ export interface RatingDoc extends BaseDoc {
   object: ObjectId;
 }
 
-const ECO_FRIENDLY_FIBERS = ["organic hemp", "organic cotton", "organic linen", "lyocell", "econyl", "pinatex", "qmonos", "bamboo"];
+const ECO_FRIENDLY_FIBERS = ["hemp", "cotton", "linen", "lyocell", "econyl", "pinatex", "qmonos", "bamboo"];
 
 /**
  * concept: Rating[Object]
@@ -48,7 +48,7 @@ export default class RatingConcept {
 
   static calculateEcoRating(fiber_types: string[][]) {
     const total_fibers = fiber_types.length;
-    const eco_friendly_count = fiber_types.filter((fiber_row) => ECO_FRIENDLY_FIBERS.includes(fiber_row[2]?.toLowerCase())).length;
+    const eco_friendly_count = fiber_types.filter((fiber_row) => ECO_FRIENDLY_FIBERS.includes(fiber_row[2]?.toLowerCase().trim())).length;
     return total_fibers > 0 ? (eco_friendly_count / total_fibers) * 5 : 0;
   }
 
