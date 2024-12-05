@@ -26,9 +26,9 @@ const deleteLink = async () => {
 <template>
     <div class="container">
         <div class="flex-container1">
-            <a class="hint"> {{ props.content }}</a>
+            <a class="hint" :href="`${props.content}`"> {{ props.content }}</a>
         </div>
-        <div class="flex-container2">
+        <div class="flex-container2" v-if="currentUsername===props.post.author">
             <button @click="emit('editLink')" class="edit edit-button"><img src="@/assets/icons/pencil.svg" /></button>
             <button class="button-error btn-small pure-button " @click="deleteLink()" type="button"><img src="@/assets/icons/thrash.svg" /></button>
         </div>
