@@ -42,7 +42,7 @@ const getFilteredPosts = async (ratingType: string, minScore: string) => {
     return;
   }
 
-  postResults = postResults.filter(x => x !== null);
+  postResults = postResults.filter((x: any) => x !== null);
 
   console.log(postResults);
 
