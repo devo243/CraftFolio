@@ -43,7 +43,9 @@ const getPost = async () => {
 };
 
 const createProject = async() => {
+  console.log("clicked");
   try {
+    console.log(post.value, fiberTypes.value, fiberYards.value);
     if(post.value!==undefined && fiberTypes.value!==undefined && fiberYards.value!==undefined){
 
       await fetchy("/api/projects", "POST", {

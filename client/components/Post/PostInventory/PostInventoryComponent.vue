@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
-import { onBeforeMount, ref } from "vue";
+import { computed, onBeforeMount, ref } from "vue";
 import { fetchy } from "../../../utils/fetchy";
 import AddPostFiberForm from "./AddPostFiberForm.vue";
 import AlternatePostFiberComponent from "./AlternatePostFiberComponent.vue";
@@ -15,19 +15,28 @@ const loaded = ref(false);
 const presentFibers = ref(new Array<string>);
 const selectedItems = ref(new Array<Record<string,string>>);
 
+const fiber_types = computed(()=>{
+  const temp = new Array<string>;
+  for(const fiber of selectedItems.value){
+    temp.push(fiber.type);
+  }
+  return temp;
+})
+const fiber_yards = computed(()=>{
+  const temp = new Array<number>;
+  for(const fiber of selectedItems.value){
+    temp.push(Number.parseFloat(fiber.remainingYardage));
+  }
+  return temp;
+})
+
 const getInventory = async () => {
   emit("refreshPost");
 };
 
 const updateFibersSelected = async()=>{
-  const fiber_types = new Array<string>;
-  const fiber_yards = new Array<number>;
-  for(const fiber of selectedItems.value){
-    fiber_types.push(fiber.type);
-    fiber_yards.push(Number.parseFloat(fiber.remainingYardage));
-  }
-  console.log(fiber_types, fiber_yards);
-  emit("refreshFibers", fiber_types,fiber_yards);
+  //console.log(fiber_types.value, fiber_yards.value);
+  emit("refreshFibers", fiber_types.value,fiber_yards.value);
 }
 
 const getAvailableMaterialsPost = async () => {
@@ -70,7 +79,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <section v-if="loaded" class="main-container">
+  <section v-if="loaded" class="main-container" @mouseleave="updateFibersSelected">
     <section class="header">
       <h1>Fibers</h1>
       <div>
@@ -92,14 +101,14 @@ onBeforeMount(async () => {
         <div class="separation">
           <div class="fiber-selection grid-item recommended">
             <div :class="presentFibers.includes(fiber.recommended._id) ? 'present' : 'absent'">
-            <input type="checkbox" v-model="selectedItems" :value="fiber.recommended" @click="updateFibersSelected"/>
+            <input type="checkbox" v-model="selectedItems" :value="fiber.recommended"/>
             </div>
             <PostFiberComponent :fiber="fiber.recommended" :id="props.post_id" :post_author="author" @refreshFibers="getInventory" :style="{flex : 1}"/>
           </div>
           <div class="fiber-selection grid-item alternative">
             <div v-for="alternative_fiber of fiber.alternatives" class="recommended">
               <div :class="presentFibers.includes(alternative_fiber._id) ? 'present' : 'absent'">
-                <input type="checkbox" v-model="selectedItems" :value="alternative_fiber" @click="updateFibersSelected"/>
+                <input type="checkbox" v-model="selectedItems" :value="alternative_fiber"/>
               </div>
               <AlternatePostFiberComponent :fiber="alternative_fiber" :id="props.post_id" :post_author="author" @refreshFibers="getInventory" :style="{flex : 1}" />
             </div>
