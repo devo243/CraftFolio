@@ -58,7 +58,7 @@ onBeforeMount(async () => {
   <section class="header" v-if="tips.length !== 0 || currentUsername===props.post.author">
     <h2 class="title">Tips/Common Mistakes</h2>
   </section>
-  <section class="container">
+  <section>
     <div class="hints" v-if="tips.length !== 0">
       <div v-for="(tip, index) in tips" :key="index" class="hint">
         <TipComponent v-if="editingTip.type!=='tip'||editingTip.index!=Number.parseInt(index.toString())" :post="props.post" :tip="tip" @refresh-tips="getTips" @edit-tip="toggleEditing('tip', Number.parseInt(index.toString()))"/>
@@ -79,7 +79,7 @@ onBeforeMount(async () => {
 .hint{
   width: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   font-size: small;
 }
@@ -93,14 +93,6 @@ onBeforeMount(async () => {
   box-shadow: 0px 4px 0px rgba(181, 181, 181, 0.3);  
 }
 
-.container {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  /* background-color: rgb(226, 226, 226); */
-  border-radius: 2em;
-}
 a,
 p,
 form {

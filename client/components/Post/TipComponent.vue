@@ -43,7 +43,7 @@ const deleteTip = async () => {
 .container {
   width: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   /* background-color: rgb(226, 226, 226); */
@@ -71,6 +71,7 @@ input {
   padding-left: 0.5em;
 }
 .flex-container1 {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: left;
@@ -79,6 +80,7 @@ input {
 
 
 .flex-container2 {
+  width: 100%;
   display:flex;
   align-items: center;
   justify-content: flex-end;
