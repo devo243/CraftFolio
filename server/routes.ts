@@ -415,25 +415,58 @@ class Routes {
 
   // PROJECT MANAGING CONCEPT
   @Router.post("/projects")
-  async createProject(session: SessionDoc, title?: string, status?: string, guideId?: string, guideLink?: string, selectedFibers?: string, selectedAmounts?: string) {
+  async createProject(session: SessionDoc, title?: string, status?: string, guideId?: string, guideLink?: string, fiber_types?: string[], fiber_yardages?: number[]) {
     const user = Sessioning.getUser(session);
-    if (guideId && guideLink && selectedFibers && selectedAmounts) {
+    if (guideId && guideLink && fiber_types && fiber_yardages) {
       const guide = await Posting.getById(new ObjectId(guideId));
       if (!guide) {
         throw new Error(`Guide with ID ${guideId} does not exist.`);
       }
       const project = await ProjectManaging.createProject(user, guide.title, "To Do");
-      if (!project.project) {
+      const projectproj = project.project;
+      if (!projectproj) {
         throw new Error("Failed to create project from guide.");
       }
       if (!URL.canParse(guideLink)) {
         throw new NotAllowedError(`Expected a valid link but got: ${guideLink}`);
       }
-      await ProjectManaging.addLink(user, project.project._id, guideLink);
-      const fibers: ObjectId[] = selectedFibers.split(",").map((fiberId) => new ObjectId(fiberId));
-      const amounts: number[] = selectedAmounts.split(",").map((amount) => parseFloat(amount));
+      await ProjectManaging.addLink(user, projectproj._id, guideLink);
 
-      await Promise.all(fibers.map((fiber: ObjectId, idx: number) => Inventorying.editFiber(fiber, undefined, undefined, undefined, undefined, amounts[idx])));
+      await Promise.all(
+        fiber_types.map(async (fiber_type, idx) => {
+          const yardage = fiber_yardages[idx];
+
+          // Check if fiber in user's inventory
+          const existingFibers = await Inventorying.getUserInventory(user);
+          const matchedFiber = existingFibers.find((fiber) => fiber.type === fiber_type);
+
+          if (matchedFiber) {
+            // Add fiber to project from inventory
+            const createdFiber = await ProjectInventorying.addNewFiber(
+              projectproj._id,
+              matchedFiber.name,
+              matchedFiber.brand,
+              matchedFiber.type,
+              matchedFiber.color,
+              yardage ?? matchedFiber.remainingYardage,
+            );
+            if (createdFiber.fiber !== null) {
+              await ProjectManaging.addFiber(user, projectproj._id, createdFiber.fiber._id);
+              if (yardage) {
+                await Inventorying.editFiber(matchedFiber._id, undefined, undefined, undefined, undefined, matchedFiber.remainingYardage - yardage);
+              } else {
+                await Inventorying.deleteFiber(matchedFiber._id);
+              }
+            }
+          } else {
+            // Create new fiber and add to project
+            const createdFiber = await ProjectInventorying.addNewFiber(projectproj._id, "", "", fiber_type, "", yardage);
+            if (createdFiber.fiber !== null) {
+              await ProjectManaging.addFiber(user, projectproj._id, createdFiber.fiber._id);
+            }
+          }
+        }),
+      );
 
       return Responses.project(project.project);
     }
