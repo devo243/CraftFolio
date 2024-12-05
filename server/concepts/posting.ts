@@ -45,7 +45,7 @@ export default class PostingConcept {
   }
 
   async getFibersForPost(_id: ObjectId) {
-    console.log("get: ", _id, typeof(_id))
+    console.log("get: ", _id, typeof _id);
     return (await this.posts.readOne({ _id }))?.options?.fibers;
   }
 
@@ -69,13 +69,12 @@ export default class PostingConcept {
     let new_fibers: ObjectId[][] | undefined;
     if (!existing_fiber) {
       new_fibers = [[created_id]];
-    }
-    else if (alternative_to === "") {
+    } else if (alternative_to === "") {
       new_fibers = existing_fiber.concat([[created_id]]);
-    } else  {
+    } else {
       new_fibers = existing_fiber.map((fibers: ObjectId[]) => (fibers.map((fiber) => fiber.toString()).includes(alternative_to) ? fibers.concat([created_id]) : fibers));
     }
-    return await this.posts.partialUpdateOne({_id}, {options: { fibers: new_fibers, tips: post.options?.tips, mistakes: post.options?.mistakes, links: post.options?.links}});
+    return await this.posts.partialUpdateOne({ _id }, { options: { fibers: new_fibers, tips: post.options?.tips, mistakes: post.options?.mistakes, links: post.options?.links } });
   }
 
   async deleteFibers(_id: ObjectId, fiber_id: string) {
@@ -93,7 +92,7 @@ export default class PostingConcept {
         new_fibers.push(fiberSet.filter((existing_fiber: ObjectId) => existing_fiber.toString() !== fiber_id));
       }
     }
-    return await this.posts.partialUpdateOne({_id}, {options: { fibers: new_fibers, tips: post.options?.tips, mistakes: post.options?.mistakes, links: post.options?.links}});
+    return await this.posts.partialUpdateOne({ _id }, { options: { fibers: new_fibers, tips: post.options?.tips, mistakes: post.options?.mistakes, links: post.options?.links } });
   }
 
   async delete(_id: ObjectId) {
