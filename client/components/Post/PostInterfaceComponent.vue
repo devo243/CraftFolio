@@ -2,6 +2,7 @@
 import { fetchy } from "@/utils/fetchy";
 import { onBeforeMount, ref } from "vue";
 import { useRouter } from "vue-router";
+import CommentListComponent from "../CommentOnPost/CommentListComponent.vue";
 import PostInventoryComponent from "./PostInventory/PostInventoryComponent.vue";
 import PostLinksListComponent from "./PostLinksListComponent.vue";
 import PostMarkdownComponent from "./PostMarkdownComponent.vue";
@@ -39,7 +40,6 @@ const getPost = async () => {
 const createProject = async() => {
   try {
     if(post.value!==undefined){
-      console.log(post.value.title, post.value._id);
       await fetchy("/api/projects", "POST", {
         body: {title: post.value.title, status: "To Do", guideId: post.value._id }
       });
@@ -74,6 +74,10 @@ onBeforeMount(async () => {
     <div class="buttons">
       <button class="pure-button-primary pure-button" @click="createProject">Import Guide</button>
     </div>
+    <section class="header">
+      <h2>Comments</h2>
+    </section>
+    <CommentListComponent :post="post"></CommentListComponent>
   </div>
 
 </template>
