@@ -48,13 +48,11 @@ const openPost = async (id: string) => {
 <template>
   <div class="page">
     <div class="row">
-      <h2 v-if="!searchAuthor">Guides:</h2>
-      <h2 v-else>Guides by {{ searchAuthor }}:</h2>
       <SearchPostForm v-if="props.username!==currentUsername" @getPostsByAuthor="getPosts" />
     </div>
     <section class="posts" v-if="loaded && posts.length !== 0">
       <article v-for="post in posts" :key="post._id">
-        <PostComponent :post="post" @click="openPost(post._id)" @refreshPosts="getPosts"  />
+        <PostComponent :post="post" @click="openPost(post._id)" @refreshPosts="getPosts" :inHome="props.username===currentUsername" />
       </article>
     </section>
     <p v-else-if="loaded">No posts found</p>
@@ -77,7 +75,7 @@ section,
 p,
 .row {
   margin: 0 auto;
-  max-width: 60em;
+  max-width: 90em;
 }
 
 article {
@@ -85,17 +83,22 @@ article {
   border-radius: 1em;
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
-  padding: 1em;
+  padding: 0;
+  width: 21.5%;
+  height: fit-content;
 }
 
 .posts {
+  flex-direction: row;
+  flex-wrap: wrap;
   padding: 1em;
+  gap: 4em;
+  row-gap: 2em;
 }
 
 .row {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   margin: 0 auto;
   max-width: 60em;
 }
