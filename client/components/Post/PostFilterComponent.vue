@@ -22,7 +22,7 @@ const clearFilters = () => {
       <option value="beginner">Beginner Friendly</option>
     </select>
     <label for="minScore">Set minimum score:</label>
-    <input type="number" id="minScore" step="any" v-model="minScore" placeholder="0" required />
+    <input type="number" id="minScore" step="any" max="5" min="0"  v-model="minScore" placeholder="0" required />
     <button class="submit" type="submit">Apply Filters</button>
     <button class="clear" type="button" @click="clearFilters">Clear Filters</button>
   </form>
