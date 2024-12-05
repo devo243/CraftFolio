@@ -563,7 +563,7 @@ class Routes {
     const fiber_ids = await ProjectManaging.getFibers(user, oid);
     const fibers: (FiberDoc | null)[] = await ProjectInventorying.idsToFibers(fiber_ids.fibers);
     // this will find the fibers assigned to the project and add them back to the user's general inventory
-    await Inventorying.updateCorrespondingFibers(user, fibers);
+    // await Inventorying.updateCorrespondingFibers(user, fibers);
     // now delete the materials from project's inventory
     await Promise.all(fiber_ids.fibers.map((fiber_id: ObjectId) => ProjectInventorying.deleteFiber(fiber_id)));
     return await ProjectManaging.deleteProject(user, oid);
