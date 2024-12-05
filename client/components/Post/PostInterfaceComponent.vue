@@ -40,8 +40,9 @@ const getPost = async () => {
 const createProject = async() => {
   try {
     if(post.value!==undefined){
+      
       await fetchy("/api/projects", "POST", {
-        body: {title: post.value.title, status: "To Do", guideId: post.value._id }
+        body: {title: post.value.title, status: "To Do", guideId: post.value._id , guideLink: `https://craft-folio.vercel.app/posts/${post.value._id}`}
       });
       router.push("/projects");
     }
