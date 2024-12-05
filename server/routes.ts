@@ -170,6 +170,19 @@ class Routes {
     return posts;
   }
 
+  @Router.get("/posts/:id/ratings")
+  async getPostRatings(id: string) {
+    const postId = new ObjectId(id);
+
+    const allEcoRatings = await EcoFriendlyRating.getRatings();
+    const allBeginnerRatings = await BeginnerFriendlyRating.getRatings();
+
+    const ecoRating = allEcoRatings.find((rating) => rating.object.equals(postId));
+    const beginnerRating = allBeginnerRatings.find((rating) => rating.object.equals(postId));
+
+    return { ecoRating: ecoRating?.rating || 0, beginnerRating: beginnerRating?.rating || 0 };
+  }
+
   //links on posts
   @Router.get("/posts/:id/links")
   async getLinks(session: SessionDoc, id: string) {
