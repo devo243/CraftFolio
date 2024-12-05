@@ -110,7 +110,12 @@ class Routes {
         ),
       );
       const created_fibers = guide_fibers.map((fiber_ids) => fiber_ids.filter((fiber_id) => fiber_id !== undefined));
-      await Posting.update(post_id, created.post?.title, created.post?.content, { fibers: created_fibers, tips: created.post?.options?.tips, links: created.post?.options?.links, mistakes: created.post?.options?.mistakes});
+      await Posting.update(post_id, created.post?.title, created.post?.content, {
+        fibers: created_fibers,
+        tips: created.post?.options?.tips,
+        links: created.post?.options?.links,
+        mistakes: created.post?.options?.mistakes,
+      });
     }
 
     const eco_rating = RatingConcept.calculateEcoRating(fiber_types || []);
@@ -149,13 +154,16 @@ class Routes {
   }
 
   @Router.get("/posts/top")
-  @Router.validate(z.object({ minScore: z.number().optional(), ratingType: z.enum(["eco", "beginner"]) }))
-  async getTopPosts(ratingType: "eco" | "beginner", minScore: number = 0) {
+  @Router.validate(z.object({ minScore: z.string().optional(), ratingType: z.string().optional() }))
+  async getTopPosts(ratingType: string, minScore: string = "0") {
+    const numberMinScore = Number(minScore);
     const Rating = ratingType === "eco" ? EcoFriendlyRating : BeginnerFriendlyRating;
-    const ratings = (await (await Rating.getObjectsWithMinRating(minScore)).toArray()) as RatingDoc[];
+    const ratings = (await (await Rating.getObjectsWithMinRating(numberMinScore)).toArray()) as RatingDoc[];
     const posts = await Promise.all(
       ratings.map(async (rating: RatingDoc) => {
-        const post = await Posting.getById(rating.object);
+        let post;
+        post = await Posting.getById(rating.object);
+        post = await Responses.post(post);
         return post ? { ...post, rating: rating.rating } : null;
       }),
     );

@@ -22,10 +22,10 @@ export default class Responses {
     const postFibers = post.options?.fibers;
     if (postFibers) {
       const formattedFibers = await Promise.all(postFibers.map(async (fiberSet: ObjectId[]) => await GuideInventorying.idsToFibers(fiberSet)));
-      const fibers = formattedFibers.map((fiberSet) => ({recommended: fiberSet[0], alternatives: fiberSet.slice(1)}));
-      return { ...post, author: author.username, fibers};
+      const fibers = formattedFibers.map((fiberSet) => ({ recommended: fiberSet[0], alternatives: fiberSet.slice(1) }));
+      return { ...post, author: author.username, fibers };
     }
-    return { ...post, author: author.username};
+    return { ...post, author: author.username };
   }
 
   /**
@@ -33,15 +33,17 @@ export default class Responses {
    */
   static async posts(posts: PostDoc[]) {
     const authors = await Authing.idsToUsernames(posts.map((post) => post.author));
-    return await Promise.all(posts.map(async (post, i) => {
-      const postFibers = post.options?.fibers;
-      if (postFibers) {
-        const formattedFibers = await Promise.all(postFibers.map(async (fiberSet: ObjectId[]) => await GuideInventorying.idsToFibers(fiberSet)));
-        const fibers = formattedFibers.map((fiberSet) => ({recommended: fiberSet[0], alternatives: fiberSet.slice(1)}));
-        return { ...post, author: authors[i], fibers};
-      }
-      return { ...post, author: authors[i]};
-    }));
+    return await Promise.all(
+      posts.map(async (post, i) => {
+        const postFibers = post.options?.fibers;
+        if (postFibers) {
+          const formattedFibers = await Promise.all(postFibers.map(async (fiberSet: ObjectId[]) => await GuideInventorying.idsToFibers(fiberSet)));
+          const fibers = formattedFibers.map((fiberSet) => ({ recommended: fiberSet[0], alternatives: fiberSet.slice(1) }));
+          return { ...post, author: authors[i], fibers };
+        }
+        return { ...post, author: authors[i] };
+      }),
+    );
   }
 
   /**
