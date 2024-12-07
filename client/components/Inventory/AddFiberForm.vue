@@ -11,7 +11,7 @@ const { currentUsername } = storeToRefs(useUserStore());
 const name = ref("");
 const brand = ref("");
 const type = ref("");
-const color = ref("");
+const color = ref("#000000");
 const yardage = ref("");
 const availableTypes = [
   "cotton",
@@ -49,7 +49,7 @@ const emptyForm = () => {
   brand.value = "";
   type.value = "";
   customType.value = "";
-  color.value = "";
+  color.value = "#000000";
   yardage.value = "";
 };
 </script>
