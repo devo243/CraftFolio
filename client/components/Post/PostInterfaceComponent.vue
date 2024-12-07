@@ -92,7 +92,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div v-if="loaded && post!==undefined">
+  <div v-if="loaded && post!==undefined" class="content-body">
     <section class="header">
       <img class="back" src="@/assets/icons/back-arrow.svg" @click="goBack" />
       <h1 class="title">{{ post.title }}</h1>
@@ -109,9 +109,6 @@ onBeforeMount(async () => {
     <div class="buttons">
       <button class="pure-button-primary pure-button" @click="createProject">Import Guide</button>
     </div>
-    <section class="header">
-      <h2>Comments</h2>
-    </section>
     <CommentListComponent :post="post"></CommentListComponent>
   </div>
 
@@ -178,16 +175,19 @@ h1 {
   flex-direction: row;
   justify-content: center;
   gap: 2em;
-  margin: 1em 0 5% 0;
 }
 
 button {
-  box-shadow: 0px 4px 0px lightgrey;  
+  box-shadow: 0px 4px 0px var(--grey);  
   width: fit-content;
   height: fit-content;
   font-size: 1.5em;
   padding: 0.5em;
   border-radius: 1em;
-  
+  border: none;
+}
+
+.content-body {
+  margin: 1em 0 5% 0;
 }
 </style>

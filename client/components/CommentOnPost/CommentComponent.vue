@@ -26,7 +26,7 @@ const deleteComment = async () => {
   <div class="base">
     <menu v-if="props.comment.author == currentUsername">
       <li>
-        <button class="btn-small pure-button" @click="emit('editComment', props.comment._id)">
+        <button class="btn-small pure-button" @click="emit('editComment', props.comment._id)" style="background-color: var(--dark-blue); color: white;">
           <span class="material-icons"> edit </span>
         </button>
       </li>
@@ -61,6 +61,10 @@ menu {
   margin: 0;
 }
 
+menu li button {
+  border-radius: 0.5em;
+}
+
 .timestamp {
   display: flex;
   justify-content: flex-end;
@@ -72,6 +76,7 @@ menu {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1em;
 }
 
 .base article:only-child {

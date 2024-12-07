@@ -25,7 +25,7 @@ const emptyForm = () => {
 
 <template>
   <form @submit.prevent="createComment(content)">
-    <label for="content">Leave a Comment!</label>
+    <h3 for="content">Leave a Comment!</h3>
     <textarea id="content" v-model="content" placeholder="Comment Contents" required> </textarea>
     <button type="submit" class="pure-button-primary pure-button">Post Comment</button>
   </form>
@@ -38,6 +38,8 @@ form {
   flex-direction: column;
   gap: 0.5em;
   padding: 1em;
+  width: 65%;
+  margin: 0 auto;
 }
 
 textarea {

@@ -26,8 +26,8 @@ const editComment = async (content: string) => {
     <textarea id="content" v-model="content" placeholder="Create a comment!" required> </textarea>
     <div class="base">
       <menu>
-        <li><button class="btn-small pure-button-primary pure-button" type="submit" style="background-color: rgb(19, 60, 109)">Save</button></li>
-        <li><button class="btn-small pure-button" @click="emit('editComment')">Cancel</button></li>
+        <li><button class="btn-small pure-button-primary pure-button" type="submit" style="background-color: var(--dark-blue)">Save</button></li>
+        <li><button class="btn-small pure-button" @click="emit('editComment')" style="background-color: #bbb">Cancel</button></li>
       </menu>
       <p v-if="props.comment.dateCreated !== props.comment.dateUpdated" class="timestamp">Edited on: {{ formatDate(props.comment.dateUpdated) }}</p>
       <p v-else class="timestamp">Created on: {{ formatDate(props.comment.dateCreated) }}</p>
@@ -37,26 +37,23 @@ const editComment = async (content: string) => {
 
 <style scoped>
 form {
-  background-color: rgb(77, 111, 135);
+  /* background-color: var(--dark-blue);
+  color: var(--base-bg); */
   border-radius: 1em;
   display: flex;
   flex-direction: column;
   gap: 0.5em;
-  padding: 1em;
+  /* padding: 1em; */
 }
 
 textarea {
-  background-color: rgb(234, 245, 248);
+  /* background-color: rgb(234, 245, 248); */
   font-family: inherit;
   font-size: inherit;
   height: 6em;
   padding: 0.5em;
   border-radius: 4px;
   resize: none;
-}
-
-label {
-  color: rgb(37, 63, 50);
 }
 
 p {
@@ -81,6 +78,7 @@ menu {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1em;
 }
 
 .timestamp {
