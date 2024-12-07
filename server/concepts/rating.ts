@@ -49,14 +49,15 @@ export default class RatingConcept {
   static calculateEcoRating(fiber_types: string[][]) {
     const total_fibers = fiber_types.length;
     const eco_friendly_count = fiber_types.filter((fiber_row) => ECO_FRIENDLY_FIBERS.includes(fiber_row[2]?.toLowerCase().trim())).length;
-    return total_fibers > 0 ? (eco_friendly_count / total_fibers) * 5 : 0;
+    const rating = total_fibers > 0 ? (eco_friendly_count / total_fibers) * 5 : 0;
+    return Math.round(rating);
   }
 
   static calculateBeginnerRating(options?: { tips?: string[]; mistakes?: string[] }) {
     const tips_count = options?.tips?.length || 0;
     const mistakes_count = options?.mistakes?.length || 0;
-    const max_tips_mistakes = 3;
-
-    return Math.min(((tips_count + mistakes_count) / max_tips_mistakes) * 5, 5);
+    const max_tips_mistakes = 2;
+    const rating = Math.min(Math.floor((tips_count + mistakes_count) / max_tips_mistakes), 5);
+    return Math.round(rating);
   }
 }
