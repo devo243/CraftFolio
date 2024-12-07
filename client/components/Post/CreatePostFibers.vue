@@ -116,7 +116,7 @@ const deleteFiber = async (row: number, column: number)=>{
                     class="custom"
                     required
                 />
-                <input type="number" step="any" id="yardage" v-model="alternateNewYards" placeholder="Yardage" required />
+                <input type="number" min="0" step="any" id="yardage" v-model="alternateNewYards" placeholder="Yardage" required />
                 <button type="submit" class="button-custom pure-button pure-button-primary">Add</button>
         </form>
         </div>
@@ -140,7 +140,7 @@ const deleteFiber = async (row: number, column: number)=>{
                 v-if="newType === 'custom'"
                 required
             />
-            <input type="number" step="any" id="yardage" v-model="newYards" placeholder="Yardage" required />
+            <input type="number" min="0" step="any" id="yardage" v-model="newYards" placeholder="Yardage" required />
             <button type="submit" class="button-custom pure-button pure-button-primary">Add</button>
         </form>
     </section>

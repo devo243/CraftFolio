@@ -107,7 +107,7 @@ const cancel = async () => {
       <div class="vl"></div>
       <div class="block">
         <span v-if="!editing">{{ fiber.remainingYardage }} yd</span>
-        <input v-else type="number" step="any" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
+        <input v-else type="number" min="0" step="any" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
       </div>
     </div>
     <button v-if="!editing" v-on:click="toggleEditing"><img src="@/assets/icons/pencil.svg" /></button>

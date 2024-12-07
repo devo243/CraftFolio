@@ -58,7 +58,7 @@ const emptyForm = () => {
 <template>
   <form @submit.prevent="createFiber()">
     <input type="text" id="name" v-model="name" placeholder="Name" required />
-    <input type="text" id="brand" v-model="brand" placeholder="Brand" required />
+    <input type="text" id="brand" v-model="brand" placeholder="Brand" />
     <!-- <input type="text" id="type" v-model="type" placeholder="Type" required /> -->
     <select v-model="type" required>
       <option disabled value="">Please select one</option>
@@ -73,7 +73,7 @@ const emptyForm = () => {
         required
       />
     <input type="color" id="color" v-model="color" placeholder="Color" required />
-    <input type="number" step="any" id="yardage" v-model="yardage" placeholder="Yardage" required />
+    <input type="number" min="0" step="any" id="yardage" v-model="yardage" placeholder="Yardage" required />
     <button type="submit" class="button-custom pure-button pure-button-primary">Add</button>
   </form>
 </template>
