@@ -10,7 +10,7 @@ const emit = defineEmits(["refreshFibers"]);
 
 const fiber = ref(props.fiber);
 const editing = ref(false);
-
+const customType = ref("");
 const availableTypes = [
   "cotton",
   "linen",
@@ -35,6 +35,7 @@ const deleteFiber = async () => {
 
 const editFiber = async () => {
   try {
+    fiber.value.type = fiber.value.type === "custom" ? customType.value : fiber.value.type;
     await fetchy(`/api/projects/${props.id}/fibers/${props.fiber._id}`, "PATCH", {
       body: {
         name: fiber.value.name,
@@ -86,6 +87,14 @@ const cancel = async () => {
           <option v-for="(type, index) of availableTypes" :key="index">{{ type }}</option>
           <option value="custom">Custom...</option>
         </select>
+        <input 
+          type="text" 
+          v-model="customType" 
+          placeholder="Enter custom type" 
+          v-if="fiber.type === 'custom' && editing"
+          style="margin-top: 0.5em;"
+          requried
+        />
       </div>
       <div class="vl"></div>
       <div class="block">
@@ -98,7 +107,7 @@ const cancel = async () => {
       <div class="vl"></div>
       <div class="block">
         <span v-if="!editing">{{ fiber.remainingYardage }} yd</span>
-        <input v-else type="number" step="any" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
+        <input v-else type="number" min="0" step="any" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
       </div>
     </div>
     <button v-if="!editing" v-on:click="toggleEditing"><img src="@/assets/icons/pencil.svg" /></button>

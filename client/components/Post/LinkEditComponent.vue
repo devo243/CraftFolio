@@ -30,7 +30,7 @@ const editLink = async (newContent:string) => {
 <template>
     <form @submit.prevent="editLink(newContent)" class="container">
         <div class="flex-container1">
-            <textarea id="newContent" v-model="newContent" class="hint"></textarea>
+            <input type="url" id="newContent" v-model="newContent" class="hint"/>
         </div>
         <div class="flex-container2">
             <button class="edit" type="submit"><img src="@/assets/icons/check.svg" /></button>
