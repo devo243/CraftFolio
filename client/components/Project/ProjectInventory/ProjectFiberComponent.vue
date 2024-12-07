@@ -10,7 +10,7 @@ const emit = defineEmits(["refreshFibers"]);
 
 const fiber = ref(props.fiber);
 const editing = ref(false);
-
+const customType = ref("");
 const availableTypes = [
   "cotton",
   "linen",
@@ -35,6 +35,7 @@ const deleteFiber = async () => {
 
 const editFiber = async () => {
   try {
+    fiber.value.type = fiber.value.type === "custom" ? customType.value : fiber.value.type;
     await fetchy(`/api/projects/${props.id}/fibers/${props.fiber._id}`, "PATCH", {
       body: {
         name: fiber.value.name,
@@ -86,6 +87,13 @@ const cancel = async () => {
           <option v-for="(type, index) of availableTypes" :key="index">{{ type }}</option>
           <option value="custom">Custom...</option>
         </select>
+        <input 
+          type="text" 
+          v-model="customType" 
+          placeholder="Enter custom type" 
+          v-if="fiber.type === 'custom' && editing"
+          style="margin-top: 0.5em;"
+        />
       </div>
       <div class="vl"></div>
       <div class="block">
