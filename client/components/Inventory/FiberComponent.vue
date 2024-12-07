@@ -93,6 +93,7 @@ const cancel = async () => {
           placeholder="Enter custom type" 
           v-if="fiber.type === 'custom' && editing"
           style="margin-top: 0.5em;"
+          required
         />
       </div>
       <div class="vl"></div>

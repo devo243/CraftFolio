@@ -83,6 +83,8 @@ export default class PostingConcept {
       throw new NotFoundError(`Post ${_id} does not exist!`);
     }
     const existing_fibers = post.options?.fibers;
+    console.log("existing: ", existing_fibers);
+    console.log("deleting: ", fiber_id);
     const new_fibers: ObjectId[][] = [];
     if (!existing_fibers) {
       throw new NotAllowedError(`Fiber ${fiber_id} does not exist!`);
@@ -92,6 +94,7 @@ export default class PostingConcept {
         new_fibers.push(fiberSet.filter((existing_fiber: ObjectId) => existing_fiber.toString() !== fiber_id));
       }
     }
+    console.log("new fbers: ", new_fibers);
     return await this.posts.partialUpdateOne({ _id }, { options: { fibers: new_fibers, tips: post.options?.tips, mistakes: post.options?.mistakes, links: post.options?.links } });
   }
 

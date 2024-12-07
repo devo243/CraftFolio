@@ -2,7 +2,7 @@
 import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
 import { storeToRefs } from "pinia";
-import { ref } from "vue";
+import { ref, watchEffect } from "vue";
 
 const props = defineProps(["fiber", "id","post_author"]);
 const { currentUsername } = storeToRefs(useUserStore());
@@ -22,6 +22,10 @@ const editing = ref(false);
 //   "zipper",
 //   "button",
 // ];
+
+watchEffect(() => {
+  fiber.value = props.fiber;
+});
 
 const deleteFiber = async () => {
   try {
@@ -67,7 +71,6 @@ const cancel = async () => {
 </script>
 
 <template>
-  <!-- {{ props.id }} -->
   <div class="fiber">
     <div class="container">
       <div class="block">

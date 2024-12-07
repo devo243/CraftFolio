@@ -14,8 +14,8 @@ const newType = ref("");
 const alternateNewType = ref("");
 const customType = ref("");
 const alternateCustomType = ref("");
-const newYards = ref(0);
-const alternateNewYards = ref(0);
+const newYards = ref("");
+const alternateNewYards = ref("");
 const availableTypes = [
   "cotton",
   "linen",
@@ -30,8 +30,8 @@ const availableTypes = [
 const emptyForm = ()=>{
     newType.value="";
     alternateNewType.value=""
-    newYards.value = 0;
-    alternateNewYards.value = 0;
+    newYards.value = "";
+    alternateNewYards.value = "";
 };
 
 const addFiber = async () => {
@@ -114,6 +114,7 @@ const deleteFiber = async (row: number, column: number)=>{
                     placeholder="Enter custom type" 
                     v-if="alternateNewType === 'custom'"
                     class="custom"
+                    required
                 />
                 <input type="number" step="any" id="yardage" v-model="alternateNewYards" placeholder="Yardage" required />
                 <button type="submit" class="button-custom pure-button pure-button-primary">Add</button>
@@ -137,6 +138,7 @@ const deleteFiber = async (row: number, column: number)=>{
                 v-model="customType" 
                 placeholder="Enter custom type" 
                 v-if="newType === 'custom'"
+                required
             />
             <input type="number" step="any" id="yardage" v-model="newYards" placeholder="Yardage" required />
             <button type="submit" class="button-custom pure-button pure-button-primary">Add</button>

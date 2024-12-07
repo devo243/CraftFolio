@@ -70,6 +70,7 @@ const emptyForm = () => {
         v-model="customType" 
         placeholder="Enter custom type" 
         v-if="type === 'custom'"
+        required
       />
     <input type="color" id="color" v-model="color" placeholder="Color" required />
     <input type="number" step="any" id="yardage" v-model="yardage" placeholder="Yardage" required />
