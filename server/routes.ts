@@ -300,7 +300,7 @@ class Routes {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
-    const created = await GuideInventorying.addNewFiber(oid, "", "", type, "", yardage);
+    const created = await GuideInventorying.addNewFiber(oid, "", "", type, "", yardage, false);
     const created_id = created.fiber?._id;
     if (created_id) {
       return await Posting.updateFibers(oid, created_id, alternative_to);

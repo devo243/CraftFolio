@@ -41,7 +41,7 @@ export default class ProjectManagingConcept {
     await this.assertOwnerIsUser(owner, _id);
     const project = await this.projects.readOne({ _id });
     if (!project) {
-      throw new NotFoundError("Project not found.");
+      throw new ProjectNotFoundError(_id);
     }
     const updatedFields: Partial<ProjectDoc> = { title: title || project.title, status: status || project.status };
     await this.projects.partialUpdateOne({ _id }, updatedFields);
@@ -53,7 +53,7 @@ export default class ProjectManagingConcept {
     await this.assertOwnerIsUser(owner, _id);
     const result = await this.projects.deleteOne({ _id });
     if (result.deletedCount === 0) {
-      throw new NotFoundError("Project not found.");
+      throw new ProjectNotFoundError(_id);
     }
     return { msg: "Project deleted successfully!" };
   }
@@ -63,7 +63,7 @@ export default class ProjectManagingConcept {
     await this.assertOwnerIsUser(owner, _id);
     const project = await this.projects.readOne({ _id });
     if (!project) {
-      throw new NotFoundError(`Project ${_id} does not exist!`);
+      throw new ProjectNotFoundError(_id);
     }
     return { notes: project.notes };
   }
@@ -80,7 +80,7 @@ export default class ProjectManagingConcept {
     await this.assertOwnerIsUser(owner, _id);
     const project = await this.projects.readOne({ _id });
     if (!project) {
-      throw new NotFoundError(`Project ${_id} does not exist!`);
+      throw new ProjectNotFoundError(_id);
     }
     return { links: project.links };
   }
@@ -93,7 +93,7 @@ export default class ProjectManagingConcept {
     }
     const project = await this.projects.readOne({ _id });
     if (!project) {
-      throw new NotFoundError("Project not found.");
+      throw new ProjectNotFoundError(_id);
     }
     const updatedLinks = Array.from(new Set([...project.links, newLink]));
     await this.projects.partialUpdateOne({ _id }, { links: updatedLinks });
@@ -108,7 +108,7 @@ export default class ProjectManagingConcept {
     }
     const project = await this.projects.readOne({ _id });
     if (!project) {
-      throw new NotFoundError("Project not found.");
+      throw new ProjectNotFoundError(_id);
     }
     const updatedLinks = project.links.filter((link) => link !== linkToDelete);
     await this.projects.partialUpdateOne({ _id }, { links: updatedLinks });
@@ -120,7 +120,7 @@ export default class ProjectManagingConcept {
     await this.assertOwnerIsUser(owner, _id);
     const project = await this.projects.readOne({ _id });
     if (!project) {
-      throw new NotFoundError(`Project ${_id} does not exist!`);
+      throw new ProjectNotFoundError(_id);
     }
     return { images: project.images };
   }
@@ -133,7 +133,7 @@ export default class ProjectManagingConcept {
     }
     const project = await this.projects.readOne({ _id });
     if (!project) {
-      throw new NotFoundError("Project not found.");
+      throw new ProjectNotFoundError(_id);
     }
     const updatedImages = Array.from(new Set([...project.images, newImage]));
     await this.projects.partialUpdateOne({ _id }, { images: updatedImages });
@@ -148,7 +148,7 @@ export default class ProjectManagingConcept {
     }
     const project = await this.projects.readOne({ _id });
     if (!project) {
-      throw new NotFoundError("Project not found.");
+      throw new ProjectNotFoundError(_id);
     }
     const updatedImages = project.images.filter((image) => image !== imageToDelete);
     await this.projects.partialUpdateOne({ _id }, { images: updatedImages });
@@ -160,7 +160,7 @@ export default class ProjectManagingConcept {
     await this.assertOwnerIsUser(owner, _id);
     const project = await this.projects.readOne({ _id });
     if (!project) {
-      throw new NotFoundError(`Project ${_id} does not exist!`);
+      throw new ProjectNotFoundError(_id);
     }
     const updatedInventory = Array.from(new Set([...project.projectInventory, fiber]));
     await this.projects.partialUpdateOne({ _id }, { projectInventory: updatedInventory });
@@ -172,7 +172,7 @@ export default class ProjectManagingConcept {
     await this.assertOwnerIsUser(owner, _id);
     const project = await this.projects.readOne({ _id });
     if (!project) {
-      throw new NotFoundError(`Project ${_id} does not exist!`);
+      throw new ProjectNotFoundError(_id);
     }
     const updatedInventory = project?.projectInventory.filter((id) => id.toString() !== fiber.toString());
     await this.projects.partialUpdateOne({ _id }, { projectInventory: updatedInventory });
@@ -184,7 +184,7 @@ export default class ProjectManagingConcept {
     await this.assertOwnerIsUser(owner, _id);
     const project = await this.projects.readOne({ _id });
     if (!project) {
-      throw new NotFoundError(`Project ${_id} does not exist!`);
+      throw new ProjectNotFoundError(_id);
     }
     return { fibers: project.projectInventory };
   }
@@ -192,19 +192,27 @@ export default class ProjectManagingConcept {
   async assertOwnerIsUser(user: ObjectId, _id: ObjectId) {
     const project = await this.projects.readOne({ _id });
     if (!project) {
-      throw new NotFoundError(`Project ${_id} does not exist!`);
+      throw new ProjectNotFoundError(_id);
     }
     if (project.owner.toString() !== user.toString()) {
-      throw new PostOwnerNotMatchError(user, _id);
+      throw new ProjectOwnerNotMatchError(user, _id);
     }
   }
 }
 
-export class PostOwnerNotMatchError extends NotAllowedError {
+export class ProjectOwnerNotMatchError extends NotAllowedError {
   constructor(
     public readonly owner: ObjectId,
     public readonly _id: ObjectId,
   ) {
     super("{0} is not the owner of project {1}!", owner, _id);
+  }
+}
+
+export class ProjectNotFoundError extends NotFoundError {
+  constructor(
+    public readonly _id: ObjectId,
+  ) {
+    super("Project {0} does not exist!", _id);
   }
 }

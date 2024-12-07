@@ -32,9 +32,12 @@ export default class InventoryConcept {
     return await this.fibers.readMany({ user });
   }
 
-  async addNewFiber(user: ObjectId, name: string, brand: string, type: string, color: string, yardage: number) {
-    if (await this.fiberExists(user, name, brand, type, color)) {
-      throw new NotAllowedError("This fiber already exists in your inventory!");
+  async addNewFiber(user: ObjectId, name: string, brand: string, type: string, color: string, yardage: number, checkFiberExists: boolean = true) {
+    if (await this.fiberExists(user, name, brand, type, color) && checkFiberExists) {
+      throw new FiberAlreadyExistsError(name, brand, type, color);
+    }
+    if (yardage === 0) {
+      throw new NotAllowedError("Cannot add fiber of length 0")
     }
     const _id = await this.fibers.createOne({ user, name, brand, type, color, remainingYardage: yardage });
     return { msg: "Fiber successfully added!", fiber: await this.fibers.readOne({ _id }) };
@@ -103,5 +106,16 @@ export default class InventoryConcept {
         return await this.addNewFiber(user, new_fiber.name, new_fiber.brand, new_fiber.type, new_fiber.color, new_fiber.remainingYardage);
       }
     });
+  }
+}
+
+export class FiberAlreadyExistsError extends NotAllowedError {
+  constructor(
+    public readonly name: string,
+    public readonly brand: string,
+    public readonly type: string,
+    public readonly color: string
+  ) {
+    super("{3} fiber {2} with name {0} from {1} already exists in your inventory!", name, brand, type, color);
   }
 }

@@ -61,7 +61,7 @@ const cancel = async () => {
 <template>
   <div class="fiber">
     <div class="container">
-      <div class="block">
+      <div class="block fiber-type">
         <span v-if="!editing">{{ fiber.type }}</span>
         <input v-else type="text" id="type" v-model="fiber.type" :placeholder="fiber.type" />
       </div>
@@ -87,6 +87,10 @@ const cancel = async () => {
   align-items: center;
 }
 
+.fiber-type span {
+  overflow: scroll;
+}
+
 .container {
   width: 100%;
   display: flex;
@@ -98,7 +102,7 @@ const cancel = async () => {
 .block {
   display: flex;
   align-items: center;
-  width: 20%;
+  width: 30%;
   overflow: hidden;
   justify-content: center;
   height: 40px;
