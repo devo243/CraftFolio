@@ -10,7 +10,7 @@ const props = defineProps(["post"]);
 const { currentUsername } = storeToRefs(useUserStore());
 
 const newLink = ref("");
-const links = ref(Array<String>);
+const links = ref(Array<string>);
 const editinglink = ref(-1);
 
 const emit = defineEmits(["refreshPost"]);
@@ -20,6 +20,7 @@ const addLink = async () => {
     await fetchy(`/api/posts/${props.post._id}/links/`, "POST", {
       body: { newLink: newLink.value },
     });
+    newLink.value = "";
   } catch (_) {
     console.log(_);
     return;
@@ -28,8 +29,8 @@ const addLink = async () => {
   emit("refreshPost");
 };
 
-const getLinks = async() => {
-  let linkResults = Array<String>;
+const getLinks = async () => {
+  let linkResults = Array<string>;
   try {
     linkResults = await fetchy(`/api/posts/${props.post._id}/links/`, "GET");
   } catch (_) {
@@ -37,10 +38,10 @@ const getLinks = async() => {
     return;
   }
   links.value = linkResults;
-}
+};
 
 const toggleEditing = async (index: number) => {
-  if (editinglink.value===-1) {
+  if (editinglink.value === -1) {
     editinglink.value = index;
   } else {
     editinglink.value = -1;
@@ -50,34 +51,37 @@ const toggleEditing = async (index: number) => {
 onBeforeMount(async () => {
   await getLinks();
 });
-
-
 </script>
 
 <template>
-  <section class="header" v-if="links.length !== 0 || currentUsername===props.post.author">
+  <section class="header" v-if="links.length !== 0 || currentUsername === props.post.author">
     <h2 class="title">Links</h2>
   </section>
   <section>
     <div class="hints" v-if="links.length !== 0">
       <div v-for="(link, index) in links" :key="index" class="hint">
-        <LinkComponent v-if="editinglink!=Number.parseInt(index.toString())" :post="props.post" :content="link"  @refresh-links="getLinks" @edit-link="toggleEditing(Number.parseInt(index.toString()))"/>
-        <LinkEditComponent v-else :post="props.post" :content="link" @refresh-links="getLinks" @edit-link="toggleEditing(Number.parseInt(index.toString()))"/>
+        <LinkComponent
+          v-if="editinglink != Number.parseInt(index.toString())"
+          :post="props.post"
+          :content="link"
+          @refresh-links="getLinks"
+          @edit-link="toggleEditing(Number.parseInt(index.toString()))"
+        />
+        <LinkEditComponent v-else :post="props.post" :content="link" @refresh-links="getLinks" @edit-link="toggleEditing(Number.parseInt(index.toString()))" />
       </div>
     </div>
-    
-    <form @submit.prevent="addLink()" v-if="currentUsername===props.post.author">
+
+    <form @submit.prevent="addLink()" v-if="currentUsername === props.post.author">
       <!-- <label for="link">Add a new link:</label> -->
       <p class="placeholder" v-if="links.length === 0">Add some links...</p>
       <input id="link" v-model="newLink" required />
       <button type="submit">+</button>
     </form>
   </section>
-
 </template>
 
 <style scoped>
-.hint{
+.hint {
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -91,7 +95,7 @@ onBeforeMount(async () => {
 
 .hint a {
   padding: 0.5em;
-  box-shadow: 0px 4px 0px rgba(181, 181, 181, 0.3);  
+  box-shadow: 0px 4px 0px rgba(181, 181, 181, 0.3);
 }
 
 a,
@@ -104,7 +108,7 @@ form {
   border-radius: 0.5em;
 }
 
-p{
+p {
   font-size: small;
 }
 

@@ -17,8 +17,8 @@ const loaded = ref(false);
 const ecoRating = ref(0);
 const beginnerRating = ref(0);
 
-const fiberTypes = ref(new Array<string>);
-const fiberYards = ref(new Array<number>);
+const fiberTypes = ref(new Array<string>());
+const fiberYards = ref(new Array<number>());
 
 const router = useRouter();
 
@@ -42,38 +42,37 @@ const getPost = async () => {
   post.value = postResults;
 };
 
-const createProject = async() => {
+const createProject = async () => {
   console.log("clicked");
   try {
     console.log(post.value, fiberTypes.value, fiberYards.value);
-    if(post.value!==undefined && fiberTypes.value!==undefined && fiberYards.value!==undefined){
-
+    if (post.value !== undefined && fiberTypes.value !== undefined && fiberYards.value !== undefined) {
       await fetchy("/api/projects", "POST", {
-        body: {title: post.value.title,
+        body: {
+          title: post.value.title,
           status: "To Do",
-          guideId: post.value._id ,
+          guideId: post.value._id,
           guideLink: `https://craft-folio.vercel.app/posts/${post.value._id}`,
           fiber_types: fiberTypes.value,
-          fiber_yardages: fiberYards.value
-        }
+          fiber_yardages: fiberYards.value,
+        },
       });
       router.push("/projects");
     }
   } catch (_) {
     return;
   }
+};
 
-}
-
-const updateFibersSelected = async(types:string[], yards: number[]) =>{
+const updateFibersSelected = async (types: string[], yards: number[]) => {
   console.log("updated fibers");
   // console.log(types);
   // console.log(yards);
   fiberTypes.value = types;
   fiberYards.value = yards;
-}
+};
 
-const getRatings = async()=>{
+const getRatings = async () => {
   try {
     const ratings = await fetchy(`/api/posts/${props.id}/ratings`, "GET");
     console.log(ratings);
@@ -82,7 +81,7 @@ const getRatings = async()=>{
   } catch (_) {
     return;
   }
-}
+};
 
 onBeforeMount(async () => {
   await getPost();
@@ -94,16 +93,35 @@ onBeforeMount(async () => {
 <template>
   <div v-if="loaded && post!==undefined" class="content-body">
     <section class="header">
-      <img class="back" src="@/assets/icons/back-arrow.svg" @click="goBack" />
-      <h1 class="title">{{ post.title }}</h1>
-      <p>Eco rating: {{ ecoRating }}, Beginner Rating: {{ beginnerRating }}</p>
+      <div class="title-container">
+        <img class="back" src="@/assets/icons/back-arrow.svg" @click="goBack" />
+        <h1 class="title">{{ post.title }}</h1>
+      </div>
+      <div class="ratings">
+        <div class="rating">
+          <span>Eco Rating: </span>
+          <span class="stars">
+            <img v-for="n in Math.round(ecoRating)" :key="'eco' + n" src="@/assets/icons/yellowstar.svg" alt="star" class="star" />
+            <img v-for="n in Math.round(5 - ecoRating)" :key="'eco-empty' + n" src="@/assets/icons/star-border.svg" alt="star" class="star" />
+          </span>
+          <span>({{ Math.round(ecoRating) }})</span>
+        </div>
+        <div class="rating">
+          <span>Beginner Rating: </span>
+          <span class="stars">
+            <img v-for="n in Math.round(beginnerRating)" :key="'beginner' + n" src="@/assets/icons/yellowstar.svg" alt="star" class="star" />
+            <img v-for="n in Math.round(5 - beginnerRating)" :key="'beginner-empty' + n" src="@/assets/icons/star-border.svg" alt="star" class="star" />
+          </span>
+          <span>({{ Math.round(beginnerRating) }})</span>
+        </div>
+      </div>
     </section>
-    <PostTipsComponent :post="post" @refresh-post="getPost"/>
+    <PostTipsComponent :post="post" @refresh-post="getPost" />
     <section>
-      <PostMarkdownComponent :content="post.content" :post="post" @refresh-post="getPost"/>
+      <PostMarkdownComponent :content="post.content" :post="post" @refresh-post="getPost" />
     </section>
     <!-- <section> -->
-      <PostInventoryComponent :fibers="post.fibers" :post_id="post._id" :author="post.author" @refresh-post="getPost" @refresh-fibers="updateFibersSelected"/>
+    <PostInventoryComponent :fibers="post.fibers" :post_id="post._id" :author="post.author" @refresh-post="getPost" @refresh-fibers="updateFibersSelected" />
     <!-- </section> -->
     <PostLinksListComponent :post="post" @refresh-post="getPost" />
     <div class="buttons">
@@ -111,15 +129,20 @@ onBeforeMount(async () => {
     </div>
     <CommentListComponent :post="post"></CommentListComponent>
   </div>
-
 </template>
 
 <style scoped>
 .header {
   display: flex;
-  flex-direction: row;
-  gap: 1em;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5em;
+}
+
+.title-container {
+  display: flex;
   align-items: center;
+  gap: 1em;
 }
 
 section {
@@ -189,5 +212,20 @@ button {
 
 .content-body {
   margin: 1em 0 5% 0;
+}
+.ratings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  font-size: 1em;
+}
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.stars {
+  display: flex;
+  align-items: center;
 }
 </style>

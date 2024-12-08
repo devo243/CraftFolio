@@ -20,6 +20,20 @@ const props = defineProps(["username"]);
 const fiterSchema = z.object({ minScore: z.number().optional(), ratingType: z.enum(["eco", "beginner"]) });
 type filterSchemaType = z.infer<typeof fiterSchema>;
 
+const filterMakeableGuides = ref(false);
+
+const filterGuidesByInventory = async () => {
+  if (filterMakeableGuides.value) {
+    const availableFibers = await fetchy("/api/fibers", "GET");
+    const makeableGuides = await fetchy("/api/posts/makeable-guides", "POST", {
+      body: { availableFibers: availableFibers.map((fiber: any) => fiber._id) },
+    });
+    posts.value = makeableGuides;
+  } else {
+    await getPosts();
+  }
+};
+
 async function getPosts(author?: string) {
   let query: Record<string, string> = author !== undefined ? { author } : {};
   let postResults;
@@ -33,7 +47,7 @@ async function getPosts(author?: string) {
 }
 
 const getFilteredPosts = async (ratingType: string, minScore: string) => {
-  let query: Record<string, string> = { "ratingType": ratingType, "minScore": minScore };
+  let query: Record<string, string> = { ratingType: ratingType, minScore: minScore };
   let postResults;
   try {
     postResults = await fetchy("/api/posts/top", "GET", { query });
@@ -69,6 +83,10 @@ const openPost = async (id: string) => {
 
 <template>
   <div class="page">
+    <div class="makeable" v-if="!props.username">
+      <input type="checkbox" id="makeable-guides" v-model="filterMakeableGuides" @change="filterGuidesByInventory" />
+      <label for="makeable-guides"> Only show makeable guides (sufficient fibers)</label>
+    </div>
     <div class="row">
       <!-- <SearchPostForm v-if="props.username !== currentUsername" @getPostsByAuthor="getPosts" /> -->
       <PostFilterComponent v-if="props.username !== currentUsername" @getPostsByRating="getFilteredPosts" @getPosts="getPosts" />
@@ -122,7 +140,7 @@ article {
   display: flex;
   justify-content: center;
   margin: 0 auto;
-  max-width: 80em;
+  width: 80%;
   background-color: var(--base-bg);
   border-radius: 2em;
 }
@@ -140,5 +158,15 @@ button {
   padding: 0.5em;
   /* border: none; */
   border-radius: 2em;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.makeable {
+  margin-bottom: 1em;
 }
 </style>
