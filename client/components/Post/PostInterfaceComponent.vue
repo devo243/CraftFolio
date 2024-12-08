@@ -36,10 +36,12 @@ const getPost = async () => {
   for (const p of postResults) {
     if (p._id === props.id) {
       post.value = p;
+      await getRatings();
       return;
     }
   }
   post.value = postResults;
+  await getRatings();
 };
 
 const createProject = async () => {
@@ -64,10 +66,7 @@ const createProject = async () => {
   }
 };
 
-const updateFibersSelected = async (types: string[], yards: number[]) => {
-  console.log("updated fibers");
-  // console.log(types);
-  // console.log(yards);
+const updateFibersSelected = async(types:string[], yards: number[]) =>{
   fiberTypes.value = types;
   fiberYards.value = yards;
 };
@@ -75,7 +74,6 @@ const updateFibersSelected = async (types: string[], yards: number[]) => {
 const getRatings = async () => {
   try {
     const ratings = await fetchy(`/api/posts/${props.id}/ratings`, "GET");
-    console.log(ratings);
     ecoRating.value = ratings.ecoRating;
     beginnerRating.value = ratings.beginnerRating;
   } catch (_) {
@@ -85,7 +83,6 @@ const getRatings = async () => {
 
 onBeforeMount(async () => {
   await getPost();
-  await getRatings();
   loaded.value = true;
 });
 </script>

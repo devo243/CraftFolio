@@ -118,7 +118,8 @@ class Routes {
       });
     }
 
-    const eco_rating = RatingConcept.calculateEcoRating(fiber_types || []);
+    const eco_rating = RatingConcept.calculateEcoRating(fiber_types?.flat() || []);
+    console.log("eco rating: ", eco_rating);
     const beginner_rating = RatingConcept.calculateBeginnerRating(options);
     await EcoFriendlyRating.create(post_id, eco_rating);
     await BeginnerFriendlyRating.create(post_id, beginner_rating);
@@ -128,12 +129,12 @@ class Routes {
 
   // to update anything fiber realted use addNewFiberToPost, editFiberInGuide, deleteFiberInPost
   @Router.patch("/posts/:id")
-  async updatePost(session: SessionDoc, id: string, title: string, content?: string, options?: PostOptions, fiber_types?: string[][]) {
+  async updatePost(session: SessionDoc, id: string, title: string, content?: string, options?: PostOptions, fiber_types?: string[]) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
 
-    const eco_rating = RatingConcept.calculateEcoRating(fiber_types || []);
+    const eco_rating = RatingConcept.calculateEcoRating(fiber_types?.flat() || []);
     const beginner_rating = RatingConcept.calculateBeginnerRating(options);
     await EcoFriendlyRating.update(oid, eco_rating);
     await BeginnerFriendlyRating.update(oid, beginner_rating);
@@ -196,7 +197,9 @@ class Routes {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
-    return await Posting.addLink(oid, newLink);
+    const result = await Posting.addLink(oid, newLink);
+    await Routes.updateRatingForBeginner(oid);
+    return result
   }
 
   @Router.delete("/posts/:id/links/:linkToDelete")
@@ -204,7 +207,9 @@ class Routes {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
-    return await Posting.deleteLink(oid, linkToDelete);
+    const result = await Posting.deleteLink(oid, linkToDelete);
+    await Routes.updateRatingForBeginner(oid);
+    return result
   }
 
   @Router.patch("/posts/:id/links")
@@ -233,7 +238,9 @@ class Routes {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
-    return await Posting.addTip(oid, newTip);
+    const result = await Posting.addTip(oid, newTip);
+    await Routes.updateRatingForBeginner(oid);
+    return result;
   }
 
   @Router.post("/posts/:id/mistakes")
@@ -241,7 +248,9 @@ class Routes {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
-    return await Posting.addMistake(oid, newMistake);
+    const result = await Posting.addMistake(oid, newMistake);
+    await Routes.updateRatingForBeginner(oid);
+    return result;
   }
 
   @Router.delete("/posts/:id/tips/:tipToDelete")
@@ -249,7 +258,9 @@ class Routes {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
-    return await Posting.deleteTip(oid, tipToDelete);
+    const result = await Posting.deleteTip(oid, tipToDelete);
+    await Routes.updateRatingForBeginner(oid);
+    return result;
   }
 
   @Router.delete("/posts/:id/mistakes/:mistakeToDelete")
@@ -257,7 +268,9 @@ class Routes {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     await Posting.assertAuthorIsUser(oid, user);
-    return await Posting.deleteMistake(oid, mistakeToDelete);
+    const result = await Posting.deleteMistake(oid, mistakeToDelete);
+    await Routes.updateRatingForBeginner(oid);
+    return result;
   }
 
   @Router.patch("/posts/:id/tips")
@@ -302,11 +315,14 @@ class Routes {
     await Posting.assertAuthorIsUser(oid, user);
     const created = await GuideInventorying.addNewFiber(oid, "", "", type, "", yardage, false);
     const created_id = created.fiber?._id;
+    let return_value;
     if (created_id) {
-      return await Posting.updateFibers(oid, created_id, alternative_to);
+      return_value = await Posting.updateFibers(oid, created_id, alternative_to);
     } else {
-      return created.msg;
+      return_value = created.msg;
     }
+    await Routes.updateRatingForFiber(oid);
+    return return_value;
   }
 
   @Router.patch("/posts/:id/fibers/:fiber_id")
@@ -316,7 +332,9 @@ class Routes {
     const fid = new ObjectId(fiber_id);
     await Posting.assertAuthorIsUser(oid, user);
     await GuideInventorying.assertOwnerIsUser(fid, oid);
-    return GuideInventorying.editFiber(fid, name, brand, type, color, yardage);
+    const return_value = GuideInventorying.editFiber(fid, name, brand, type, color, yardage);
+    await Routes.updateRatingForFiber(oid);
+    return return_value;
   }
 
   @Router.delete("/posts/:id/fibers/:fiber_id")
@@ -328,7 +346,9 @@ class Routes {
     await Posting.assertAuthorIsUser(oid, user);
     await GuideInventorying.assertOwnerIsUser(fid, oid);
     await Posting.deleteFibers(oid, fiber_id);
-    return await GuideInventorying.deleteFiber(fid);
+    const return_value = await GuideInventorying.deleteFiber(fid);
+    await Routes.updateRatingForFiber(oid);
+    return return_value;
   }
 
   @Router.get("/posts/:id/presentfibers")
@@ -600,6 +620,20 @@ class Routes {
     // now delete the materials from project's inventory
     await Promise.all(fiber_ids.fibers.map((fiber_id: ObjectId) => ProjectInventorying.deleteFiber(fiber_id)));
     return await ProjectManaging.deleteProject(user, oid);
+  }
+
+  static async updateRatingForFiber(id: ObjectId) {
+    console.log("udpate called!");
+    const updatedFibers = (await GuideInventorying.getUserInventory(id)).map((fiber: FiberDoc) => fiber.type);
+    const new_score = await RatingConcept.calculateEcoRating(updatedFibers);
+    await EcoFriendlyRating.update(id, new_score);
+  }
+
+  static async updateRatingForBeginner(id: ObjectId) {
+    console.log("udpate beginner called!");
+    const options = (await Posting.getById(id))?.options;
+    const new_score = await RatingConcept.calculateBeginnerRating(options);
+    await BeginnerFriendlyRating.update(id, new_score);
   }
 }
 
