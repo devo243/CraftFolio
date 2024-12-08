@@ -73,8 +73,7 @@ onBeforeMount(async () => {
 
     <form @submit.prevent="addLink()" v-if="currentUsername === props.post.author">
       <!-- <label for="link">Add a new link:</label> -->
-      <p class="placeholder" v-if="links.length === 0">Add some links...</p>
-      <input id="link" v-model="newLink" required />
+      <input id="link" v-model="newLink" placeholder="Add some links..." required />
       <button type="submit">+</button>
     </form>
   </section>
