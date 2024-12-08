@@ -46,9 +46,10 @@ const toggleEditing = () => {
 <template>
   <div class="container">
     <div class="links" v-if="props.links.length !== 0">
-      <div class="guideLinks" v-if="guideLinks.length !== 0">
-        <h2>Guide Links</h2>
-        <a class="link" v-for="(link, index) in guideLinks" :key="index" :href="link">- {{ link }}</a>
+      <h2>Guide Links</h2>
+      <div class="guideLinks" v-if="guideLinks.length !== 0" v-for="(link, index) in guideLinks" :key="index">
+        <a class="link" :href="link">- {{ link }}</a>
+        <button v-if="editing" v-on:click="deleteLink(link)" class="trash"><img src="@/assets/icons/thrash.svg" /></button>
       </div>
       <h2>Other Links</h2>
       <div class="otherLinkContainer" v-for="(link, index) in otherLinks" :key="index">
@@ -153,7 +154,7 @@ img {
 
 .guideLinks {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 1em;
 }
 
@@ -176,7 +177,7 @@ img {
   border-radius: 1em;
   color: white;
   border: none;
-  background-color: var(--red);
+  background-color: rgb(71, 249, 178);
 }
 
 .bar {

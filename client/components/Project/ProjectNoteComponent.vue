@@ -90,6 +90,6 @@ button {
 }
 
 .save {
-  background-color: var(--red);
+  background-color: rgb(71, 249, 178);
 }
 </style>

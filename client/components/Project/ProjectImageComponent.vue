@@ -159,7 +159,7 @@ img {
   border-radius: 1em;
   color: white;
   border: none;
-  background-color: var(--red);
+  background-color: rgb(71, 249, 178);
 }
 
 .bar {
