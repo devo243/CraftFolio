@@ -95,5 +95,7 @@ img {
 
 .edit {
   background-color: var(--earthy-green);
+  border: none;
+  margin-right: 0.5em;
 }
 </style>
