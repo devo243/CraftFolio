@@ -52,8 +52,9 @@ const emptyForm = () => {
         v-model="customType" 
         placeholder="Enter custom type" 
         v-if="type === 'custom'"
+        required
       />
-    <input type="number"  step="any" id="yardage" v-model="yardage" placeholder="Yardage" required />
+    <input type="number" min="0" step="any" id="yardage" v-model="yardage" placeholder="Yardage" required />
     <button type="submit" class="button-custom pure-button pure-button-primary">Add</button>
   </form>
 </template>

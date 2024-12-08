@@ -2,7 +2,7 @@
 import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
 import { storeToRefs } from "pinia";
-import { ref } from "vue";
+import { ref, watchEffect } from "vue";
 
 const props = defineProps(["fiber", "id","post_author"]);
 const { currentUsername } = storeToRefs(useUserStore());
@@ -10,6 +10,10 @@ const emit = defineEmits(["refreshFibers"]);
 
 const fiber = ref(props.fiber);
 const editing = ref(false);
+
+watchEffect(() => {
+  fiber.value = props.fiber;
+});
 
 const deleteFiber = async () => {
   try {
@@ -55,16 +59,15 @@ const cancel = async () => {
 </script>
 
 <template>
-  <!-- {{fiber}} -->
   <div class="fiber">
     <div class="container">
-      <div class="block">
+      <div class="block fiber-type">
         <span v-if="!editing">{{ fiber.type }}</span>
         <input v-else type="text" id="type" v-model="fiber.type" :placeholder="fiber.type" />
       </div>
       <div class="block">
         <span v-if="!editing">{{ fiber.remainingYardage }} yd</span>
-        <input v-else type="number" step="any" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
+        <input v-else type="number" min="0" step="any" id="yardage" v-model="fiber.remainingYardage" :placeholder="fiber.remainingYardage" />
       </div>
     </div>
     <div v-if="props.post_author === currentUsername" class="editing-buttons">
@@ -84,6 +87,10 @@ const cancel = async () => {
   align-items: center;
 }
 
+.fiber-type span {
+  overflow: scroll;
+}
+
 .container {
   width: 100%;
   display: flex;
@@ -95,7 +102,7 @@ const cancel = async () => {
 .block {
   display: flex;
   align-items: center;
-  width: 20%;
+  width: 30%;
   overflow: hidden;
   justify-content: center;
   height: 40px;
