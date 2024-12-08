@@ -12,32 +12,32 @@ const { currentUsername } = storeToRefs(useUserStore());
 const props = defineProps(["fibers", "post_id", "author"]);
 const emit = defineEmits(["refreshPost", "refreshFibers"]);
 const loaded = ref(false);
-const presentFibers = ref(new Array<string>);
-const selectedItems = ref(new Array<Record<string,string>>);
+const presentFibers = ref(new Array<string>());
+const selectedItems = ref(new Array<Record<string, string>>());
 
-const fiber_types = computed(()=>{
-  const temp = new Array<string>;
-  for(const fiber of selectedItems.value){
+const fiber_types = computed(() => {
+  const temp = new Array<string>();
+  for (const fiber of selectedItems.value) {
     temp.push(fiber.type);
   }
   return temp;
-})
-const fiber_yards = computed(()=>{
-  const temp = new Array<number>;
-  for(const fiber of selectedItems.value){
+});
+const fiber_yards = computed(() => {
+  const temp = new Array<number>();
+  for (const fiber of selectedItems.value) {
     temp.push(Number.parseFloat(fiber.remainingYardage));
   }
   return temp;
-})
+});
 
 const getInventory = async () => {
   emit("refreshPost");
 };
 
-const updateFibersSelected = async()=>{
+const updateFibersSelected = async () => {
   //console.log(fiber_types.value, fiber_yards.value);
-  emit("refreshFibers", fiber_types.value,fiber_yards.value);
-}
+  emit("refreshFibers", fiber_types.value, fiber_yards.value);
+};
 
 const getAvailableMaterialsPost = async () => {
   try {
@@ -45,37 +45,35 @@ const getAvailableMaterialsPost = async () => {
   } catch (_) {
     return;
   }
-
 };
 
 const addRecommendedFiber = async (type: string, yardage: number) => {
   await fetchy(`/api/posts/${props.post_id}/fibers`, "POST", {
-        body: {
-          alternative_to: "",
-          type,
-          yardage,
-        },
-      });
-}
+    body: {
+      alternative_to: "",
+      type,
+      yardage,
+    },
+  });
+};
 
 const addAlternativeFiber = (alternative_to: string) => {
   const addFiber = async (type: string, yardage: number) => {
     await fetchy(`/api/posts/${props.post_id}/fibers`, "POST", {
-        body: {
-          alternative_to,
-          type,
-          yardage,
-        },
-      });
-  }
+      body: {
+        alternative_to,
+        type,
+        yardage,
+      },
+    });
+  };
   return addFiber;
-}
+};
 
 onBeforeMount(async () => {
   await getAvailableMaterialsPost();
   loaded.value = true;
 });
-
 </script>
 
 <template>
@@ -101,26 +99,26 @@ onBeforeMount(async () => {
         <div class="separation">
           <div class="fiber-selection grid-item recommended">
             <div :class="presentFibers.includes(fiber.recommended._id) ? 'present' : 'absent'">
-            <input type="checkbox" v-model="selectedItems" :value="fiber.recommended"/>
+              <input type="checkbox" v-model="selectedItems" :value="fiber.recommended" />
             </div>
-            <PostFiberComponent :fiber="fiber.recommended" :id="props.post_id" :post_author="author" @refreshFibers="getInventory" :style="{flex : 1}"/>
+            <PostFiberComponent :fiber="fiber.recommended" :id="props.post_id" :post_author="author" @refreshFibers="getInventory" :style="{ flex: 1 }" />
           </div>
           <div class="fiber-selection grid-item alternative">
             <div v-for="alternative_fiber of fiber.alternatives" class="recommended">
               <div :class="presentFibers.includes(alternative_fiber._id) ? 'present' : 'absent'">
-                <input type="checkbox" v-model="selectedItems" :value="alternative_fiber"/>
+                <input type="checkbox" v-model="selectedItems" :value="alternative_fiber" />
               </div>
-              <AlternatePostFiberComponent :fiber="alternative_fiber" :id="props.post_id" :post_author="author" @refreshFibers="getInventory" :style="{flex : 1}" />
+              <AlternatePostFiberComponent :fiber="alternative_fiber" :id="props.post_id" :post_author="author" @refreshFibers="getInventory" :style="{ flex: 1 }" />
             </div>
-            <section v-if="currentUsername===props.author" class="add-fiber">
-                <AddPostFiberForm :add_fiber="addAlternativeFiber(fiber.recommended._id)" :post_id="props.post_id" @refreshFibers="getInventory" />
+            <section v-if="currentUsername === props.author" class="add-fiber">
+              <AddPostFiberForm :add_fiber="addAlternativeFiber(fiber.recommended._id)" :post_id="props.post_id" @refreshFibers="getInventory" />
             </section>
           </div>
         </div>
       </article>
     </section>
     <p v-else>No inventory</p>
-    <section v-if="currentUsername===props.author">
+    <section v-if="currentUsername === props.author">
       <h2>Add fiber:</h2>
       <AddPostFiberForm :add_fiber="addRecommendedFiber" :post_id="props.post_id" @refreshFibers="getInventory" />
     </section>
@@ -162,7 +160,8 @@ onBeforeMount(async () => {
   height: 24px;
 }
 
-.present, .absent {
+.present,
+.absent {
   border-radius: 0.5em;
   width: 24px;
   height: 24px;
@@ -178,7 +177,7 @@ onBeforeMount(async () => {
   accent-color: var(--yellow);
 }
 
-.recommended{
+.recommended {
   display: flex;
   flex-direction: row;
   gap: 0.5em;
@@ -199,7 +198,7 @@ onBeforeMount(async () => {
 
 article .separation {
   padding: 1em;
-  box-shadow: 0px 4px 0px rgba(181, 181, 181, 0.3);  
+  box-shadow: 0px 4px 0px rgba(181, 181, 181, 0.3);
   background-color: var(--base-bg);
   border-radius: 1em;
 }

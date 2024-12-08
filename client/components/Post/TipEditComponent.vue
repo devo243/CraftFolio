@@ -32,13 +32,13 @@ const editTip = async (newContent: string) => {
 
 <template>
   <form @submit.prevent="editTip(newContent)" class="container">
-    <div class="flex-container1">
-      <img v-if="props.type === 'tip'" src="@/assets/icons/check.svg" class="tip" />
-      <img v-else-if="props.type === 'mistake'" src="@/assets/icons/mistake.svg" class="mistake" />
-      <textarea id="newContent" v-model="newContent" class="hint"></textarea>
-    </div>
-    <div class="flex-container2">
-      <button class="edit" type="submit"><img src="@/assets/icons/check.svg" /></button>
+    <div class="flex-container">
+      <img v-if="props.type === 'tip'" src="@/assets/icons/bulb.svg" class="icon" />
+      <img v-else-if="props.type === 'mistake'" src="@/assets/icons/redx.svg" class="icon" />
+      <textarea id="newContent" v-model="newContent" class="hint-input" placeholder="Edit content..."></textarea>
+      <button class="edit-btn" type="submit">
+        <img src="@/assets/icons/check.svg" />
+      </button>
     </div>
   </form>
 </template>
@@ -50,8 +50,7 @@ const editTip = async (newContent: string) => {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  /* background-color: rgb(226, 226, 226); */
-  border-radius: 2em;
+  border-radius: 1.5em;
 }
 
 form {
@@ -59,7 +58,7 @@ form {
   margin-left: 1em;
   font-size: 1.5em;
   /* margin: 0; */
-  padding: 0.5em;
+  padding: 0.5em 1em;
   border-radius: 0.5em;
   flex-direction: column;
   display: flex;
@@ -70,32 +69,24 @@ input {
   border-radius: 0.5em;
   padding-left: 0.5em;
 }
-.flex-container1 {
+
+.flex-container {
   width: 100%;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: left;
-  height: 100%;
+  gap: 1em;
 }
 
-.flex-container2 {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  height: 100%;
+.hint-input {
+  flex: 1;
+  border: 1px solid var(--light-grey);
+  border-radius: 0.5em;
+  padding: 0.5em;
 }
 
 button {
   border-radius: 1em;
-}
-
-.tip {
-  background-color: var(--green);
-}
-
-.mistake {
-  background-color: var(--red);
 }
 
 img {
@@ -105,7 +96,8 @@ img {
   padding: 0.5em;
 }
 
-.edit {
+.edit-btn {
   background-color: var(--earthy-green);
+  border: none;
 }
 </style>

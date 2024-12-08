@@ -22,6 +22,7 @@ const addTip = async () => {
     await fetchy(`/api/posts/${props.post._id}/tips/`, "POST", {
       body: { newTip: newTip.value },
     });
+    newTip.value = "";
   } catch (_) {
     console.log(_);
     return;
@@ -46,6 +47,7 @@ const addMistake = async () => {
     await fetchy(`/api/posts/${props.post._id}/mistakes/`, "POST", {
       body: { newMistake: newMistake.value },
     });
+    newMistake.value = "";
   } catch (_) {
     console.log(_);
     return;
@@ -98,10 +100,8 @@ onBeforeMount(async () => {
       </div>
     </div>
 
-    <form @submit.prevent="addTip()" v-if="currentUsername === props.post.author">
-      <!-- <label for="link">Add a new link:</label> -->
-      <p class="placeholder" v-if="tips.length === 0">Add some tips...</p>
-      <input id="tip" v-model="newTip" required />
+    <form @submit.prevent="addTip()" v-if="currentUsername === props.post.author" class="input-form">
+      <input id="tip" v-model="newTip" placeholder="Add some tips..." required />
       <button type="submit">+</button>
     </form>
   </section>
@@ -124,10 +124,8 @@ onBeforeMount(async () => {
       </div>
     </div>
 
-    <form @submit.prevent="addMistake()" v-if="currentUsername === props.post.author">
-      <!-- <label for="link">Add a new link:</label> -->
-      <p class="placeholder" v-if="mistakes.length === 0">Add some mistakes...</p>
-      <input id="tip" v-model="newMistake" required />
+    <form @submit.prevent="addMistake()" v-if="currentUsername === props.post.author" class="input-form">
+      <input id="mistake" v-model="newMistake" placeholder="Add some mistakes..." required />
       <button type="submit">+</button>
     </form>
   </section>

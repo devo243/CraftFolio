@@ -26,11 +26,11 @@ const deleteTip = async () => {
 <template>
   <div class="container">
     <div class="flex-container1">
-      <img v-if="props.type === 'tip'" src="@/assets/icons/check.svg" class="tip" />
-      <img v-else-if="props.type === 'mistake'" src="@/assets/icons/mistake.svg" class="mistake" />
+      <img v-if="props.type === 'tip'" src="@/assets/icons/bulb.svg" class="tip" />
+      <img v-else-if="props.type === 'mistake'" src="@/assets/icons/redx.svg" class="mistake" />
       <a class="hint"> {{ props.content }}</a>
     </div>
-    <div class="flex-container2" v-if="currentUsername===props.post.author">
+    <div class="flex-container2" v-if="currentUsername === props.post.author">
       <button @click="emit('editTip')" class="edit edit-button"><img src="@/assets/icons/pencil.svg" /></button>
       <button class="button-error btn-small pure-button" @click="deleteTip()" type="button"><img src="@/assets/icons/thrash.svg" /></button>
     </div>
@@ -85,11 +85,11 @@ button {
 }
 
 .tip {
-  background-color: var(--green);
+  /* background-color: var(--green); */
 }
 
 .mistake {
-  background-color: var(--red);
+  /* background-color: var(--red); */
 }
 
 img {
@@ -101,5 +101,7 @@ img {
 
 .edit {
   background-color: var(--earthy-green);
+  border: none;
+  margin-right: 0.5em;
 }
 </style>

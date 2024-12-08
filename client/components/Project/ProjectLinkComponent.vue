@@ -56,13 +56,13 @@ const toggleEditing = () => {
         <button v-if="editing" v-on:click="deleteLink(link)" class="trash"><img src="@/assets/icons/thrash.svg" /></button>
       </div>
     </div>
-    <p class="placeholder" v-else>Add some links...</p>
+    <p class="placeholder" v-else></p>
     <div class="bar">
       <button v-if="editing" class="save" @click="toggleEditing">Save</button>
       <button v-else class="edit" @click="toggleEditing">Edit</button>
       <form @submit.prevent="addLink()">
         <!-- <label for="link">Add a new link:</label> -->
-        <input type="url" id="link" v-model="newLink" required />
+        <input type="url" id="link" placeholder="Add links to resources and more..." v-model="newLink" required />
         <button class="submit" type="submit">+</button>
       </form>
     </div>
