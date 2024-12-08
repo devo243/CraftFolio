@@ -26,8 +26,8 @@ const deleteTip = async () => {
 <template>
   <div class="container">
     <div class="flex-container1">
-      <img v-if="props.type === 'tip'" src="@/assets/icons/bulb.svg" class="tip" />
-      <img v-else-if="props.type === 'mistake'" src="@/assets/icons/redx.svg" class="mistake" />
+      <img v-if="props.type === 'tip'" src="@/assets/icons/bulb.svg"/>
+      <img v-else-if="props.type === 'mistake'" src="@/assets/icons/redx.svg"/>
       <a class="hint"> {{ props.content }}</a>
     </div>
     <div class="flex-container2" v-if="currentUsername === props.post.author">
@@ -82,14 +82,6 @@ input {
 
 button {
   border-radius: 1em;
-}
-
-.tip {
-  /* background-color: var(--green); */
-}
-
-.mistake {
-  /* background-color: var(--red); */
 }
 
 img {
