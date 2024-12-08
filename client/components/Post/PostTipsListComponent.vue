@@ -27,7 +27,6 @@ const addTip = async () => {
     return;
   }
   await getTips();
-  emit("refreshPost");
 };
 
 const getTips = async () => {
@@ -39,6 +38,7 @@ const getTips = async () => {
     return;
   }
   tips.value = tipResults;
+  emit("refreshPost");
 };
 
 const addMistake = async () => {
@@ -51,7 +51,6 @@ const addMistake = async () => {
     return;
   }
   await getMistakes();
-  emit("refreshPost");
 };
 
 const getMistakes = async () => {
@@ -63,6 +62,7 @@ const getMistakes = async () => {
     return;
   }
   mistakes.value = mistakeResults;
+  emit("refreshPost");
 };
 
 const toggleEditing = async (type: string, index: number) => {
