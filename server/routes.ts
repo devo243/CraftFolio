@@ -199,7 +199,7 @@ class Routes {
     await Posting.assertAuthorIsUser(oid, user);
     const result = await Posting.addLink(oid, newLink);
     await Routes.updateRatingForBeginner(oid);
-    return result
+    return result;
   }
 
   @Router.delete("/posts/:id/links/:linkToDelete")
@@ -209,7 +209,7 @@ class Routes {
     await Posting.assertAuthorIsUser(oid, user);
     const result = await Posting.deleteLink(oid, linkToDelete);
     await Routes.updateRatingForBeginner(oid);
-    return result
+    return result;
   }
 
   @Router.patch("/posts/:id/links")
@@ -452,7 +452,7 @@ class Routes {
       }
       await ProjectManaging.addLink(user, projectproj._id, guideLink);
 
-      await Promise.all(
+      const fiber_ids = await Promise.all(
         fiber_types.map(async (fiber_type, idx) => {
           const yardage = fiber_yardages[idx];
 
@@ -470,23 +470,30 @@ class Routes {
               matchedFiber.color,
               yardage ?? matchedFiber.remainingYardage,
             );
+
             if (createdFiber.fiber !== null) {
-              await ProjectManaging.addFiber(user, projectproj._id, createdFiber.fiber._id);
+              // await ProjectManaging.addFiber(user, projectproj._id, createdFiber.fiber._id);
               if (yardage) {
                 await Inventorying.editFiber(matchedFiber._id, undefined, undefined, undefined, undefined, matchedFiber.remainingYardage - yardage);
               } else {
                 await Inventorying.deleteFiber(matchedFiber._id);
               }
+              return createdFiber.fiber._id;
             }
           } else {
             // Create new fiber and add to project
             const createdFiber = await ProjectInventorying.addNewFiber(projectproj._id, "", "", fiber_type, "", yardage);
             if (createdFiber.fiber !== null) {
-              await ProjectManaging.addFiber(user, projectproj._id, createdFiber.fiber._id);
+              return createdFiber.fiber._id;
+              // await ProjectManaging.addFiber(user, projectproj._id, createdFiber.fiber._id);
             }
           }
         }),
       );
+
+      if (fiber_ids !== null) {
+        await ProjectManaging.addFibers(user, projectproj._id, fiber_ids);
+      }
 
       return Responses.project(project.project);
     }

@@ -163,6 +163,23 @@ export default class ProjectManagingConcept {
       throw new ProjectNotFoundError(_id);
     }
     const updatedInventory = Array.from(new Set([...project.projectInventory, fiber]));
+    console.log(updatedInventory);
+    await this.projects.partialUpdateOne({ _id }, { projectInventory: updatedInventory });
+    return { msg: "Fiber added successfully!", projectInventory: updatedInventory };
+  }
+
+  async addFibers(owner: ObjectId, _id: ObjectId, fibers: (ObjectId | undefined)[]) {
+    await this.assertOwnerIsUser(owner, _id);
+    const project = await this.projects.readOne({ _id });
+    if (!project) {
+      throw new ProjectNotFoundError(_id);
+    }
+    let updatedInventory = Array.from(new Set([...project.projectInventory]));
+    for (const fiber of fibers) {
+      if (fiber !== undefined) {
+        updatedInventory = Array.from(new Set([...updatedInventory, fiber]));
+      }
+    }
     await this.projects.partialUpdateOne({ _id }, { projectInventory: updatedInventory });
     return { msg: "Fiber added successfully!", projectInventory: updatedInventory };
   }
@@ -210,9 +227,7 @@ export class ProjectOwnerNotMatchError extends NotAllowedError {
 }
 
 export class ProjectNotFoundError extends NotFoundError {
-  constructor(
-    public readonly _id: ObjectId,
-  ) {
+  constructor(public readonly _id: ObjectId) {
     super("Project {0} does not exist!", _id);
   }
 }
