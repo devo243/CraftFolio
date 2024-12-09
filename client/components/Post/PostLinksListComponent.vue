@@ -46,6 +46,7 @@ const toggleEditing = async (index: number) => {
   } else {
     editinglink.value = -1;
   }
+  console.log(editinglink.value);
 };
 
 onBeforeMount(async () => {

@@ -148,9 +148,9 @@ export default class PostingConcept {
     if (!post) {
       throw new NotFoundError(`Post ${_id} does not exist!`);
     }
-    const updatedLinks = post.options?.tips?.map((link) => (link === oldLink ? newLink : link)) || [];
+    const updatedLinks = post.options?.links?.map((link) => (link === oldLink ? newLink : link)) || [];
     await this.update(_id, undefined, undefined, { ...post.options, links: updatedLinks });
-    return { msg: "Link updated successfully!", tips: updatedLinks };
+    return { msg: "Link updated successfully!", links: updatedLinks };
   }
 
   async getTips(_id: ObjectId) {
