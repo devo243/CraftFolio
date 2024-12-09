@@ -26,7 +26,7 @@ const filterGuidesByInventory = async () => {
   if (filterMakeableGuides.value) {
     const availableFibers = await fetchy("/api/fibers", "GET");
     const makeableGuides = await fetchy("/api/posts/makeable-guides", "POST", {
-      body: { availableFibers: availableFibers.map((fiber: any) => fiber._id) },
+      body: { availableFibers },
     });
     posts.value = makeableGuides;
   } else {

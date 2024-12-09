@@ -289,6 +289,46 @@ class Routes {
     return await Posting.editMistake(oid, oldMistake, newMistake);
   }
 
+  @Router.post("/posts/makeable-guides")
+  async getMakeableGuides(availableFibers: { type: string; remainingYardage: number }[]) {
+    const allPosts = await Posting.getPosts();
+    const makeablePosts = [];
+
+    for (const post of allPosts) {
+      const fibers = post.options?.fibers || [];
+      let isMakeable = true;
+
+      const resolvedFibers = await Promise.all(fibers.map(async (fiberGroup) => Promise.all(fiberGroup.map(async (fiberId) => GuideInventorying.getFiberById(fiberId)))));
+      for (const fiberGroup of resolvedFibers) {
+        const recommendedFiber = fiberGroup[0];
+        const alternativeFibers = fiberGroup.slice(1);
+
+        const isRecommendedAvailable = availableFibers.some(
+          (userFiber) => recommendedFiber && recommendedFiber.type === userFiber.type && recommendedFiber.remainingYardage <= userFiber.remainingYardage,
+        );
+
+        const isAnyAlternativeAvailable = alternativeFibers.some((altFiber) =>
+          availableFibers.some((userFiber) => altFiber && altFiber.type === userFiber.type && altFiber.remainingYardage <= userFiber.remainingYardage),
+        );
+
+        if (!isRecommendedAvailable && !isAnyAlternativeAvailable) {
+          isMakeable = false;
+          break;
+        }
+      }
+
+      if (isMakeable) {
+        const author = await Authing.getUserById(post.author);
+        makeablePosts.push({
+          ...post,
+          author: author.username,
+        });
+      }
+    }
+
+    return makeablePosts;
+  }
+
   async getGuidesWith(availableFibers: ObjectId[]) {
     const allGuides: PostDoc[] = await Posting.getPosts();
     const usableGuides: PostDoc[] = [];
