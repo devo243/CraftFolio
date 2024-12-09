@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useToastStore } from "@/stores/toast";
 import { fetchy } from "@/utils/fetchy";
 import { ref } from "vue";
 
@@ -8,7 +9,21 @@ const editing = ref(false);
 const imageLink = ref("");
 const emit = defineEmits(["refreshProject"]);
 
+const isImgUrl = (url: string) => {
+  const img = new Image();
+  img.src = url;
+  return new Promise((resolve) => {
+    img.onerror = () => resolve(false);
+    img.onload = () => resolve(true);
+  });
+}
+
 const addImage = async () => {
+  if (!(await isImgUrl(imageLink.value))) {
+    useToastStore().showToast({ message: `${imageLink.value} is not a valid image link`, style: "error" });
+    imageLink.value = "";
+    return;
+  }
   try {
     await fetchy(`/api/projects/${props.id}/image`, "POST", {
       body: { image: imageLink.value },
