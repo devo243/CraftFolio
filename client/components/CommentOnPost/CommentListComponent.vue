@@ -8,10 +8,16 @@ import EditCommentForm from "./EditCommentForm.vue";
 const props = defineProps(["post"]);
 
 const loaded = ref(false);
-let comments = ref<Array<Record<string, string>>>([]);
+let comments = ref<Array<Record<string, any>>>([]);
 let editing = ref("");
-const commentIsVisible = ref(false);
+const commentIsVisible = ref(true);
 let pid = props.post._id;
+
+enum CommentType {
+  Question,    // 0
+  Tip,  // 1
+  Comment    // 2
+}
 
 async function getComments() {
   //let query: Record<string, string> = { pid };
@@ -48,10 +54,16 @@ onBeforeMount(async () => {
     </button>
   </section>
   <section class="comments" v-if="loaded && comments.length !== 0 && commentIsVisible">
-    <article v-for="comment in comments" :key="comment._id">
-      <CommentComponent v-if="editing !== comment._id" :post="post" :comment="comment" @refreshComments="getComments" @editComment="updateEditing" />
-      <EditCommentForm v-else :post="post" :comment="comment" @refreshComments="getComments" @editComment="updateEditing" />
-    </article>
+    <div  v-for="(comment, index) of comments" :key="index" class="container">
+      <img v-if="comment.options.type === CommentType.Tip" src="@/assets/icons/bulb.svg"/>
+      <img v-else-if="comment.options.type === CommentType.Question" src="@/assets/icons/question-mark.svg" />
+      <img v-else>
+      <article>
+        <CommentComponent v-if="editing !== comment._id" :post="post" :comment="comment" @refreshComments="getComments" @editComment="updateEditing" />
+        <EditCommentForm v-else :post="post" :comment="comment" @refreshComments="getComments" @editComment="updateEditing" />
+      </article>
+    </div>
+    
   </section>
   <p v-else-if="loaded && commentIsVisible">No comments found</p>
   <p v-else-if="commentIsVisible">Loading...</p>
@@ -88,6 +100,7 @@ article {
   align-items: flex-start;
   gap: 0.5em;
   padding: 1em;
+  flex: 1;
 }
 
 .posts {
@@ -122,5 +135,20 @@ button {
   padding: 0.5em;
   border-radius: 1em;
   border: none;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5em;
+  align-items: center;
+}
+
+
+img {
+  width: 32px;
+  height: 100%;
+  border-radius: 1em;
+  padding: 0.5em;
 }
 </style>
