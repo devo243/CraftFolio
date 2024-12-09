@@ -4,7 +4,13 @@ import DocCollection, { BaseDoc } from "../framework/doc";
 import { NotAllowedError, NotFoundError } from "./errors";
 
 export interface CommentOptions {
-  backgroundColor?: string;
+  type: CommentType;
+}
+
+enum CommentType {
+  Question,    // 0
+  Tip,  // 1
+  Comment    // 2
 }
 
 export interface CommentDoc extends BaseDoc {
@@ -12,6 +18,7 @@ export interface CommentDoc extends BaseDoc {
   author: ObjectId;
   content: string;
   options?: CommentOptions;
+
 }
 
 /**
